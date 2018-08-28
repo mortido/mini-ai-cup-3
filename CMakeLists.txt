@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
-project(ahead)
+project(mini-ai-cup-3)
 
 set(CMAKE_CXX_STANDARD 11)
-
-add_executable(ahead main.cpp)
+set(SOURCE_FILES main.cpp solution.cpp)
+file(GLOB CHIPMUNK_SOURCES chipmunk/src/*.c)
+#add_definitions(-DDEBUG)
+#set(CMAKE_CXX_FLAGS "-O2")
+add_executable(mini-ai-cup-3 ${SOURCE_FILES} ${CHIPMUNK_SOURCES})
