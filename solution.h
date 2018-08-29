@@ -3,10 +3,29 @@
 
 #include "constants.h"
 
-class solution {
+#include "../nlohmann/json.hpp"
+
+using json = nlohmann::json;
+
+
+class Solution {
 public:
     double fitness;
     int moves[GA::DEPTH];
+
+    Solution* merge_shuffle(Solution* solution);
+
+    Solution* merge_crossover(Solution* solution);
+
+    void mutate_single_gen();
+
+    void mutate_slice();
+
+    void mutate_slice_all_random();
+
+    void randomize();
+
+    json to_json();
 
 //    solution* merge(solution* solution) {
 //        solution* child = new solution();
@@ -32,10 +51,6 @@ public:
 //
 //        this->points = solution->points;
 //    }
-
-    void mutate();
-
-    void randomize();
 };
 
 
