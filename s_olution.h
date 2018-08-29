@@ -1,7 +1,9 @@
 #ifndef MINI_AI_CUP_3_SOLUTION_H
 #define MINI_AI_CUP_3_SOLUTION_H
 
-#include "constants.h"
+#include <array>
+
+#include "c_onstants.h"
 
 #include "../nlohmann/json.hpp"
 
@@ -11,7 +13,7 @@ using json = nlohmann::json;
 class Solution {
 public:
     double fitness;
-    int moves[GA::DEPTH];
+    std::array<int, GA::DEPTH> moves;
 
     Solution* merge_shuffle(Solution* solution);
 
@@ -24,6 +26,10 @@ public:
     void mutate_slice_all_random();
 
     void randomize();
+
+    void randomize_interval();
+
+    void shit();
 
     json to_json();
 
