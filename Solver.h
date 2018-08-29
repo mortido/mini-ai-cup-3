@@ -12,18 +12,24 @@ using namespace std::chrono;
 
 #define PLAYERS_COUNT 2
 
-typedef std::array<Solution, GA::POPULATION_SIZE> population_t;
+using population_t = std::array<Solution, GA::POPULATION_SIZE>;
+using population_ptr = std::unique_ptr<population_t>;
+
 
 class Solver {
 private:
-    // pool that contain all previous and current populations for all players
-    std::array<population_t, 2 * PLAYERS_COUNT> populations_pool;
+    class PopulationState {
+    public:
+        population_ptr current, previous;
 
-    // pointers to current and previous population to make possible swap them without making copies.
-    std::array<population_t*, PLAYERS_COUNT> curr_populations;
-    std::array<population_t*, PLAYERS_COUNT> prev_populations;
+        PopulationState();
+        void swap();
+        std::pair<int, int> get_parent_indexes();
+    };
 
-    void evaluate(Solution &my_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id);
+    std::array<PopulationState, PLAYERS_COUNT> population_states;
+
+    void evaluate(Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id);
 public:
     std::array<Solution, PLAYERS_COUNT> best_solutions;
     Solver();
