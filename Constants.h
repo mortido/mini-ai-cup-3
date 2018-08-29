@@ -25,7 +25,7 @@ public:
     static void initConstants(const json &json);
 
 private:
-    GameConstants(const json &json);
+    explicit GameConstants(const json &json);
 
 public:
     static int MAX_GAME_TICKS();

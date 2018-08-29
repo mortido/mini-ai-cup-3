@@ -1,11 +1,11 @@
-#include "s_olution.h"
+#include "Solution.h"
 
-Solution *Solution::merge_shuffle(Solution *solution) {
-    return nullptr;
+void Solution::merge_shuffle(Solution &solution1, Solution& solution2) {
+
 }
 
-Solution *Solution::merge_crossover(Solution *solution) {
-    return nullptr;
+void Solution::merge_crossover(Solution &solution1, Solution& solution2) {
+
 }
 
 void Solution::mutate_single_gen() {
@@ -28,7 +28,7 @@ void Solution::randomize_interval() {
 
 }
 
-void Solution::shit() {
+void Solution::shift() {
 
 }
 
