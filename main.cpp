@@ -5,7 +5,7 @@
 #include "chipmunk/include/chipmunk.h"
 #include "../nlohmann/json.hpp"
 
-#include "Randomizer.h"
+#include "random/Randomizer.h"
 #include "GameState.h"
 #include "Solution.h"
 #include "Solver.h"
@@ -13,38 +13,59 @@
 using namespace std;
 using namespace std::chrono;
 
+#define NOW high_resolution_clock::now()
+#define ELAPSED_TIME duration_cast<duration<double>>(NOW - start_time).count()
 
 int main() {
-    string input_string;
-    cin >> input_string;
 
-    // read inputs
-    auto state = nlohmann::json::parse(input_string);
-
-    // init game constants
-    GameConstants::initConstants(state);
-    Randomizer::init();
+    int round = 0;
+    double time_bank = 120.0 - 10.0;
 
     // make preparations
     Solver solver{};
     GameState game_state{};
+    Randomizer::init();
 
-    while (game_state.tick_index < GameConstants::MAX_GAME_TICKS()) {
-        high_resolution_clock::time_point start_time(high_resolution_clock::now());
+    high_resolution_clock::time_point start_time;
+    string input_string, input_type;
+    while (true) {
+        getline(cin, input_string) ;
+        start_time = NOW;
 
-        // read inputs
-        cin >> input_string;
-        state = nlohmann::json::parse(input_string);
-        game_state.update_from_json(state);
+        // parse inputs
+        auto state = nlohmann::json::parse(input_string);
+        input_type = state["type"].get<std::string>();
 
-        // find best move
-        solver.solve(game_state, start_time);
+        if (input_type == "new_match") {
+            // init game constants
+//            GameConstants::initConstants(state["params"]);
+            game_state.reset(state["params"]);
+            solver.set_time_limt(
+                    time_bank / (game_state.my_lives + game_state.enemy_lives - 1) * GAME::MAX_ROUND_TICKS);
+            round++;
+        } else if (input_type == "tick") {
+            game_state.update_from_json(state["params"]);
 
-        // write best solution
-        cout << solver.best_solutions[game_state.my_player_id].to_json().dump() << endl;
-        cout << solver.best_solutions[game_state.my_player_id].fitness << endl;
-        cout << solver.best_solutions[game_state.my_player_id].moves[0] << endl;
-        game_state.next_tick();
+            // find best move
+            solver.solve(game_state, start_time);
+
+            // write best solution
+            cout << solver.best_solutions[game_state.my_player_id].to_json().dump() << endl;
+            cerr << "round " << round << " tick " << game_state.tick_index << endl;
+            cerr << solver.best_solutions[game_state.my_player_id].fitness << endl;
+            cerr << solver.best_solutions[game_state.my_player_id].moves[0] << endl;
+
+#ifdef REWIND_VIEWER
+            // TODO: simulate best_solutions again and draw them.
+#endif
+
+            game_state.next_tick();
+        } else {
+            // TODO: remove trash line because we are good
+            break;
+        }
+
+        time_bank -= ELAPSED_TIME;
     }
 
     return 0;

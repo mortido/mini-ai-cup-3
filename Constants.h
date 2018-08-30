@@ -11,28 +11,30 @@ namespace GA {
     constexpr double MUTATION_PROBABILITY = 0.3;
     constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.5;
     constexpr double CHANGE_MOVE_ON_RANDOMIZATION_PROBABILITY = 0.05;
-    constexpr double TIME_LIMIT = 0.018;
     constexpr int DEBUG_ITERATIONS_LIMIT = 100;
-    constexpr int SOLVE_ENEMY_EVERY_N_TURNS = 3;
+    constexpr int SOLVE_ENEMY_EVERY_N_TURNS = 3; // 1 enemy calculation, 2 my...
 }
 
 namespace GAME {
     constexpr int MOVES_COUNT = 3;
+    constexpr int MAX_ROUND_TICKS = 1000;
+
+    constexpr double X_GRAVITY = 0;
+    constexpr double Y_GRAVITY = -700;
 }
 
-class GameConstants {
-
-private:
-    int max_game_ticks;
-
-    static std::unique_ptr<GameConstants> instance;
-
-    explicit GameConstants(const json &json);
-
-public:
-    static void initConstants(const json &json);
-
-    static inline int MAX_GAME_TICKS();
-};
+//class GameConstants {
+//
+//private:
+//    int max_game_ticks;
+//
+//    static std::unique_ptr<GameConstants> instance;
+//    explicit GameConstants(const json &json);
+//
+//public:
+//    static void initConstants(const json &json);
+//
+//    static int MAX_GAME_TICKS();
+//};
 
 #endif //MINI_AI_CUP_3_CONSTANTS_H

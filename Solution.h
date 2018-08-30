@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "Constants.h"
-#include "Randomizer.h"
+#include "random/Randomizer.h"
 
 #include "../nlohmann/json.hpp"
 
@@ -19,30 +19,20 @@ public:
     std::array<int, GA::DEPTH> moves{};
 
     void randomize();
-
     void merge(Solution &solution1, Solution &solution2);
-
     void mutate();
-
     void shift();
-
     void copy_from(Solution &solution);
 
     json to_json();
 
 private:
     void randomize_interval();
-
     void randomize_shuffle();
-
     void merge_shuffle(Solution &solution1, Solution &solution2);
-
     void merge_crossover(Solution &solution1, Solution &solution2);
-
     void mutate_single_gen();
-
     void mutate_slice();
-
     void mutate_slice_all_random();
 };
 

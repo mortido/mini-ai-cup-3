@@ -6,13 +6,14 @@
 #ifdef DEBUG
 #define LIMIT iteration < GA::DEBUG_ITERATIONS_LIMIT
 #else
-#define LIMIT ELAPSED_TIME < GA::TIME_LIMIT
+#define LIMIT ELAPSED_TIME < time_limit
 #endif
 
 Solver::Solver() {}
 
 void Solver::solve(GameState &game_state, high_resolution_clock::time_point &start_time) {
     int iteration = 0;
+    simulations = 0;
 
     // shift previous best moves
     if (game_state.tick_index > 0) {
@@ -104,7 +105,19 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
 }
 
 void Solver::evaluate(Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id) {
+
+    // TODO: reset simulation.
+
+    // TODO: simulate
+
+    // TODO: evaluate position
+
+    simulations++;
     test_solution.fitness = Randomizer::GetProbability();
+}
+
+void Solver::set_time_limt(double time_limit) {
+    time_limit = time_limit;
 }
 
 // ********************* POPULATION STATES *********************

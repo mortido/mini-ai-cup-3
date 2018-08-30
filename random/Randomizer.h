@@ -18,12 +18,12 @@ private:
 public:
 
     static void init();
-    static inline double GetProbability();
-    static inline int GetRandomMove();
-    static inline int GetCrossoverPoint();
-    static inline int GetMutatePoint();
-    static inline int GetRandomParent();
-    static inline int FlipCoin();
+    static double GetProbability();
+    static int GetRandomMove();
+    static int GetCrossoverPoint();
+    static int GetMutatePoint();
+    static int GetRandomParent();
+    static int FlipCoin();
 };
 
 #endif //MINI_AI_CUP_3_RANDOMIZER_H

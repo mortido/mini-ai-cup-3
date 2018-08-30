@@ -74,7 +74,22 @@ void Solution::shift() {
 }
 
 json Solution::to_json() {
-    return json();
+    json command;
+    switch (moves[0]) {
+        case 0:
+            command["command"] = "stop";
+            break;
+        case 1:
+            command["command"] = "left";
+            break;
+        case 2:
+            command["command"] = "right";
+            break;
+        default:
+            command["command"] = "stop";
+    }
+
+    return command;
 }
 
 void Solution::copy_from(Solution &solution) {

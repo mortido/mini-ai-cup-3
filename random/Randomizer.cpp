@@ -1,5 +1,5 @@
 #include "Randomizer.h"
-#include "Constants.h"
+#include "../Constants.h"
 
 std::unique_ptr<Randomizer> Randomizer::instance;
 

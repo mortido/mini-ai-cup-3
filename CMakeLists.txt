@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 
 set(CMAKE_CXX_STANDARD 11)
-set(SOURCE_FILES main.cpp Solution.cpp Constants.cpp Solver.cpp GameState.cpp Randomizer.cpp)
+set(SOURCE_FILES main.cpp Solution.cpp Constants.cpp Solver.cpp GameState.cpp random/Randomizer.cpp simulation/Simulator.cpp simulation/Car.cpp simulation/Car.h simulation/Map.cpp simulation/Map.h simulation/TrashLine.cpp simulation/TrashLine.h)
 file(GLOB CHIPMUNK_SOURCES chipmunk/src/*.c)
 add_executable(mini-ai-cup-3 ${SOURCE_FILES} ${CHIPMUNK_SOURCES})
 
