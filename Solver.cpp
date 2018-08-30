@@ -19,8 +19,7 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
 
     // prepare populations (my player last)
     for (auto player:{game_state.enemy_player_id, game_state.my_player_id}) {
-
-        population_t &current = *population_states[player].current;
+//        population_t &current = *population_states[player].current;
         population_t &previous = *population_states[player].previous;
         Solution *best = nullptr;
 
