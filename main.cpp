@@ -5,6 +5,7 @@
 #include "chipmunk/include/chipmunk.h"
 #include "../nlohmann/json.hpp"
 
+#include "Randomizer.h"
 #include "GameState.h"
 #include "Solution.h"
 #include "Solver.h"
@@ -22,6 +23,7 @@ int main() {
 
     // init game constants
     GameConstants::initConstants(state);
+    Randomizer::init();
 
     // make preparations
     Solver solver{};
@@ -40,6 +42,8 @@ int main() {
 
         // write best solution
         cout << solver.best_solutions[game_state.my_player_id].to_json().dump() << endl;
+        cout << solver.best_solutions[game_state.my_player_id].fitness << endl;
+        cout << solver.best_solutions[game_state.my_player_id].moves[0] << endl;
         game_state.next_tick();
     }
 

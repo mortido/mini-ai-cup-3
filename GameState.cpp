@@ -9,5 +9,6 @@ void GameState::next_tick() {
 }
 
 void GameState::update_from_json(const json &json) {
-
+    my_player_id = 0;
+    enemy_player_id = 1;
 }

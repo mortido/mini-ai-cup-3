@@ -3,12 +3,16 @@
 #define NOW high_resolution_clock::now()
 #define ELAPSED_TIME duration_cast<duration<double>>(NOW - start_time).count()
 
+#ifdef DEBUG
+#define LIMIT iteration < GA::DEBUG_ITERATIONS_LIMIT
+#else
+#define LIMIT ELAPSED_TIME < GA::TIME_LIMIT
+#endif
+
 Solver::Solver() {}
 
 void Solver::solve(GameState &game_state, high_resolution_clock::time_point &start_time) {
-    int iteration = 1;
-
-#define LIMIT ELAPSED_TIME < GA::TIME_LIMIT
+    int iteration = 0;
 
     // shift previous best moves
     if (game_state.tick_index > 0) {
@@ -40,7 +44,7 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
             previous[idx].randomize();
 
             evaluate(previous[idx], best_solutions, player);
-            if (!best || previous[idx].fitness > best->fitness) {
+            if (!best || (previous[idx].fitness > best->fitness)) {
                 best = &previous[idx];
             }
         }
@@ -48,6 +52,7 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
         best_solutions[player].copy_from(*best);
     }
 
+    int prev_solve_id = game_state.my_player_id;
     while (LIMIT) {
         // TODO: try not optimize enemy on last iteration (maybe set max_iter/time for them)...
         int solve_for_id = (iteration % GA::SOLVE_ENEMY_EVERY_N_TURNS)
@@ -58,7 +63,14 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
 
         Solution *best = &best_solutions[solve_for_id];
 
-        // trick: copy best chromosome and mutate it.
+        if (solve_for_id != prev_solve_id) {
+            // re-evaluate best solution as enemies was updated too
+            // TODO: may be track that enemies was actually updated...
+            evaluate(*best, best_solutions, solve_for_id);
+            prev_solve_id = solve_for_id;
+        }
+
+        // trick: copy best chromosome and mutate it
         current[0].copy_from(*best);
         current[0].mutate();
         evaluate(current[0], best_solutions, solve_for_id);
@@ -71,10 +83,12 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
 
             auto parents = population_states[solve_for_id].get_parent_indexes();
             current[idx].merge(previous[parents.first], previous[parents.second]);
-// TODO:
-//                if (rnd.nextDouble() <= mutationProb) {
-            current[idx].mutate();
-//                }
+
+            // Mutate with some chance.
+            if (Randomizer::GetProbability() <= GA::MUTATION_PROBABILITY) {
+                current[idx].mutate();
+            }
+
             evaluate(current[idx], best_solutions, solve_for_id);
             if (best->fitness < current[idx].fitness) {
                 best = &current[idx];
@@ -86,11 +100,14 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
         best_solutions[solve_for_id].copy_from(*best);
         iteration++;
     }
+//    std::cout << iteration << std::endl;
 }
 
 void Solver::evaluate(Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id) {
-    test_solution.fitness = 0;
+    test_solution.fitness = Randomizer::GetProbability();
 }
+
+// ********************* POPULATION STATES *********************
 
 Solver::PopulationState::PopulationState() {
     current = std::unique_ptr<population_t>(new population_t());
@@ -99,4 +116,27 @@ Solver::PopulationState::PopulationState() {
 
 void Solver::PopulationState::swap() {
     std::swap(current, previous);
+}
+
+std::pair<int, int> Solver::PopulationState::get_parent_indexes() {
+    int a = Randomizer::GetRandomParent();
+    int b;
+
+    do {
+        b = Randomizer::GetRandomParent();
+    } while (b == a);
+
+    int mom = (*previous)[a].fitness > (*previous)[b].fitness ? a : b;
+
+    do {
+        a = Randomizer::GetRandomParent();
+    } while (a == mom);
+
+    do {
+        b = Randomizer::GetRandomParent();
+    } while (b == a || b == mom);
+
+    int dad = (*previous)[a].fitness > (*previous)[b].fitness ? a : b;
+
+    return std::make_pair(mom, dad);
 }

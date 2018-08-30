@@ -1,6 +1,8 @@
 #include "Constants.h"
 #include <memory>
 
+std::unique_ptr<GameConstants> GameConstants::instance;
+
 void GameConstants::initConstants(const json &json) {
     instance = std::unique_ptr<GameConstants>(new GameConstants(json));
 }

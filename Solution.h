@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "Constants.h"
+#include "Randomizer.h"
 
 #include "../nlohmann/json.hpp"
 
@@ -15,7 +16,7 @@ class Solution {
 public:
     double fitness;
 
-    std::array<int, GA::DEPTH> moves;
+    std::array<int, GA::DEPTH> moves{};
 
     void randomize();
 

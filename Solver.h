@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <array>
+#include "Randomizer.h"
 
 #include "Solution.h"
 #include "GameState.h"
@@ -18,6 +19,7 @@ using population_ptr = std::unique_ptr<population_t>;
 
 class Solver {
 private:
+    // **********************
     class PopulationState {
     public:
         population_ptr current, previous;
@@ -26,6 +28,9 @@ private:
         void swap();
         std::pair<int, int> get_parent_indexes();
     };
+    // **********************
+
+
 
     std::array<PopulationState, PLAYERS_COUNT> population_states;
 
