@@ -9,32 +9,31 @@
 #define LIMIT ELAPSED_TIME < time_limit
 #endif
 
-Solver::Solver() {}
-
-void Solver::solve(GameState &game_state, high_resolution_clock::time_point &start_time) {
+void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &start_time) {
     int iteration = 0;
     simulations = 0;
 
     // shift previous best moves
-    if (game_state.tick_index > 0) {
+    if (simulation.tick_index > 0) {
         for (int player = 0; player < PLAYERS_COUNT; player++) {
             best_solutions[player].shift();
         }
     }
 
     // prepare populations (my player last)
-    for (auto player:{game_state.enemy_player_id, game_state.my_player_id}) {
+    // TODO: move array to simulation object, generate after new_round.
+    for (auto player:{simulation.enemy_player_id, simulation.my_player_id}) {
 //        population_t &current = *population_states[player].current;
         population_t &previous = *population_states[player].previous;
         Solution *best = nullptr;
 
         int idx = 0;
         // add best from prev move if exist
-        if (game_state.tick_index > 0) {
+        if (simulation.tick_index > 0) {
             best_solutions[player].shift();
             previous[0].copy_from(best_solutions[player]);
 
-            evaluate(previous[0], best_solutions, player);
+            evaluate(simulation, previous[0], best_solutions, player);
             best = &previous[0];
 
             idx++;
@@ -44,7 +43,7 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
         for (; idx < GA::POPULATION_SIZE; idx++) {
             previous[idx].randomize();
 
-            evaluate(previous[idx], best_solutions, player);
+            evaluate(simulation, previous[idx], best_solutions, player);
             if (!best || (previous[idx].fitness > best->fitness)) {
                 best = &previous[idx];
             }
@@ -53,11 +52,11 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
         best_solutions[player].copy_from(*best);
     }
 
-    int prev_solve_id = game_state.my_player_id;
+    int prev_solve_id = simulation.my_player_id;
     while (LIMIT) {
         // TODO: try not optimize enemy on last iteration (maybe set max_iter/time for them)...
         int solve_for_id = (iteration % GA::SOLVE_ENEMY_EVERY_N_TURNS)
-                           ? game_state.my_player_id : game_state.enemy_player_id;
+                           ? simulation.my_player_id : simulation.enemy_player_id;
 
         population_t &current = *population_states[solve_for_id].current;
         population_t &previous = *population_states[solve_for_id].previous;
@@ -67,14 +66,14 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
         if (solve_for_id != prev_solve_id) {
             // re-evaluate best solution as enemies was updated too
             // TODO: may be track that enemies was actually updated...
-            evaluate(*best, best_solutions, solve_for_id);
+            evaluate(simulation, *best, best_solutions, solve_for_id);
             prev_solve_id = solve_for_id;
         }
 
         // trick: copy best chromosome and mutate it
         current[0].copy_from(*best);
         current[0].mutate();
-        evaluate(current[0], best_solutions, solve_for_id);
+        evaluate(simulation, current[0], best_solutions, solve_for_id);
         if (best->fitness < current[0].fitness) {
             best = &current[0];
         }
@@ -90,7 +89,7 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
                 current[idx].mutate();
             }
 
-            evaluate(current[idx], best_solutions, solve_for_id);
+            evaluate(simulation, current[idx], best_solutions, solve_for_id);
             if (best->fitness < current[idx].fitness) {
                 best = &current[idx];
             }
@@ -104,11 +103,18 @@ void Solver::solve(GameState &game_state, high_resolution_clock::time_point &sta
 //    std::cout << iteration << std::endl;
 }
 
-void Solver::evaluate(Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id) {
+void Solver::evaluate(Simulation &simulation,
+                      Solution &test_solution,
+                      std::array<Solution, PLAYERS_COUNT> &best_solutions,
+                      int my_id) {
 
     // TODO: reset simulation.
 
     // TODO: simulate
+    for (int i = 0; i < GA::DEPTH; i++) {
+        // TODO: adaptive step DT (late steps less precise)
+        simulation.simulate_tick();
+    }
 
     // TODO: evaluate position
 
@@ -116,9 +122,9 @@ void Solver::evaluate(Solution &test_solution, std::array<Solution, PLAYERS_COUN
     test_solution.fitness = Randomizer::GetProbability();
 }
 
-void Solver::set_time_limt(double time_limit) {
-    time_limit = time_limit;
-}
+//void Solver::set_time_limt(double time_limit) {
+//    time_limit = time_limit;
+//}
 
 // ********************* POPULATION STATES *********************
 

@@ -16,11 +16,18 @@ namespace GA {
 }
 
 namespace GAME {
-    constexpr int MOVES_COUNT = 3;
+//    constexpr int MOVES_COUNT = 3;
     constexpr int MAX_ROUND_TICKS = 1000;
 
-    constexpr double X_GRAVITY = 0;
-    constexpr double Y_GRAVITY = -700;
+    constexpr double SIMULATION_DT = 0.016;
+
+    constexpr double X_GRAVITY = 0.0;
+    constexpr double Y_GRAVITY = -700.0;
+    constexpr double MAX_WIDTH = 1200.0;
+    constexpr double MAX_HEIGHT = 800.0;
+
+    constexpr double MAP_FRICTION = 1.0;
+    constexpr double MAP_ELASTICITY = 0.0;
 }
 
 //class GameConstants {
@@ -29,7 +36,7 @@ namespace GAME {
 //    int max_game_ticks;
 //
 //    static std::unique_ptr<GameConstants> instance;
-//    explicit GameConstants(const json &json);
+//    GameConstants(const json &json);
 //
 //public:
 //    static void initConstants(const json &json);

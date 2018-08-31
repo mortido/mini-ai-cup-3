@@ -1,5 +1,9 @@
-#include "TrashLine.h"
-
-TrashLine::TrashLine() {
-
-}
+//#include "TrashLine.h"
+//
+//TrashLine::TrashLine() {
+//
+//}
+//
+//TrashLine::~TrashLine() {
+//
+//}

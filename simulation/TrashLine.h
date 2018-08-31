@@ -22,6 +22,8 @@ public:
     void reset();
     void move();
     double get_position();
+
+    virtual ~TrashLine();
 };
 
 

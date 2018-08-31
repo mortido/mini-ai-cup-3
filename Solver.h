@@ -6,7 +6,7 @@
 #include "random/Randomizer.h"
 
 #include "Solution.h"
-#include "GameState.h"
+#include "simulation/Simulation.h"
 
 
 using namespace std::chrono;
@@ -31,17 +31,17 @@ private:
     // **********************
 
     std::array<PopulationState, PLAYERS_COUNT> population_states;
-    int simulations;
-    double time_limit;
 
-    void evaluate(Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id);
+
+    void evaluate(Simulation &simulation, Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id);
 
 public:
     std::array<Solution, PLAYERS_COUNT> best_solutions;
-    Solver();
+    int simulations;
+    double time_limit;
 
-    void set_time_limt(double time_limit);
-    void solve(GameState &game_state, high_resolution_clock::time_point &start_time);
+//    void set_time_limt(double time_limit);
+    void solve(Simulation &simulation, high_resolution_clock::time_point &start_time);
 };
 
 #endif //MINI_AI_CUP_3_SOLVER_H

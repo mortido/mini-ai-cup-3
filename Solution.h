@@ -16,7 +16,7 @@ class Solution {
 public:
     double fitness;
 
-    std::array<int, GA::DEPTH> moves{};
+    std::array<int, GA::DEPTH> moves;
 
     void randomize();
     void merge(Solution &solution1, Solution &solution2);
