@@ -29,7 +29,7 @@ private:
     void attach();
 
 public:
-    double max_angular_speed;
+    double torque;
     double max_speed;
     int external_id;
     int player_id;

@@ -69,25 +69,25 @@ public:
 
     void circle(double x, double y, double r, uint32_t color, size_t layer = DEFAULT_LAYER) {
         static const char *fmt =
-            R"({"type": "circle", "x": %lf, "y": %lf, "r": %lf, "color": %u, "layer": %u})";
+                R"({"type": "circle", "x": %lf, "y": %lf, "r": %lf, "color": %u, "layer": %u})";
         send(format(fmt, x, y, r, color, layer));
     }
 
     void popup(double x, double y, double r, std::string text) {
         static const char *fmt =
-            R"({"type": "popup", "x": %lf, "y": %lf, "r": %lf, "text": "%s"})";
+                R"({"type": "popup", "x": %lf, "y": %lf, "r": %lf, "text": "%s"})";
         send(format(fmt, x, y, r, text.c_str()));
     }
 
     void rect(double x1, double y1, double x2, double y2, uint32_t color, size_t layer = DEFAULT_LAYER) {
         static const char *fmt =
-            R"({"type": "rectangle", "x1": %lf, "y1": %lf, "x2": %lf, "y2": %lf, "color": %u, "layer": %u})";
+                R"({"type": "rectangle", "x1": %lf, "y1": %lf, "x2": %lf, "y2": %lf, "color": %u, "layer": %u})";
         send(format(fmt, x1, y1, x2, y2, color, layer));
     }
 
     void line(double x1, double y1, double x2, double y2, uint32_t color, size_t layer = DEFAULT_LAYER) {
         static const char *fmt =
-            R"({"type": "line", "x1": %lf, "y1": %lf, "x2": %lf, "y2": %lf, "color": %u, "layer": %u})";
+                R"({"type": "line", "x1": %lf, "y1": %lf, "x2": %lf, "y2": %lf, "color": %u, "layer": %u})";
         send(format(fmt, x1, y1, x2, y2, color, layer));
     }
 

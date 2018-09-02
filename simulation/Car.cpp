@@ -4,10 +4,10 @@
 
 Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _player_id) : space{space_to_attach},
                                                                                         player_id{_player_id} {
-    car_group = static_cast<cpGroup>(player_id);
-    button_collision_type = static_cast<cpCollisionType>(player_id * 10);
+    car_group = static_cast<cpGroup>(player_id + 1);
+    button_collision_type = static_cast<cpCollisionType>((player_id + 1) * 10);
 
-    max_angular_speed = params["max_angular_speed"].get<double>();
+    torque = params["torque"].get<double>();
     max_speed = params["max_speed"].get<double>();
 //    external_id = params["external_id"].get<int>();
     drive_type = params["drive"].get<DRIVE::Type>();
@@ -162,13 +162,16 @@ void Car::move(int direction) {
               or cpSpacePointQueryNearest(space,
                                           cpBodyGetPosition(front_wheel_body), front_wheel_radius + 1.0, car_filter,
                                           nullptr))) {
-            cpBodySetAngularVelocity(car_body, max_angular_speed * direction);
-        }
+//            cpBodySetAngularVelocity(car_body, max_angular_speed * direction);
 
-        for (auto *engine:engines) {
-            cpSimpleMotorSetRate(engine, -max_speed * direction);
+            cpBodySetTorque(car_body, torque * direction);
         }
     }
+
+    for (auto *engine:engines) {
+        cpSimpleMotorSetRate(engine, -max_speed * direction);
+    }
+
 }
 
 Car::~Car() {

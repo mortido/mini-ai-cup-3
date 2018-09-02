@@ -36,7 +36,6 @@ public:
 
 #ifdef REWIND_VIEWER
     void draw();
-private:
     RewindClient &rewind;
 #endif
 };

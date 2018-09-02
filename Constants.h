@@ -23,6 +23,7 @@ namespace GAME {
     constexpr double SIMULATION_DT = 0.016;
 
     const cpVect GRAVITY = cpv(0.0, -700.0);
+    const double DAMPING = 0.85;
     const cpVect LEFT_CAR_POS = cpv(300.0, 300.0);
     const cpVect RIGHT_CAR_POS = cpv(900.0, 300.0);
     constexpr double MAX_WIDTH = 1200.0;

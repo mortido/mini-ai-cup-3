@@ -7,6 +7,7 @@ Simulation::Simulation() : space(cpSpaceNew()),
 #endif
                            round{-1} {
     cpSpaceSetGravity(space, GAME::GRAVITY);
+    cpSpaceSetDamping(space, GAME::DAMPING);
 }
 
 Simulation::~Simulation() {
@@ -25,16 +26,16 @@ void Simulation::new_round(const json &params) {
 
         // create left and right cars
         cars[0] = std::unique_ptr<Car>(new Car(params["proto_car"], space, 1.0, 0));
-//        cars[1] = std::unique_ptr<Car>(new Car(params["proto_car"], space, -1.0, 1));
+        cars[1] = std::unique_ptr<Car>(new Car(params["proto_car"], space, -1.0, 1));
     } else {
         // implicitly call detach (in other case it will be called in destructor anyway)
         map->detach();
         cars[0]->detach();
-//        cars[1]->detach();
+        cars[1]->detach();
 
         map.reset(new Map(params["proto_map"], space));
         cars[0].reset(new Car(params["proto_car"], space, 1.0, 0));
-//        cars[1].reset(new Car(params["proto_car"], space, -1.0, 1));
+        cars[1].reset(new Car(params["proto_car"], space, -1.0, 1));
     }
 }
 
@@ -50,7 +51,7 @@ void Simulation::update_tick(const json &params) {
             enemy_player_id = 0;
         }
         cars[my_player_id]->set_from_json(params["my_car"]);
-//        cars[enemy_player_id]->set_from_json(params["enemy_car"]);
+        cars[enemy_player_id]->set_from_json(params["enemy_car"]);
     } else {
 //        cars[my_player_id]->update_from_json(params["my_car"]);
 //        cars[enemy_player_id]->update_from_json(params["enemy_car"]);
@@ -66,7 +67,7 @@ void Simulation::simulate_tick() {
 void Simulation::draw() {
     map->draw(rewind);
     cars[0]->draw(rewind);
-//    cars[1]->draw(rewind);
+    cars[1]->draw(rewind);
     rewind.end_frame();
 }
 
