@@ -24,7 +24,7 @@ namespace DRIVE {
 class Car {
 private:
     bool is_attached;
-
+    cpFloat front_wheel_radius, rear_wheel_radius;
 
     void attach();
 
@@ -47,16 +47,17 @@ public:
 
     DRIVE::Type drive_type;
     cpGroup car_group;
+    cpShapeFilter car_filter;
     cpCollisionType button_collision_type;
     bool squared_wheels;
 
     Car(const json &params, cpSpace *space_to_attach, double mirror, int player_id);
-
     virtual ~Car();
 
     void detach();
-
     void move(int direction);
+    void set_from_json(const json &params);
+    void update_from_json(const json &params);
 //    void remember_state();
 //    void restore_state();
 

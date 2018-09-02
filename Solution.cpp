@@ -79,10 +79,10 @@ json Solution::to_json() {
         case 0:
             command["command"] = "stop";
             break;
-        case 1:
+        case -1:
             command["command"] = "left";
             break;
-        case 2:
+        case 1:
             command["command"] = "right";
             break;
         default:

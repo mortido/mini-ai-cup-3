@@ -26,7 +26,7 @@ Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _playe
     car_shape = cpPolyShapeNew(car_body, static_cast<int>(car_poly.size()), car_poly.data(), cpTransformIdentity, 0.0);
     cpShapeSetFriction(car_shape, params["car_body_friction"].get<cpFloat>());
     cpShapeSetElasticity(car_shape, params["car_body_elasticity"].get<cpFloat>());
-    auto car_filter = cpShapeFilterNew(car_group, CP_ALL_CATEGORIES, CP_ALL_CATEGORIES);
+    car_filter = cpShapeFilterNew(car_group, CP_ALL_CATEGORIES, CP_ALL_CATEGORIES);
     cpShapeSetFilter(car_shape, car_filter);
 
     std::vector<cpVect> button_poly;
@@ -44,19 +44,20 @@ Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _playe
     // rear wheel ******************************************************************************************
 
     auto rear_wheel_mass = params["rear_wheel_mass"].get<cpFloat>();
-    auto rear_wheel_r = params["rear_wheel_radius"].get<cpFloat>();
+    rear_wheel_radius = params["rear_wheel_radius"].get<cpFloat>();
 
     if (squared_wheels) {
-        cpFloat dr = rear_wheel_r * 2.0;
+        cpFloat dr = rear_wheel_radius * 2.0;
         rear_wheel_body = cpBodyNew(rear_wheel_mass, cpMomentForBox(rear_wheel_mass, dr, dr));
         cpBodySetPosition(rear_wheel_body, cpv(params["rear_wheel_position"][0].get<cpFloat>() * mirror,
                                                params["rear_wheel_position"][1].get<cpFloat>()));
         rear_wheel_shape = cpBoxShapeNew(rear_wheel_body, dr, dr, 0.0);
     } else {
-        rear_wheel_body = cpBodyNew(rear_wheel_mass, cpMomentForCircle(rear_wheel_mass, 0.0, rear_wheel_r, cpvzero));
+        rear_wheel_body = cpBodyNew(rear_wheel_mass,
+                                    cpMomentForCircle(rear_wheel_mass, 0.0, rear_wheel_radius, cpvzero));
         cpBodySetPosition(rear_wheel_body, cpv(params["rear_wheel_position"][0].get<cpFloat>() * mirror,
                                                params["rear_wheel_position"][1].get<cpFloat>()));
-        rear_wheel_shape = cpCircleShapeNew(rear_wheel_body, rear_wheel_r, cpvzero);
+        rear_wheel_shape = cpCircleShapeNew(rear_wheel_body, rear_wheel_radius, cpvzero);
     }
 
     cpShapeSetFilter(rear_wheel_shape, car_filter);
@@ -77,34 +78,34 @@ Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _playe
 
     std::array<cpVect, 4> stop_points{cpv(0.0, 0.0),
                                       cpv(0.0, 1.0),
-                                      cpv(rear_wheel_r * 2.0 * mirror, 1),
-                                      cpv(rear_wheel_r * 2.0 * mirror, 0)};
+                                      cpv(rear_wheel_radius * 2.0 * mirror, 1),
+                                      cpv(rear_wheel_radius * 2.0 * mirror, 0)};
 
     rear_wheel_stop = cpPolyShapeNew(car_body,
                                      4,
                                      stop_points.data(),
                                      cpTransformNew(1, 0, 0, 1,
                                                     params["rear_wheel_damp_position"][0].get<cpFloat>() *
-                                                    mirror - rear_wheel_r * mirror,
+                                                    mirror - rear_wheel_radius * mirror,
                                                     params["rear_wheel_damp_position"][1].get<cpFloat>()),
                                      0.0);
 
     // front wheel ******************************************************************************************
     auto front_wheel_mass = params["front_wheel_mass"].get<cpFloat>();
-    auto front_wheel_r = params["front_wheel_radius"].get<cpFloat>();
+    front_wheel_radius = params["front_wheel_radius"].get<cpFloat>();
 
     if (squared_wheels) {
-        cpFloat dr = front_wheel_r * 2.0;
+        cpFloat dr = front_wheel_radius * 2.0;
         front_wheel_body = cpBodyNew(front_wheel_mass, cpMomentForBox(front_wheel_mass, dr, dr));
         cpBodySetPosition(front_wheel_body, cpv(params["front_wheel_position"][0].get<cpFloat>() * mirror,
                                                 params["front_wheel_position"][1].get<cpFloat>()));
         front_wheel_shape = cpBoxShapeNew(front_wheel_body, dr, dr, 0.0);
     } else {
         front_wheel_body = cpBodyNew(front_wheel_mass,
-                                     cpMomentForCircle(front_wheel_mass, 0.0, front_wheel_r, cpvzero));
+                                     cpMomentForCircle(front_wheel_mass, 0.0, front_wheel_radius, cpvzero));
         cpBodySetPosition(front_wheel_body, cpv(params["front_wheel_position"][0].get<cpFloat>() * mirror,
                                                 params["front_wheel_position"][1].get<cpFloat>()));
-        front_wheel_shape = cpCircleShapeNew(front_wheel_body, front_wheel_r, cpvzero);
+        front_wheel_shape = cpCircleShapeNew(front_wheel_body, front_wheel_radius, cpvzero);
     }
 
     cpShapeSetFilter(front_wheel_shape, car_filter);
@@ -123,15 +124,15 @@ Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _playe
                                          params["front_wheel_damp_stiffness"].get<cpFloat>(),
                                          params["front_wheel_damp_damping"].get<cpFloat>());
 
-    stop_points[2] = cpv(front_wheel_r * 2.0 * mirror, 1);
-    stop_points[3] = cpv(front_wheel_r * 2.0 * mirror, 0);
+    stop_points[2] = cpv(front_wheel_radius * 2.0 * mirror, 1);
+    stop_points[3] = cpv(front_wheel_radius * 2.0 * mirror, 0);
 
     front_wheel_stop = cpPolyShapeNew(car_body,
                                       4,
                                       stop_points.data(),
                                       cpTransformNew(1, 0, 0, 1,
                                                      params["front_wheel_damp_position"][0].get<cpFloat>() *
-                                                     mirror - front_wheel_r * mirror,
+                                                     mirror - front_wheel_radius * mirror,
                                                      params["front_wheel_damp_position"][1].get<cpFloat>()),
                                       0.0);
     // ******************************************************************************************
@@ -151,8 +152,18 @@ Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _playe
 
 void Car::move(int direction) {
     if (direction) {
-        cpBodySetAngularVelocity(car_body, max_angular_speed * direction);
 
+//        def in_air(self):
+//        return not (self.point_query_nearest(self.rear_wheel_body.position, self.rear_wheel_radius + 1, pymunk.ShapeFilter(group=self.car_group))
+//                    or self.point_query_nearest(self.front_wheel_body.position, self.front_wheel_radius + 1, pymunk.ShapeFilter(group=self.car_group)))
+
+        if (!(cpSpacePointQueryNearest(space,
+                                       cpBodyGetPosition(rear_wheel_body), rear_wheel_radius + 1.0, car_filter, nullptr)
+              or cpSpacePointQueryNearest(space,
+                                          cpBodyGetPosition(front_wheel_body), front_wheel_radius + 1.0, car_filter,
+                                          nullptr))) {
+            cpBodySetAngularVelocity(car_body, max_angular_speed * direction);
+        }
 
         for (auto *engine:engines) {
             cpSimpleMotorSetRate(engine, -max_speed * direction);
@@ -250,15 +261,21 @@ void draw_poly(RewindClient &rw_client, cpBody *body, cpShape *poly, uint32_t co
 
 void draw_wheel(RewindClient &rw_client, cpBody *wheel_body, cpShape *wheel_shape,
                 cpBody *car_body, cpShape *wheel_stop,
-                uint32_t wheel_color, uint32_t stop_color, uint32_t line_color) {
+                uint32_t wheel_color, uint32_t stop_color, uint32_t line_color, bool square) {
 
     const cpVect &rear_pos = cpBodyGetPosition(wheel_body);
-    double rear_radius = cpCircleShapeGetRadius(wheel_shape);
-    double rear_angle = cpBodyGetAngle(wheel_body);
-    rw_client.circle(rear_pos.x, rear_pos.y, rear_radius, wheel_color);
-    rw_client.line(rear_pos.x, rear_pos.y, rear_pos.x + rear_radius * cos(rear_angle),
-                   rear_pos.y + rear_radius * sin(rear_angle), line_color);
 
+    double angle = cpBodyGetAngle(wheel_body);
+    if (square) {
+        draw_poly(rw_client, wheel_body, wheel_shape, wheel_color);
+        rw_client.line(rear_pos.x, rear_pos.y, rear_pos.x + 10.0 * cos(angle),
+                       rear_pos.y + 10.0 * sin(angle), line_color);
+    } else {
+        double radius = cpCircleShapeGetRadius(wheel_shape);
+        rw_client.circle(rear_pos.x, rear_pos.y, radius, wheel_color);
+        rw_client.line(rear_pos.x, rear_pos.y, rear_pos.x + radius * cos(angle),
+                       rear_pos.y + radius * sin(angle), line_color);
+    }
     draw_poly(rw_client, car_body, wheel_stop, stop_color);
 }
 
@@ -281,12 +298,35 @@ void Car::draw(RewindClient &rw_client) {
     rw_client.line(car_center.x, car_center.y - 5.0, car_center.x, car_center.y + 5.0, black);
     rw_client.line(car_center.x - 5.0, car_center.y, car_center.x + 5.0, car_center.y, black);
 
-    draw_wheel(rw_client, rear_wheel_body, rear_wheel_shape, car_body, rear_wheel_stop, wheel_color, stop_color, black);
+    draw_wheel(rw_client, rear_wheel_body, rear_wheel_shape, car_body, rear_wheel_stop, wheel_color, stop_color, black,
+               squared_wheels);
     draw_wheel(rw_client, front_wheel_body, front_wheel_shape, car_body, front_wheel_stop, wheel_color, stop_color,
-               black);
+               black, squared_wheels);
 
     draw_poly(rw_client, car_body, car_shape, car_color);
     draw_poly(rw_client, car_body, button_shape, button_color);
 }
 
 #endif
+
+void Car::set_from_json(const json &params) {
+    cpBodySetPosition(car_body, cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>()));
+    cpBodySetAngle(car_body, params[1].get<cpFloat>());
+
+    cpBodySetPosition(rear_wheel_body, cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>()));
+    cpBodySetAngle(rear_wheel_body, params[3][2].get<cpFloat>());
+    cpBodySetPosition(front_wheel_body, cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>()));
+    cpBodySetAngle(front_wheel_body, params[4][2].get<cpFloat>());
+
+
+}
+
+void Car::update_from_json(const json &params) {
+    cpBodySetPosition(car_body, cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>()));
+    cpBodySetAngle(car_body, params[1].get<cpFloat>());
+
+    cpBodySetPosition(rear_wheel_body, cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>()));
+    cpBodySetAngle(rear_wheel_body, params[3][2].get<cpFloat>());
+    cpBodySetPosition(front_wheel_body, cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>()));
+    cpBodySetAngle(front_wheel_body, params[4][2].get<cpFloat>());
+}
