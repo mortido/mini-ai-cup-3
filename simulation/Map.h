@@ -3,6 +3,10 @@
 
 #include <vector>
 
+#ifdef REWIND_VIEWER
+#include "../RewindClient.h"
+#endif
+
 #include "../chipmunk/include/chipmunk.h"
 #include "../../nlohmann/json.hpp"
 
@@ -19,8 +23,12 @@ public:
 
     Map(const json &params, cpSpace *space_to_attach);
     virtual ~Map();
-
     void detach();
+
+#ifdef REWIND_VIEWER
+    void draw(RewindClient &rw_client);
+
+#endif
 };
 
 

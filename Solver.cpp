@@ -21,8 +21,7 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
     }
 
     // prepare populations (my player last)
-    // TODO: move array to simulation object, generate after new_round.
-    for (auto player:{simulation.enemy_player_id, simulation.my_player_id}) {
+    for (auto player: prepare_order) {
 //        population_t &current = *population_states[player].current;
         population_t &previous = *population_states[player].previous;
         Solution *best = nullptr;
@@ -113,7 +112,7 @@ void Solver::evaluate(Simulation &simulation,
     // TODO: simulate
     for (int i = 0; i < GA::DEPTH; i++) {
         // TODO: adaptive step DT (late steps less precise)
-        simulation.simulate_tick();
+//        simulation.simulate_tick();
     }
 
     // TODO: evaluate position
@@ -122,9 +121,10 @@ void Solver::evaluate(Simulation &simulation,
     test_solution.fitness = Randomizer::GetProbability();
 }
 
-//void Solver::set_time_limt(double time_limit) {
-//    time_limit = time_limit;
-//}
+void Solver::init(Simulation &simulation) {
+    prepare_order[0] = simulation.enemy_player_id;
+    prepare_order[1] = simulation.my_player_id;
+}
 
 // ********************* POPULATION STATES *********************
 

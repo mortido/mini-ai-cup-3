@@ -2,6 +2,7 @@
 #define MINI_AI_CUP_3_CONSTANTS_H
 
 #include "../nlohmann/json.hpp"
+#include "chipmunk/include/chipmunk.h"
 
 using json = nlohmann::json;
 
@@ -21,8 +22,9 @@ namespace GAME {
 
     constexpr double SIMULATION_DT = 0.016;
 
-    constexpr double X_GRAVITY = 0.0;
-    constexpr double Y_GRAVITY = -700.0;
+    const cpVect GRAVITY = cpv(0.0, -700.0);
+    const cpVect LEFT_CAR_POS = cpv(300.0, 300.0);
+    const cpVect RIGHT_CAR_POS = cpv(900.0, 300.0);
     constexpr double MAX_WIDTH = 1200.0;
     constexpr double MAX_HEIGHT = 800.0;
 

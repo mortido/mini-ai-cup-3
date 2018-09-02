@@ -31,6 +31,7 @@ private:
     // **********************
 
     std::array<PopulationState, PLAYERS_COUNT> population_states;
+    std::array<int, PLAYERS_COUNT> prepare_order;
 
 
     void evaluate(Simulation &simulation, Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id);
@@ -40,8 +41,9 @@ public:
     int simulations;
     double time_limit;
 
-//    void set_time_limt(double time_limit);
+
     void solve(Simulation &simulation, high_resolution_clock::time_point &start_time);
+    void init(Simulation &simulation);
 };
 
 #endif //MINI_AI_CUP_3_SOLVER_H
