@@ -1,14 +1,17 @@
 #include "Car.h"
+#include "../Constants.h"
 #include <vector>
 #include <array>
 
-Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _player_id) : space{space_to_attach},
-                                                                                        player_id{_player_id} {
+Car::Car(const json &params, cpSpace *_space, double mirror,
+         int _player_id, cpVect pos) : space_attached{_space}, player_id{_player_id},
+                           car_speed{cpvzero}, rear_wheel_speed{cpvzero}, front_wheel_speed{cpvzero},
+                           car_angle_speed{0.0}, rear_wheel_angle_speed{0.0}, front_wheel_angle_speed{0.0} {
     car_group = static_cast<cpGroup>(player_id + 1);
     button_collision_type = static_cast<cpCollisionType>((player_id + 1) * 10);
 
-    torque = params["torque"].get<double>();
-    max_speed = params["max_speed"].get<double>();
+    torque = params["torque"].get<cpFloat>();
+    max_speed = params["max_speed"].get<cpFloat>();
 //    external_id = params["external_id"].get<int>();
     drive_type = params["drive"].get<DRIVE::Type>();
     squared_wheels = params.value("squared_wheels", false);
@@ -145,9 +148,13 @@ Car::Car(const json &params, cpSpace *space_to_attach, double mirror, int _playe
         engines.emplace_back(cpSimpleMotorNew(front_wheel_body, car_body, 0.0));
     }
 
-    // TODO: self.point_query_nearest = point_query_nearest
+    // ******************************************************************************************
 
-    attach();
+    cpBodySetPosition(car_body, pos);
+    cpBodySetPosition(front_wheel_body, pos + cpv(params["front_wheel_position"][0].get<cpFloat>() * mirror,
+                                           params["front_wheel_position"][1].get<cpFloat>()));
+    cpBodySetPosition(rear_wheel_body, pos + cpv(params["rear_wheel_position"][0].get<cpFloat>() * mirror,
+                                           params["rear_wheel_position"][1].get<cpFloat>()));
 }
 
 void Car::move(int direction) {
@@ -157,9 +164,9 @@ void Car::move(int direction) {
 //        return not (self.point_query_nearest(self.rear_wheel_body.position, self.rear_wheel_radius + 1, pymunk.ShapeFilter(group=self.car_group))
 //                    or self.point_query_nearest(self.front_wheel_body.position, self.front_wheel_radius + 1, pymunk.ShapeFilter(group=self.car_group)))
 
-        if (!(cpSpacePointQueryNearest(space,
+        if (!(cpSpacePointQueryNearest(space_attached,
                                        cpBodyGetPosition(rear_wheel_body), rear_wheel_radius + 1.0, car_filter, nullptr)
-              or cpSpacePointQueryNearest(space,
+              or cpSpacePointQueryNearest(space_attached,
                                           cpBodyGetPosition(front_wheel_body), front_wheel_radius + 1.0, car_filter,
                                           nullptr))) {
 //            cpBodySetAngularVelocity(car_body, max_angular_speed * direction);
@@ -175,10 +182,6 @@ void Car::move(int direction) {
 }
 
 Car::~Car() {
-    if (is_attached) {
-        detach();
-    }
-
     for (auto *engine:engines) {
         cpConstraintFree(engine);
     }
@@ -200,9 +203,7 @@ Car::~Car() {
     cpBodyFree(rear_wheel_body);
 }
 
-void Car::attach() {
-    is_attached = true;
-
+void Car::attach(cpSpace *space) {
     // WARNING: ORDER MATTERS!
     cpSpaceAddShape(space, button_shape);
     cpSpaceAddBody(space, car_body);
@@ -223,7 +224,7 @@ void Car::attach() {
     }
 }
 
-void Car::detach() {
+void Car::detach(cpSpace *space) {
     for (auto *engine:engines) {
         cpSpaceRemoveConstraint(space, engine);
     }
@@ -243,8 +244,6 @@ void Car::detach() {
     cpSpaceRemoveBody(space, car_body);
     cpSpaceRemoveBody(space, front_wheel_body);
     cpSpaceRemoveBody(space, rear_wheel_body);
-
-    is_attached = false;
 }
 
 #ifdef REWIND_VIEWER
@@ -313,23 +312,79 @@ void Car::draw(RewindClient &rw_client) {
 #endif
 
 void Car::set_from_json(const json &params) {
-    cpBodySetPosition(car_body, cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>()));
-    cpBodySetAngle(car_body, params[1].get<cpFloat>());
+    car_angle = params[1].get<cpFloat>();
+    car_position = cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>());
+    rear_wheel_angle = params[3][2].get<cpFloat>();
+    rear_wheel_position = cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>());
+    front_wheel_angle = params[4][2].get<cpFloat>();
+    front_wheel_position = cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>());
 
-    cpBodySetPosition(rear_wheel_body, cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>()));
-    cpBodySetAngle(rear_wheel_body, params[3][2].get<cpFloat>());
-    cpBodySetPosition(front_wheel_body, cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>()));
-    cpBodySetAngle(front_wheel_body, params[4][2].get<cpFloat>());
-
-
+    cpBodySetPosition(car_body, car_position);
+    cpBodySetAngle(car_body, car_angle);
+    cpBodySetPosition(rear_wheel_body, rear_wheel_position);
+    cpBodySetAngle(rear_wheel_body, rear_wheel_angle);
+    cpBodySetPosition(front_wheel_body, front_wheel_position);
+    cpBodySetAngle(front_wheel_body, front_wheel_angle);
 }
 
-void Car::update_from_json(const json &params) {
-    cpBodySetPosition(car_body, cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>()));
-    cpBodySetAngle(car_body, params[1].get<cpFloat>());
+//#include <iostream>
 
-    cpBodySetPosition(rear_wheel_body, cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>()));
-    cpBodySetAngle(rear_wheel_body, params[3][2].get<cpFloat>());
-    cpBodySetPosition(front_wheel_body, cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>()));
-    cpBodySetAngle(front_wheel_body, params[4][2].get<cpFloat>());
+void Car::update_from_json(const json &params) {
+    cpFloat old_car_angle = car_angle;
+    cpVect old_car_position = car_position;
+    cpFloat old_rear_wheel_angle = rear_wheel_angle;
+    cpVect old_rear_wheel_position = rear_wheel_position;
+    cpFloat old_front_wheel_angle = front_wheel_angle;
+    cpVect old_front_wheel_position = front_wheel_position;
+
+    car_angle = params[1].get<cpFloat>();
+    car_position = cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>());
+    rear_wheel_angle = params[3][2].get<cpFloat>();
+    rear_wheel_position = cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>());
+    front_wheel_angle = params[4][2].get<cpFloat>();
+    front_wheel_position = cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>());
+
+    car_angle_speed = (car_angle - old_car_angle) * GAME::SIMULATION_DT_INVERSED;
+    car_speed = cpvmult(car_position - old_car_position, GAME::SIMULATION_DT_INVERSED);
+//    std::cerr << "pos_old    "<< old_car_position.x << " - " << old_car_position.y << std::endl;
+//    std::cerr << "pos_new    "<< car_position.x << " - " << car_position.y << std::endl;
+//    std::cerr << "speeed_simm    "<< cpBodyGetVelocity(car_body).x << " - " << cpBodyGetVelocity(car_body).y << std::endl;
+//    std::cerr << "speeed_json    "<< car_speed.x << " - " << car_speed.y << std::endl;
+    rear_wheel_angle_speed = (rear_wheel_angle - old_rear_wheel_angle) * GAME::SIMULATION_DT_INVERSED;
+    rear_wheel_speed = cpvmult(rear_wheel_position - old_rear_wheel_position, GAME::SIMULATION_DT_INVERSED);
+    front_wheel_angle_speed = (front_wheel_angle - old_front_wheel_angle) * GAME::SIMULATION_DT_INVERSED;
+    front_wheel_speed = cpvmult(front_wheel_position - old_front_wheel_position, GAME::SIMULATION_DT_INVERSED);
+
+    car_angle_speed = cpBodyGetAngularVelocity(car_body);
+    car_speed = cpBodyGetVelocity(car_body);
+    rear_wheel_angle_speed = cpBodyGetAngularVelocity(rear_wheel_body);
+    rear_wheel_speed = cpBodyGetVelocity(rear_wheel_body);
+    front_wheel_angle_speed = cpBodyGetAngularVelocity(front_wheel_body);
+    front_wheel_speed = cpBodyGetVelocity(front_wheel_body);
+
+//    car_force = cpBodyGetForce(car_body);
+//    rear_wheel_force=cpBodyGetForce(rear_wheel_body);
+//    front_wheel_force=cpBodyGetForce(front_wheel_body);
+
+    reset();
+}
+
+void Car::reset() {
+    cpBodySetPosition(car_body, car_position);
+    cpBodySetAngle(car_body, car_angle);
+    cpBodySetPosition(rear_wheel_body, rear_wheel_position);
+    cpBodySetAngle(rear_wheel_body, rear_wheel_angle);
+    cpBodySetPosition(front_wheel_body, front_wheel_position);
+    cpBodySetAngle(front_wheel_body, front_wheel_angle);
+
+//    cpBodySetVelocity(car_body, car_speed);
+//    cpBodySetAngularVelocity(car_body, car_angle_speed);
+//    cpBodySetVelocity(rear_wheel_body, rear_wheel_speed);
+//    cpBodySetAngularVelocity(rear_wheel_body, rear_wheel_angle_speed);
+//    cpBodySetVelocity(front_wheel_body, front_wheel_speed);
+//    cpBodySetAngularVelocity(front_wheel_body, front_wheel_angle_speed);
+
+//    cpBodySetForce(car_body, car_force);
+//    cpBodySetForce(rear_wheel_body, rear_wheel_force);
+//    cpBodySetForce(front_wheel_body, front_wheel_force);
 }

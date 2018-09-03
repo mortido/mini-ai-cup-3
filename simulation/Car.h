@@ -23,18 +23,16 @@ namespace DRIVE {
 
 class Car {
 private:
-    bool is_attached;
     cpFloat front_wheel_radius, rear_wheel_radius;
 
-    void attach();
 
 public:
-    double torque;
-    double max_speed;
+    cpFloat torque;
+    cpFloat max_speed;
     int external_id;
     int player_id;
 
-    cpSpace *space;
+    cpSpace *space_attached;
     cpBody *car_body;
     cpShape *car_shape, *button_shape;
 
@@ -51,13 +49,28 @@ public:
     cpCollisionType button_collision_type;
     bool squared_wheels;
 
-    Car(const json &params, cpSpace *space_to_attach, double mirror, int player_id);
+    // STATE *****************
+    cpFloat car_angle, rear_wheel_angle, front_wheel_angle;
+    cpFloat car_angle_speed, rear_wheel_angle_speed, front_wheel_angle_speed;
+    cpVect car_position, rear_wheel_position, front_wheel_position;
+    cpVect car_speed, rear_wheel_speed, front_wheel_speed;
+//    cpVect car_force, rear_wheel_force, front_wheel_force;
+
+    Car(const json &params, cpSpace *_space, double mirror, int player_id, cpVect pos);
+
     virtual ~Car();
 
-    void detach();
+    void attach(cpSpace *space);
+
+    void detach(cpSpace *space);
+
     void move(int direction);
+
     void set_from_json(const json &params);
+
     void update_from_json(const json &params);
+
+    void reset();
 //    void remember_state();
 //    void restore_state();
 

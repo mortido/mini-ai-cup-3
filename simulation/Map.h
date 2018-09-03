@@ -14,16 +14,15 @@ using json = nlohmann::json;
 
 class Map {
 private:
-    bool is_attached;
-    cpSpace *space;
     std::vector<cpShape*> shapes;
 
 public:
     int external_id;
 
-    Map(const json &params, cpSpace *space_to_attach);
+    Map(const json &params, cpSpace *space);
     virtual ~Map();
-    void detach();
+    void detach(cpSpace *space);
+    void attach(cpSpace *space);
 
 #ifdef REWIND_VIEWER
     void draw(RewindClient &rw_client);

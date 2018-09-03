@@ -21,9 +21,12 @@ namespace GAME {
     constexpr int MAX_ROUND_TICKS = 1000;
 
     constexpr double SIMULATION_DT = 0.016;
+    constexpr double SIMULATION_DT_INVERSED = 62.5;
 
     const cpVect GRAVITY = cpv(0.0, -700.0);
-    const double DAMPING = 0.85;
+
+    constexpr double DAMPING = 0.85;
+    constexpr int TICK_TO_DEADLINE = 600;
     const cpVect LEFT_CAR_POS = cpv(300.0, 300.0);
     const cpVect RIGHT_CAR_POS = cpv(900.0, 300.0);
     constexpr double MAX_WIDTH = 1200.0;
