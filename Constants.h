@@ -2,7 +2,7 @@
 #define MINI_AI_CUP_3_CONSTANTS_H
 
 #include "../nlohmann/json.hpp"
-#include "chipmunk/include/chipmunk.h"
+#include <chipmunk/chipmunk.h>
 
 using json = nlohmann::json;
 

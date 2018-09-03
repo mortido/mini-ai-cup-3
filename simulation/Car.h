@@ -1,7 +1,7 @@
 #ifndef MINI_AI_CUP_3_CAR_H
 #define MINI_AI_CUP_3_CAR_H
 
-#include "../chipmunk/include/chipmunk.h"
+#include <chipmunk/chipmunk.h>
 
 #ifdef REWIND_VIEWER
 
@@ -23,7 +23,7 @@ namespace DRIVE {
 
 class Car {
 private:
-    cpFloat front_wheel_radius, rear_wheel_radius;
+
 
 
 public:
@@ -48,6 +48,7 @@ public:
     cpShapeFilter car_filter;
     cpCollisionType button_collision_type;
     bool squared_wheels;
+    cpFloat front_wheel_radius, rear_wheel_radius;
 
     // STATE *****************
     cpFloat car_angle, rear_wheel_angle, front_wheel_angle;

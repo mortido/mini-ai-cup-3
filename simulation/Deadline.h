@@ -1,7 +1,7 @@
 #ifndef MINI_AI_CUP_3_DEADLINE_H
 #define MINI_AI_CUP_3_DEADLINE_H
 
-#include "../chipmunk/include/chipmunk.h"
+#include <chipmunk/chipmunk.h>
 
 class Deadline {
 public:

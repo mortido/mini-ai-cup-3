@@ -7,7 +7,7 @@
 #include "Map.h"
 #include "Car.h"
 #include "Deadline.h"
-#include "../chipmunk/include/chipmunk.h"
+#include <chipmunk/chipmunk.h>
 
 #include "../../nlohmann/json.hpp"
 
@@ -39,7 +39,7 @@ public:
     void reset();
 
 #ifdef REWIND_VIEWER
-    void draw();
+    void draw(json &params);
     RewindClient &rewind;
 #endif
 };

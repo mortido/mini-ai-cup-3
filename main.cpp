@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "chipmunk/include/chipmunk.h"
+#include <chipmunk/chipmunk.h>
 #include "../nlohmann/json.hpp"
 
 #include "random/Randomizer.h"
@@ -68,6 +68,12 @@ int main() {
                 cerr << b << endl;
                 fail=true;
             }
+#ifdef REWIND_VIEWER
+            simulation.rewind.message("%d - ", simulation.tick_index);
+            simulation.rewind.message("%f - ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>());
+            simulation.rewind.message("%f    ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>());
+            simulation.draw(state["params"]);
+#endif
 
             simulation.update_tick(state["params"]);
             if (simulation.tick_index == 0) {
@@ -104,10 +110,10 @@ int main() {
         time_bank -= ELAPSED_TIME;
 #ifdef REWIND_VIEWER
         if (input_type == "tick") {
-            simulation.rewind.message("%d - ", simulation.tick_index);
-            simulation.rewind.message("%f - ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>());
-            simulation.rewind.message("%f    ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>());
-            simulation.draw();
+
+
+//            simulation.rewind.circle()
+
 //            simulation.simulate_tick();
 //            simulation.reset();
             simulation.simulate_tick();

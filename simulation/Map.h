@@ -7,7 +7,7 @@
 #include "../RewindClient.h"
 #endif
 
-#include "../chipmunk/include/chipmunk.h"
+#include <chipmunk/chipmunk.h>
 #include "../../nlohmann/json.hpp"
 
 using json = nlohmann::json;
