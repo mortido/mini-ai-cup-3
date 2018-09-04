@@ -37,7 +37,7 @@ void Simulation::new_round(const json &params) {
         space = cpSpaceNew();
         cpSpaceSetGravity(space, GAME::GRAVITY);
         cpSpaceSetDamping(space, GAME::DAMPING);
-//        cpSpaceSetCollisionPersistence(space, 1);
+        cpSpaceSetCollisionPersistence(space, 100);
 
         map = std::unique_ptr<Map>(new Map(params["proto_map"], space));
         deadline = std::unique_ptr<Deadline>(new Deadline(Deadline::ASC, 1800, 800));
@@ -69,6 +69,8 @@ void Simulation::new_round(const json &params) {
 
     cpCollisionHandler *ch1 = cpSpaceAddWildcardHandler(space, 10);
     cpCollisionHandler *ch2 = cpSpaceAddWildcardHandler(space, 20);
+//    ch1->beginFunc
+//    ch1->userData = cars[0];
 
     map->attach(space);
     deadline->attach(space);
@@ -90,12 +92,13 @@ void Simulation::update_tick(const json &params) {
             my_player_id = 1;
             enemy_player_id = 0;
         }
-//        cars[my_player_id]->set_from_json(params["my_car"]);
-//        cars[enemy_player_id]->set_from_json(params["enemy_car"]);
+        cars[my_player_id]->set_from_json(params["my_car"]);
+        cars[enemy_player_id]->set_from_json(params["enemy_car"]);
     } else {
-//        cars[my_player_id]->update_from_json(params["my_car"]);
-//        cars[enemy_player_id]->update_from_json(params["enemy_car"]);
+        cars[my_player_id]->update_from_json(params["my_car"]);
+        cars[enemy_player_id]->update_from_json(params["enemy_car"]);
     }
+    deadline->update_from_json(params["deadline_position"].get<cpFloat>());
 }
 
 void Simulation::simulate_tick() {
@@ -126,6 +129,7 @@ void Simulation::reset() {
     sim_tick_index = tick_index;
     cars[0]->reset();
     cars[1]->reset();
+    deadline->reset();
 
 //    map->detach(space);
 //    deadline->detach(space);

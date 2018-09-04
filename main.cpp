@@ -37,6 +37,9 @@ int main() {
     high_resolution_clock::time_point start_time;
     string input_string, input_type;
     bool fail = false;
+
+    cpFloat preva=0.0, prevb=0.0;
+
     while (true) {
         getline(cin, input_string);
         start_time = NOW;
@@ -60,15 +63,24 @@ int main() {
 
             cerr << "TIME LIMIT IS " << solver.time_limit << " " << state["params"]["proto_car"].value("squared_wheels", false) << endl;
         } else if (input_type == "tick") {
-            double a = cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>();
-            double b = cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>();
-            if(abs(a)>1e-6 || abs(b)>1e-6) {
-                cerr << simulation.tick_index << ":";
-                cerr << a << "; ";
-                cerr << b << endl;
-                fail=true;
-            }
+
 #ifdef REWIND_VIEWER
+
+//            if(abs(a)>1e-6 || abs(b)>1e-6) {
+                cerr << "tick" << simulation.tick_index + 1 << ":\tpos_real( ";
+                cerr << state["params"]["my_car"][0][0].get<cpFloat>() << "; ";
+                cerr << state["params"]["my_car"][0][1].get<cpFloat>() << " ), pos_in_simulation ( ";
+                cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y << "; ";
+                cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y << " ), vel_in_simulation ( ";
+                cerr << cpBodyGetVelocity(simulation.cars[simulation.my_player_id]->car_body).x << "; ";
+                cerr << cpBodyGetVelocity(simulation.cars[simulation.my_player_id]->car_body).y << " ), delta_pos_real_div_dt ( ";
+                cerr << (state["params"]["my_car"][0][0].get<cpFloat>() - preva) / 0.016 << "; ";
+                cerr << (state["params"]["my_car"][0][1].get<cpFloat>() - prevb) / 0.016 << " )" << endl;
+                preva = /*cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x -*/ state["params"]["my_car"][0][0].get<cpFloat>();
+                prevb = /*cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y -*/ state["params"]["my_car"][0][1].get<cpFloat>();
+//                fail=true;
+//            }
+
             simulation.rewind.message("%d - ", simulation.tick_index);
             simulation.rewind.message("%f - ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>());
             simulation.rewind.message("%f    ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>());
@@ -114,6 +126,16 @@ int main() {
 
 //            simulation.rewind.circle()
 
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
+//            simulation.simulate_tick();
 //            simulation.simulate_tick();
 //            simulation.reset();
             simulation.simulate_tick();

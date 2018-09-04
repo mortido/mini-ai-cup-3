@@ -107,18 +107,45 @@ void Solver::evaluate(Simulation &simulation,
                       std::array<Solution, PLAYERS_COUNT> &best_solutions,
                       int my_id) {
 
-    // TODO: reset simulation.
+    // Calculate few simulations as it is not perfect.
+    for (int k = 0; k < GA::RE_SIM_COUNT; k++) {
+        // TODO: reset simulation.
+//    simulation.reset();
 
-    // TODO: simulate
-    for (int i = 0; i < GA::DEPTH; i++) {
-        // TODO: adaptive step DT (late steps less precise)
+        double mul(1.0);
+        double fitness(0.0);
+
+        // TODO: simulate
+        for (int i = 0; i < GA::DEPTH; i++) {
+            // TODO: adaptive step DT (late steps less precise)
+            // if all alive:
 //        simulation.simulate_tick();
+
+            // in case of somebody death.
+            if (false) {
+                while (i < GA::DEPTH) {
+                    test_solution.fitness += 100500 * mul;
+                    mul *= GA::THETA;
+                }
+                break;
+            }
+
+            // TODO: evaluate position
+            //    cpShape *
+//    cpSpacePointQueryNearest(cpSpace *space, cpVect point, cpFloat maxDistance, cpShapeFilter filter, cpPointQueryInfo *out)
+
+
+            fitness += Randomizer::GetProbability() * mul;
+            mul *= GA::THETA;
+        }
+
+        // chose worst possible case
+        if (k == 0 || fitness < test_solution.fitness) {
+            test_solution.fitness = fitness;
+        }
     }
 
-    // TODO: evaluate position
-
     simulations++;
-    test_solution.fitness = Randomizer::GetProbability();
 }
 
 void Solver::init(Simulation &simulation) {

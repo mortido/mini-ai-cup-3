@@ -80,6 +80,8 @@ void draw_segment(RewindClient &rw_client, cpShape *shape, uint32_t color){
     const cpVect &b2 = b + n * r;
     rw_client.line(a1.x, a1.y, b1.x, b1.y, color);
     rw_client.line(a2.x, a2.y, b2.x, b2.y, color);
+    rw_client.line(a1.x, a1.y, a2.x, a2.y, color);
+    rw_client.line(b1.x, b1.y, b2.x, b2.y, color);
 }
 
 void Map::draw(RewindClient &rw_client) {

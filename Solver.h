@@ -33,7 +33,6 @@ private:
     std::array<PopulationState, PLAYERS_COUNT> population_states;
     std::array<int, PLAYERS_COUNT> prepare_order;
 
-
     void evaluate(Simulation &simulation, Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id);
 
 public:

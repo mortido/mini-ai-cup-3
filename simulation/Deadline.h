@@ -1,6 +1,10 @@
 #ifndef MINI_AI_CUP_3_DEADLINE_H
 #define MINI_AI_CUP_3_DEADLINE_H
 
+#ifdef REWIND_VIEWER
+#include "../RewindClient.h"
+#endif
+
 #include <chipmunk/chipmunk.h>
 
 class Deadline {
@@ -12,6 +16,7 @@ public:
 
     cpBody *body;
     cpShape *shape;
+    cpVect position;
     Type type;
 
     Deadline(Type type, cpFloat max_length, cpFloat max_height);
@@ -19,6 +24,13 @@ public:
     void detach(cpSpace *space);
     void attach(cpSpace *space);
     void move();
+    void update_from_json(cpFloat y_pos);
+    void reset();
+
+#ifdef REWIND_VIEWER
+    void draw(RewindClient &rw_client);
+
+#endif
 };
 
 

@@ -325,7 +325,7 @@ void Car::set_from_json(const json &params) {
     cpBodySetAngle(front_wheel_body, front_wheel_angle);
 }
 
-//#include <iostream>
+#include <iostream>
 
 void Car::update_from_json(const json &params) {
     cpFloat old_car_angle = car_angle;
@@ -363,6 +363,9 @@ void Car::update_from_json(const json &params) {
 //    car_force = cpBodyGetForce(car_body);
 //    rear_wheel_force=cpBodyGetForce(rear_wheel_body);
 //    front_wheel_force=cpBodyGetForce(front_wheel_body);
+
+//    std::cerr <<  cpBodyGetForce(car_body).x << " - " <<  cpBodyGetForce(car_body).y << std::endl;
+//    cpBodyGetForce(rear_wheel_body)<< " - " << cpBodyGetForce(front_wheel_body)<< std::endl;
 
     reset();
 }
