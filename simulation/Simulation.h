@@ -37,6 +37,7 @@ public:
     void new_round(const json &params);
     void simulate_tick();
     void reset();
+    cpFloat get_closest_point_to_button(int player_id);
 
 #ifdef REWIND_VIEWER
     void draw(json &params);

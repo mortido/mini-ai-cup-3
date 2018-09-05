@@ -13,6 +13,9 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
     int iteration = 0;
     simulations = 0;
 
+    prepare_order[0] = simulation.enemy_player_id;
+    prepare_order[1] = simulation.my_player_id;
+
     // shift previous best moves
     if (simulation.tick_index > 0) {
         for (int player = 0; player < PLAYERS_COUNT; player++) {
@@ -107,50 +110,52 @@ void Solver::evaluate(Simulation &simulation,
                       std::array<Solution, PLAYERS_COUNT> &best_solutions,
                       int my_id) {
 
-    // Calculate few simulations as it is not perfect.
-    for (int k = 0; k < GA::RE_SIM_COUNT; k++) {
-        // TODO: reset simulation.
-//    simulation.reset();
-
-        double mul(1.0);
-        double fitness(0.0);
-
-        // TODO: simulate
-        for (int i = 0; i < GA::DEPTH; i++) {
-            // TODO: adaptive step DT (late steps less precise)
-            // if all alive:
-//        simulation.simulate_tick();
-
-            // in case of somebody death.
-            if (false) {
-                while (i < GA::DEPTH) {
-                    test_solution.fitness += 100500 * mul;
-                    mul *= GA::THETA;
-                }
-                break;
-            }
-
-            // TODO: evaluate position
-            //    cpShape *
-//    cpSpacePointQueryNearest(cpSpace *space, cpVect point, cpFloat maxDistance, cpShapeFilter filter, cpPointQueryInfo *out)
-
-
-            fitness += Randomizer::GetProbability() * mul;
-            mul *= GA::THETA;
-        }
-
-        // chose worst possible case
-        if (k == 0 || fitness < test_solution.fitness) {
-            test_solution.fitness = fitness;
-        }
-    }
+//    // Calculate few simulations as it is not perfect.
+//    for (int k = 0; k < GA::RE_SIM_COUNT; k++) {
+//        // TODO: reset simulation.
+////    simulation.reset();
+//
+//        double mul(1.0);
+//        double fitness(0.0);
+//
+//        // TODO: simulate
+//        for (int i = 0; i < GA::DEPTH; i++) {
+//
+//            // Apply moves.
+//            for (int p = 0; p < PLAYERS_COUNT; p++) {
+//                simulation.cars[p]->move(p == my_id ? test_solution.moves[i] : best_solutions[p].moves[i]);
+//            }
+//
+//            // TODO: adaptive step DT (late steps less precise?)
+//            // if all alive:
+////        simulation.simulate_tick();
+//
+//            // in case of somebody death.
+//            if (!simulation.cars[0]->alive || !simulation.cars[1]->alive) {
+//                double points = simulation.cars[my_id]->alive ? 100500 : -100500;
+//                while (i < GA::DEPTH) {
+//                    test_solution.fitness += points * mul;
+//                    mul *= GA::THETA;
+//                }
+//                break;
+//            }
+//
+//            // TODO: evaluate position
+//            double min_dist = simulation.get_closest_point_to_button(my_id);
+//
+//            min_dist = simulation.get_closest_point_to_button(enemy_id);
+//
+//            fitness += Randomizer::GetProbability() * mul;
+//            mul *= GA::THETA;
+//        }
+//
+//        // chose worst possible case
+//        if (k == 0 || fitness < test_solution.fitness) {
+//            test_solution.fitness = fitness;
+//        }
+//    }
 
     simulations++;
-}
-
-void Solver::init(Simulation &simulation) {
-    prepare_order[0] = simulation.enemy_player_id;
-    prepare_order[1] = simulation.my_player_id;
 }
 
 // ********************* POPULATION STATES *********************

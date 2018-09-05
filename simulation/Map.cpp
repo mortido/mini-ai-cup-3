@@ -9,35 +9,24 @@ Map::~Map() {
     }
 }
 
-Map::Map(const json &params, cpSpace *space){
+Map::Map(const json &params, cpSpace *space) {
     external_id = params["external_id"].get<int>();
     cpBody *staticBody = cpSpaceGetStaticBody(space);
 
-    cpShape *left = cpSegmentShapeNew(staticBody,
-                                      cpv(0.0, 0.0),
-                                      cpv(0.0, GAME::MAX_HEIGHT),
-                                      1.0);
+    cpFloat bo = 10.0 - 1.0;
+    cpShape *left = cpSegmentShapeNew(staticBody, cpv(-bo, -bo), cpv(-bo, GAME::MAX_HEIGHT + bo), 10.0);
     cpShapeSetSensor(left, true);
     shapes.push_back(left);
 
-    cpShape *top = cpSegmentShapeNew(staticBody,
-                                     cpv(0.0, GAME::MAX_HEIGHT),
-                                     cpv(GAME::MAX_WIDTH, GAME::MAX_HEIGHT),
-                                     1.0);
+    cpShape *top = cpSegmentShapeNew(staticBody, cpv(-bo, GAME::MAX_HEIGHT + bo), cpv(GAME::MAX_WIDTH + bo, GAME::MAX_HEIGHT + bo), 10.0);
     cpShapeSetSensor(top, true);
     shapes.push_back(top);
 
-    cpShape *right = cpSegmentShapeNew(staticBody,
-                                       cpv(GAME::MAX_WIDTH, GAME::MAX_HEIGHT),
-                                       cpv(GAME::MAX_WIDTH, 0.0),
-                                       1.0);
+    cpShape *right = cpSegmentShapeNew(staticBody, cpv(GAME::MAX_WIDTH + bo, GAME::MAX_HEIGHT + bo), cpv(GAME::MAX_WIDTH + bo, -bo), 10.0);
     cpShapeSetSensor(right, true);
     shapes.push_back(right);
 
-    cpShape *bottom = cpSegmentShapeNew(staticBody,
-                                        cpv(GAME::MAX_WIDTH, 0.0),
-                                        cpv(0.0, 0.0),
-                                        1.0);
+    cpShape *bottom = cpSegmentShapeNew(staticBody, cpv(GAME::MAX_WIDTH + bo, -bo), cpv(-bo, -bo), 10.0);
     cpShapeSetSensor(bottom, true);
     shapes.push_back(bottom);
 
@@ -68,7 +57,7 @@ void Map::detach(cpSpace *space) {
 
 #ifdef REWIND_VIEWER
 
-void draw_segment(RewindClient &rw_client, cpShape *shape, uint32_t color){
+void draw_segment(RewindClient &rw_client, cpShape *shape, uint32_t color) {
     const cpVect &n = cpSegmentShapeGetNormal(shape);
     const cpVect &a = cpSegmentShapeGetA(shape);
     const cpVect &b = cpSegmentShapeGetB(shape);

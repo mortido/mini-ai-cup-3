@@ -37,7 +37,7 @@ void Deadline::move() {
 
 #ifdef REWIND_VIEWER
 
-void draw_segment(RewindClient &rw_client, cpShape *shape, uint32_t color) {
+void draw_segment_(RewindClient &rw_client, cpShape *shape, uint32_t color) {
     const cpVect &n = cpSegmentShapeGetNormal(shape);
     const cpVect &a = cpSegmentShapeGetA(shape);
     const cpVect &b = cpSegmentShapeGetB(shape);
@@ -54,7 +54,7 @@ void draw_segment(RewindClient &rw_client, cpShape *shape, uint32_t color) {
 }
 
 void Deadline::draw(RewindClient &rw_client) {
-    draw_segment(rw_client, shape, 0xff6344);
+    draw_segment_(rw_client, shape, 0xff6344);
 }
 
 #endif

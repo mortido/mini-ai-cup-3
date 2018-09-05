@@ -22,125 +22,188 @@ using namespace std::chrono;
 #define NOW high_resolution_clock::now()
 #define ELAPSED_TIME duration_cast<duration<double>>(NOW - start_time).count()
 
+//int main() {
+//    double time_bank = 0.0 * 120.0;
+//
+//#ifdef LOCAL_RUN
+//    time_bank = time_bank * 17.0 / 9.0;
+//#endif
+//
+//    // make preparations
+//    Solver solver;
+//    Simulation simulation;
+//    Randomizer::init();
+//
+//    high_resolution_clock::time_point start_time;
+//    string input_string, input_type;
+//
+//    cpFloat preva = 0.0, prevb = 0.0;
+//
+//    while (true) {
+//        getline(cin, input_string);
+//        start_time = NOW;
+//
+//        // parse inputs
+//        auto state = nlohmann::json::parse(input_string);
+//        input_type = state["type"].get<std::string>();
+//
+//        if (input_type == "new_match") {
+//            // init game constants
+////            GameConstants::initConstants(state["params"]);
+//            simulation.new_round(state["params"]);
+//            solver.time_limit =
+//                    time_bank / ((simulation.my_lives + simulation.enemy_lives - 1) * GAME::MAX_ROUND_TICKS);
+//
+//
+////            cerr << "TIME LIMIT IS " << solver.time_limit << " "
+//              cerr << "NEW ROUND, wheels is squared ="   << state["params"]["proto_car"].value("squared_wheels", false) << endl;
+//        } else if (input_type == "tick") {
+//
+//#ifdef REWIND_VIEWER
+//            double a = cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x -
+//                       state["params"]["my_car"][0][0].get<cpFloat>();
+//            double b = cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y -
+//                       state["params"]["my_car"][0][1].get<cpFloat>();
+////            if (abs(a) > 1e-6 || abs(b) > 1e-6) {
+//                cerr << "tick " << simulation.tick_index << " pos_diff: " << a << " ; " << b << endl;
+////            }
+////            cerr << std::setprecision(16) << std::fixed;
+////            cerr << "tick" << simulation.tick_index + 1 << ":\tpos_real( ";
+////            cerr << state["params"]["my_car"][0][0].get<cpFloat>() << "; ";
+////            cerr << state["params"]["my_car"][0][1].get<cpFloat>() << " ), pos_in_simulation ( ";
+////            cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x << "; ";
+////            cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y << " )" << endl;
+////                 << " ), vel_in_simulation ( ";
+////            cerr << cpBodyGetVelocity(simulation.cars[simulation.my_player_id]->car_body).x << "; ";
+////            cerr << cpBodyGetVelocity(simulation.cars[simulation.my_player_id]->car_body).y
+////                 << " ), delta_pos_real_div_dt ( ";
+////            cerr << (state["params"]["my_car"][0][0].get<cpFloat>() - preva) / 0.016 << "; ";
+////            cerr << (state["params"]["my_car"][0][1].get<cpFloat>() - prevb) / 0.016 << " )" << endl;
+////            preva = state["params"]["my_car"][0][0].get<cpFloat>();
+////            prevb = state["params"]["my_car"][0][1].get<cpFloat>();
+//
+//            simulation.rewind.message("%d - ", simulation.tick_index);
+//            simulation.rewind.message("%f - ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x -
+//                                               state["params"]["my_car"][0][0].get<cpFloat>());
+//            simulation.rewind.message("%f    ",
+//                                      cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y -
+//                                      state["params"]["my_car"][0][1].get<cpFloat>());
+//            simulation.draw(state["params"]);
+//#endif
+//
+////            simulation.update_tick(state["params"]);
+//
+////            cerr << "TIME BEFORE SOLVE " << ELAPSED_TIME << endl;
+////            solver.solve(simulation, start_time);
+////            cerr << "TIME AFTER SOLVE " << ELAPSED_TIME << endl;
+//
+//
+//            int move = solver.best_solutions[simulation.my_player_id].moves[0];
+//            if (simulation.tick_index < 200) {
+//                move = 0;
+//            } else {
+//                move = 1;
+//            }
+//            solver.best_solutions[simulation.my_player_id].moves[0] = move;
+//            // write best solution
+//            cout << solver.best_solutions[simulation.my_player_id].to_json().dump() << endl;
+////            cerr << "round " << simulation.round << " tick " << simulation.tick_index << " simulations "
+////                 << solver.simulations
+////                 << endl;
+////            cerr << solver.best_solutions[simulation.my_player_id].fitness << endl;
+////            cerr << solver.best_solutions[simulation.my_player_id].moves[0] << endl;
+//
+//            simulation.cars[simulation.my_player_id]->move(solver.best_solutions[simulation.my_player_id].moves[0]);
+//            simulation.cars[simulation.enemy_player_id]->move(0);
+//        } else {
+//            cerr << input_type << endl;
+//            break;
+//        }
+//
+//        time_bank -= ELAPSED_TIME;
+//#ifdef LOCAL_RUN
+//        if (input_type == "tick") {
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.simulate_tick();
+////            simulation.reset();
+//            simulation.simulate_tick();
+//        }
+//#endif
+//    }
+//
+//    return 0;
+//}
+
+// ********************************************************************************************************************
+
 int main() {
-    double time_bank = 0.0*120.0;
-
-#ifdef LOCAL_RUN
-    time_bank = time_bank * 17.0 / 9.0;
-#endif
-
-    // make preparations
-    Solver solver;
     Simulation simulation;
-    Randomizer::init();
-
-    high_resolution_clock::time_point start_time;
     string input_string, input_type;
-    bool fail = false;
-
-    cpFloat preva=0.0, prevb=0.0;
-
+    double asum(0), bsum(0);
     while (true) {
         getline(cin, input_string);
-        start_time = NOW;
-
-        // parse inputs
         auto state = nlohmann::json::parse(input_string);
         input_type = state["type"].get<std::string>();
 
         if (input_type == "new_match") {
-            // init game constants
-//            GameConstants::initConstants(state["params"]);
             simulation.new_round(state["params"]);
-            solver.time_limit =
-                    time_bank / ((simulation.my_lives + simulation.enemy_lives - 1) * GAME::MAX_ROUND_TICKS);
-
-            if(fail){
-                cerr << "FAIL" << endl;
+            if (simulation.round != 0) {
+                cerr << "round " << simulation.round << " pos_diff_sum: " << asum << " ; " << bsum;
+                cerr << " wheels is squared =" << state["params"]["proto_car"].value("squared_wheels", false) << endl;
             }
-            fail=false;
-
-
-            cerr << "TIME LIMIT IS " << solver.time_limit << " " << state["params"]["proto_car"].value("squared_wheels", false) << endl;
-        } else if (input_type == "tick") {
-
-#ifdef REWIND_VIEWER
-
-//            if(abs(a)>1e-6 || abs(b)>1e-6) {
-                cerr << "tick" << simulation.tick_index + 1 << ":\tpos_real( ";
-                cerr << state["params"]["my_car"][0][0].get<cpFloat>() << "; ";
-                cerr << state["params"]["my_car"][0][1].get<cpFloat>() << " ), pos_in_simulation ( ";
-                cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y << "; ";
-                cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y << " ), vel_in_simulation ( ";
-                cerr << cpBodyGetVelocity(simulation.cars[simulation.my_player_id]->car_body).x << "; ";
-                cerr << cpBodyGetVelocity(simulation.cars[simulation.my_player_id]->car_body).y << " ), delta_pos_real_div_dt ( ";
-                cerr << (state["params"]["my_car"][0][0].get<cpFloat>() - preva) / 0.016 << "; ";
-                cerr << (state["params"]["my_car"][0][1].get<cpFloat>() - prevb) / 0.016 << " )" << endl;
-                preva = /*cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x -*/ state["params"]["my_car"][0][0].get<cpFloat>();
-                prevb = /*cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y -*/ state["params"]["my_car"][0][1].get<cpFloat>();
-//                fail=true;
-//            }
-
-            simulation.rewind.message("%d - ", simulation.tick_index);
-            simulation.rewind.message("%f - ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>());
-            simulation.rewind.message("%f    ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>());
-            simulation.draw(state["params"]);
-#endif
-
-            simulation.update_tick(state["params"]);
-            if (simulation.tick_index == 0) {
-                solver.init(simulation);
-            }
-//            cerr << "TIME BEFORE SOLVE " << ELAPSED_TIME << endl;
-            // find best move
-            solver.solve(simulation, start_time);
-//            cerr << "TIME AFTER SOLVE " << ELAPSED_TIME << endl;
-
-
-            if(simulation.tick_index<200){
-//                solver.best_solutions[simulation.my_player_id].moves[0] = 0;
-            } else {
-                solver.best_solutions[simulation.my_player_id].moves[0] = 1;
-            }
-            // write best solution
-            cout << solver.best_solutions[simulation.my_player_id].to_json().dump() << endl;
-//            cerr << "round " << simulation.round << " tick " << simulation.tick_index << " simulations "
-//                 << solver.simulations
+            asum = 0.0;
+            bsum = 0.0;
+//            cerr << "NEW ROUND, wheels is squared =" << state["params"]["proto_car"].value("squared_wheels", false)
 //                 << endl;
-//            cerr << solver.best_solutions[simulation.my_player_id].fitness << endl;
-//            cerr << solver.best_solutions[simulation.my_player_id].moves[0] << endl;
+        } else if (input_type == "tick") {
+            simulation.tick_index++;
+            double a =
+                    cpBodyGetPosition(simulation.cars[0]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>();
+            double b =
+                    cpBodyGetPosition(simulation.cars[0]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>();
+            asum += abs(a);
+            bsum += abs(b);
+//            if(abs(a)>1e-6||abs(b)>1e-6) {
+//                cerr << "tick " << simulation.tick_index << " pos_diff: " << a << " ; " << b << endl;
+//            }
+//            simulation.draw(state["params"]);
 
-
-
-            simulation.cars[simulation.my_player_id]->move(solver.best_solutions[simulation.my_player_id].moves[0]);
-            simulation.cars[simulation.enemy_player_id]->move(0);
+            int move(0);
+            if (simulation.tick_index < 200) {
+                move = 0;
+            } else {
+                move = 1;
+            }
+            json command;
+            switch (move) {
+                case 0:
+                    command["command"] = "stop";
+                    break;
+                case -1:
+                    command["command"] = "left";
+                    break;
+                case 1:
+                    command["command"] = "right";
+                    break;
+                default:
+                    command["command"] = "stop";
+            }
+            cout << command.dump() << endl;
+            simulation.cars[0]->move(move);
+            simulation.cars[1]->move(0);
+            simulation.simulate_tick(); // deadline moves here.
         } else {
-            cerr << input_type << endl;
             break;
         }
-
-        time_bank -= ELAPSED_TIME;
-#ifdef REWIND_VIEWER
-        if (input_type == "tick") {
-
-
-//            simulation.rewind.circle()
-
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.simulate_tick();
-//            simulation.reset();
-            simulation.simulate_tick();
-        }
-#endif
     }
 
     return 0;

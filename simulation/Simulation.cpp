@@ -13,16 +13,9 @@ Simulation::~Simulation() {
     cpSpaceFree(space);
 }
 
-static void RemoveEachBody(cpBody *body, cpSpace *spc){
-    cpSpaceRemoveBody(spc, body);
-}
-
-static void RemoveEachShape(cpShape *shape, cpSpace *spc){
-    cpSpaceRemoveShape(spc, shape);
-}
-
-static void RemoveEachConstraint(cpConstraint *constraint, cpSpace *spc){
-    cpSpaceRemoveConstraint(spc, constraint);
+static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive){
+    *alive = false;
+    return cpFalse;
 }
 
 void Simulation::new_round(const json &params) {
@@ -35,42 +28,38 @@ void Simulation::new_round(const json &params) {
 
     if (round == 0) {
         space = cpSpaceNew();
-        cpSpaceSetGravity(space, GAME::GRAVITY);
-        cpSpaceSetDamping(space, GAME::DAMPING);
-        cpSpaceSetCollisionPersistence(space, 100);
-
-        map = std::unique_ptr<Map>(new Map(params["proto_map"], space));
-        deadline = std::unique_ptr<Deadline>(new Deadline(Deadline::ASC, 1800, 800));
-        cars[0] = std::unique_ptr<Car>(new Car(params["proto_car"], space, 1.0, 0, GAME::LEFT_CAR_POS));
-        cars[1] = std::unique_ptr<Car>(new Car(params["proto_car"], space, -1.0, 1, GAME::RIGHT_CAR_POS));
-
+        cpSpaceSetGravity(space, GAME::GRAVITY); // 0 -700
+        cpSpaceSetDamping(space, GAME::DAMPING); // 0.85
+//        cpSpaceSetCollisionPersistence(space, 0);
     } else {
-
-//        cpSpaceEachShape(space, (cpSpaceShapeIteratorFunc)RemoveEachShape, space);
-//        cpSpaceEachBody(space, (cpSpaceBodyIteratorFunc)RemoveEachBody, space);
-//        cpSpaceEachConstraint(space, (cpSpaceConstraintIteratorFunc)RemoveEachConstraint, space);
-
         map->detach(space);
         deadline->detach(space);
+//        cars[0]->detach_shapes(space);
+//        cars[1]->detach_shapes(space);
+//        cars[0]->detach_bodies(space);
+//        cars[1]->detach_bodies(space);
+//        cars[0]->detach_constraints(space);
+//        cars[1]->detach_constraints(space);
         cars[0]->detach(space);
         cars[1]->detach(space);
-
 //        cpSpaceFree(space);
 //        space = cpSpaceNew();
 //        cpSpaceSetGravity(space, GAME::GRAVITY);
 //        cpSpaceSetDamping(space, GAME::DAMPING);
-//        cpSpaceSetCollisionPersistence(space, 1);
-
-        map.reset(new Map(params["proto_map"], space));
-        deadline.reset(new Deadline(Deadline::ASC, 1800, 800));
-        cars[0].reset(new Car(params["proto_car"], space, 1.0, 0, GAME::LEFT_CAR_POS));
-        cars[1].reset(new Car(params["proto_car"], space, -1.0, 1, GAME::RIGHT_CAR_POS));
     }
 
-    cpCollisionHandler *ch1 = cpSpaceAddWildcardHandler(space, 10);
-    cpCollisionHandler *ch2 = cpSpaceAddWildcardHandler(space, 20);
-//    ch1->beginFunc
-//    ch1->userData = cars[0];
+    map.reset(new Map(params["proto_map"], space));
+    deadline.reset(new Deadline(Deadline::ASC, 1800, 800));
+
+    cars[0].reset(new Car(params["proto_car"], space, 1.0, 0, GAME::LEFT_CAR_POS)); // 300-300
+    cpCollisionHandler *ch1 = cpSpaceAddWildcardHandler(space, cars[0]->button_collision_type);
+    ch1->beginFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
+    ch1->userData = &(cars[0]->alive);
+
+    cars[1].reset(new Car(params["proto_car"], space, -1.0, 1, GAME::RIGHT_CAR_POS)); // 900-300
+    cpCollisionHandler *ch2 = cpSpaceAddWildcardHandler(space, cars[1]->button_collision_type);
+    ch2->beginFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
+    ch2->userData = &(cars[1]->alive);
 
     map->attach(space);
     deadline->attach(space);
@@ -92,13 +81,13 @@ void Simulation::update_tick(const json &params) {
             my_player_id = 1;
             enemy_player_id = 0;
         }
-        cars[my_player_id]->set_from_json(params["my_car"]);
-        cars[enemy_player_id]->set_from_json(params["enemy_car"]);
+//        cars[my_player_id]->set_from_json(params["my_car"]);
+//        cars[enemy_player_id]->set_from_json(params["enemy_car"]);
     } else {
-        cars[my_player_id]->update_from_json(params["my_car"]);
-        cars[enemy_player_id]->update_from_json(params["enemy_car"]);
+//        cars[my_player_id]->update_from_json(params["my_car"]);
+//        cars[enemy_player_id]->update_from_json(params["enemy_car"]);
     }
-    deadline->update_from_json(params["deadline_position"].get<cpFloat>());
+//    deadline->update_from_json(params["deadline_position"].get<cpFloat>());
 }
 
 void Simulation::simulate_tick() {
@@ -131,6 +120,15 @@ void Simulation::reset() {
     cars[1]->reset();
     deadline->reset();
 
+    cpSpaceReindexShapesForBody(space, cars[0]->car_body);
+    cpSpaceReindexShapesForBody(space, cars[0]->rear_wheel_body);
+    cpSpaceReindexShapesForBody(space, cars[0]->front_wheel_body);
+    cpSpaceReindexShapesForBody(space, cars[1]->car_body);
+    cpSpaceReindexShapesForBody(space, cars[1]->rear_wheel_body);
+    cpSpaceReindexShapesForBody(space, cars[1]->front_wheel_body);
+    cpSpaceReindexStatic(space);
+    cpSpaceReindexShape(space, deadline->shape);
+
 //    map->detach(space);
 //    deadline->detach(space);
 //    cars[0]->detach(space);
@@ -150,4 +148,14 @@ void Simulation::reset() {
 //    cars[1]->attach(space);
 
     // TODO: reset deadline.
+}
+
+cpFloat Simulation::get_closest_point_to_button(int player_id) {
+//    cpShape *
+//    cpSpacePointQueryNearest(cpSpace *space, cpVect point, cpFloat maxDistance, cpShapeFilter filter, cpPointQueryInfo *out)
+//
+//    cpPointQueryInfo queryInfo;
+//
+//    cpSpacePointQueryNearest(space, , 500.0, &queryInfo);
+    return 0;
 }

@@ -42,7 +42,7 @@ public:
 
 
     void solve(Simulation &simulation, high_resolution_clock::time_point &start_time);
-    void init(Simulation &simulation);
+
 };
 
 #endif //MINI_AI_CUP_3_SOLVER_H

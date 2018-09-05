@@ -118,7 +118,7 @@ private:
         socket_.Initialize();
         socket_.DisableNagleAlgoritm();
         if (!socket_.Open(reinterpret_cast<const uint8_t *>(host.c_str()), port)) {
-            fprintf(stderr, "RewindClient:: Cannot open viewer socket. Launch viewer before strategy");
+            fprintf(stderr, "RewindClient:: Cannot open viewer socket. Launch viewer before strategy\n");
         }
     }
 

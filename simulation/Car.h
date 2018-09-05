@@ -31,6 +31,7 @@ public:
     cpFloat max_speed;
     int external_id;
     int player_id;
+    bool alive;
 
     cpSpace *space_attached;
     cpBody *car_body;
@@ -38,8 +39,7 @@ public:
 
     cpBody *front_wheel_body, *rear_wheel_body;
     cpShape *front_wheel_shape, *rear_wheel_shape;
-    cpShape *front_wheel_stop, *rear_wheel_stop;
-    cpConstraint *front_wheel_joint, *rear_wheel_joint;
+    cpConstraint *front_wheel_groove, *rear_wheel_groove;
     cpConstraint *front_wheel_dump, *rear_wheel_dump;
     std::vector<cpConstraint *> engines;
 
@@ -64,6 +64,9 @@ public:
     void attach(cpSpace *space);
 
     void detach(cpSpace *space);
+    void detach_shapes(cpSpace *space);
+    void detach_bodies(cpSpace *space);
+    void detach_constraints(cpSpace *space);
 
     void move(int direction);
 

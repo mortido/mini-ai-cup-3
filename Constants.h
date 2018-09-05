@@ -10,7 +10,7 @@ namespace GA {
     constexpr int DEPTH = 100;
     constexpr double THETA = (1.0 - 1.0 / GA::DEPTH);
 
-    constexpr int RE_SIM_COUNT; // min 4;
+    constexpr int RE_SIM_COUNT = 3; // min 4;
     constexpr int POPULATION_SIZE = 50; // min 4;
     constexpr double MUTATION_PROBABILITY = 0.3;
     constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.5;
@@ -27,7 +27,6 @@ namespace GAME {
     constexpr double SIMULATION_DT_INVERSED = 62.5;
 
     const cpVect GRAVITY = cpv(0.0, -700.0);
-
     constexpr double DAMPING = 0.85;
     constexpr int TICK_TO_DEADLINE = 600;
     const cpVect LEFT_CAR_POS = cpv(300.0, 300.0);
