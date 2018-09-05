@@ -24,7 +24,7 @@ public:
     void detach(cpSpace *space);
     void attach(cpSpace *space);
     void move();
-    void update_from_json(cpFloat y_pos);
+    void copy_from(Deadline *deadline);
     void reset();
 
 #ifdef REWIND_VIEWER

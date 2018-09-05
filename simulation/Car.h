@@ -4,9 +4,7 @@
 #include <chipmunk/chipmunk.h>
 
 #ifdef REWIND_VIEWER
-
 #include "../RewindClient.h"
-
 #endif
 
 #include "../../nlohmann/json.hpp"
@@ -55,28 +53,19 @@ public:
     cpFloat car_angle_speed, rear_wheel_angle_speed, front_wheel_angle_speed;
     cpVect car_position, rear_wheel_position, front_wheel_position;
     cpVect car_speed, rear_wheel_speed, front_wheel_speed;
-//    cpVect car_force, rear_wheel_force, front_wheel_force;
 
     Car(const json &params, cpSpace *_space, double mirror, int player_id, cpVect pos);
-
     virtual ~Car();
 
     void attach(cpSpace *space);
-
     void detach(cpSpace *space);
     void detach_shapes(cpSpace *space);
     void detach_bodies(cpSpace *space);
     void detach_constraints(cpSpace *space);
 
     void move(int direction);
-
-    void set_from_json(const json &params);
-
-    void update_from_json(const json &params);
-
+    void copy_from(Car *car);
     void reset();
-//    void remember_state();
-//    void restore_state();
 
 #ifdef REWIND_VIEWER
 

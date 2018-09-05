@@ -37,7 +37,9 @@ void Deadline::move() {
 
 #ifdef REWIND_VIEWER
 
-void draw_segment_(RewindClient &rw_client, cpShape *shape, uint32_t color) {
+void Deadline::draw(RewindClient &rw_client) {
+    cpVect pos = cpBodyGetPosition(body);
+
     const cpVect &n = cpSegmentShapeGetNormal(shape);
     const cpVect &a = cpSegmentShapeGetA(shape);
     const cpVect &b = cpSegmentShapeGetB(shape);
@@ -47,14 +49,8 @@ void draw_segment_(RewindClient &rw_client, cpShape *shape, uint32_t color) {
     const cpVect &b1 = b - n * r;
     const cpVect &a2 = a + n * r;
     const cpVect &b2 = b + n * r;
-    rw_client.line(a1.x, a1.y, b1.x, b1.y, color);
-    rw_client.line(a2.x, a2.y, b2.x, b2.y, color);
-    rw_client.line(a1.x, a1.y, a2.x, a2.y, color);
-    rw_client.line(b1.x, b1.y, b2.x, b2.y, color);
-}
-
-void Deadline::draw(RewindClient &rw_client) {
-    draw_segment_(rw_client, shape, 0xff6344);
+    rw_client.line(a1.x, a1.y + pos.y, b1.x, b1.y + pos.y, 0xff6344);
+    rw_client.line(a2.x, a2.y + pos.y, b2.x, b2.y + pos.y, 0xff6344);
 }
 
 #endif
@@ -63,8 +59,8 @@ void Deadline::reset() {
     cpBodySetPosition(body, position);
 }
 
-void Deadline::update_from_json(cpFloat y_pos) {
-    position.y = y_pos;
-    cpBodySetPosition(body, position);
+void Deadline::copy_from(Deadline *deadline) {
+    position = cpBodyGetPosition(deadline->body);
+    reset();
 }
 

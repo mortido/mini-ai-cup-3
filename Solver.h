@@ -25,7 +25,9 @@ private:
         population_ptr current, previous;
 
         PopulationState();
+
         void swap();
+
         std::pair<int, int> get_parent_indexes();
     };
     // **********************
@@ -33,15 +35,18 @@ private:
     std::array<PopulationState, PLAYERS_COUNT> population_states;
     std::array<int, PLAYERS_COUNT> prepare_order;
 
-    void evaluate(Simulation &simulation, Solution &test_solution, std::array<Solution, PLAYERS_COUNT> &best_solutions, int my_id);
+    void evaluate(Simulation &simulation,
+                  Solution &test_solution,
+                  std::array<Solution, PLAYERS_COUNT> &best_solutions,
+                  int my_player_id, int enemy_player_id);
 
 public:
     std::array<Solution, PLAYERS_COUNT> best_solutions;
     int simulations;
     double time_limit;
 
-
-    void solve(Simulation &simulation, high_resolution_clock::time_point &start_time);
+    void solve(Simulation &simulation, high_resolution_clock::time_point &start_time,
+               int my_player_id, int enemy_player_id);
 
 };
 

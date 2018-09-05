@@ -249,12 +249,12 @@ void draw_poly(RewindClient &rw_client, cpBody *body, cpShape *poly, uint32_t co
     const cpVect &first = cpBodyLocalToWorld(body, cpPolyShapeGetVert(poly, 0));
     cpVect prev = first;
 
-    for (int i = 2; i < count; i++) {
+    for (int i = 1; i < count; i++) {
         const cpVect &curr = cpBodyLocalToWorld(body, cpPolyShapeGetVert(poly, i));
         rw_client.line(prev.x, prev.y, curr.x, curr.y, color);
         prev = curr;
     }
-//    rw_client.line(prev.x, prev.y, first.x, first.y, color);
+    rw_client.line(prev.x, prev.y, first.x, first.y, color);
 }
 
 void draw_wheel(RewindClient &rw_client, cpBody *wheel_body, cpShape *wheel_shape,
@@ -305,59 +305,21 @@ void Car::draw(RewindClient &rw_client) {
 
 #endif
 
-void Car::set_from_json(const json &params) {
-    car_angle = params[1].get<cpFloat>();
-    car_position = cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>());
-    rear_wheel_angle = params[3][2].get<cpFloat>();
-    rear_wheel_position = cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>());
-    front_wheel_angle = params[4][2].get<cpFloat>();
-    front_wheel_position = cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>());
+void Car::copy_from(Car *car) {
 
-    cpBodySetPosition(car_body, car_position);
-    cpBodySetAngle(car_body, car_angle);
-    cpBodySetPosition(rear_wheel_body, rear_wheel_position);
-    cpBodySetAngle(rear_wheel_body, rear_wheel_angle);
-    cpBodySetPosition(front_wheel_body, front_wheel_position);
-    cpBodySetAngle(front_wheel_body, front_wheel_angle);
-}
+    car_position = cpBodyGetPosition(car->car_body);
+    car_angle = cpBodyGetAngle(car->car_body);
+    rear_wheel_position = cpBodyGetPosition(car->rear_wheel_body);
+    rear_wheel_angle = cpBodyGetAngle(car->rear_wheel_body);
+    front_wheel_position = cpBodyGetPosition(car->front_wheel_body);
+    front_wheel_angle = cpBodyGetAngle(car->front_wheel_body);
 
-#include <iostream>
-
-void Car::update_from_json(const json &params) {
-//    cpFloat old_car_angle = car_angle;
-//    cpVect old_car_position = car_position;
-//    cpFloat old_rear_wheel_angle = rear_wheel_angle;
-//    cpVect old_rear_wheel_position = rear_wheel_position;
-//    cpFloat old_front_wheel_angle = front_wheel_angle;
-//    cpVect old_front_wheel_position = front_wheel_position;
-
-    car_angle = params[1].get<cpFloat>();
-    car_position = cpv(params[0][0].get<cpFloat>(), params[0][1].get<cpFloat>());
-    rear_wheel_angle = params[3][2].get<cpFloat>();
-    rear_wheel_position = cpv(params[3][0].get<cpFloat>(), params[3][1].get<cpFloat>());
-    front_wheel_angle = params[4][2].get<cpFloat>();
-    front_wheel_position = cpv(params[4][0].get<cpFloat>(), params[4][1].get<cpFloat>());
-
-    car_angle_speed = cpBodyGetAngularVelocity(car_body);
-    car_speed = cpBodyGetVelocity(car_body);
-    rear_wheel_angle_speed = cpBodyGetAngularVelocity(rear_wheel_body);
-    rear_wheel_speed = cpBodyGetVelocity(rear_wheel_body);
-    front_wheel_angle_speed = cpBodyGetAngularVelocity(front_wheel_body);
-    front_wheel_speed = cpBodyGetVelocity(front_wheel_body);
-
-    car_angle_speed = params[0][4].get<cpFloat>();
-    car_speed = cpv(params[0][2].get<cpFloat>(), params[0][3].get<cpFloat>());
-    rear_wheel_angle_speed = params[3][5].get<cpFloat>();
-    rear_wheel_speed = cpv(params[3][3].get<cpFloat>(), params[3][4].get<cpFloat>());
-    front_wheel_angle_speed = params[4][5].get<cpFloat>();
-    front_wheel_speed = cpv(params[4][3].get<cpFloat>(), params[4][4].get<cpFloat>());
-
-//    car_angle_speed = cpBodyGetAngularVelocity(car_body);
-//    car_speed = cpBodyGetVelocity(car_body);
-//    rear_wheel_angle_speed = cpBodyGetAngularVelocity(rear_wheel_body);
-//    rear_wheel_speed = cpBodyGetVelocity(rear_wheel_body);
-//    front_wheel_angle_speed = cpBodyGetAngularVelocity(front_wheel_body);
-//    front_wheel_speed = cpBodyGetVelocity(front_wheel_body);
+    car_angle_speed = cpBodyGetAngularVelocity(car->car_body);
+    car_speed = cpBodyGetVelocity(car->car_body);
+    rear_wheel_angle_speed = cpBodyGetAngularVelocity(car->rear_wheel_body);
+    rear_wheel_speed = cpBodyGetVelocity(car->rear_wheel_body);
+    front_wheel_angle_speed = cpBodyGetAngularVelocity(car->front_wheel_body);
+    front_wheel_speed = cpBodyGetVelocity(car->front_wheel_body);
 
     reset();
 }
