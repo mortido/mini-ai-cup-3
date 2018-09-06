@@ -6,7 +6,7 @@ std::unique_ptr<Randomizer> Randomizer::instance;
 Randomizer::Randomizer() : rng(2707),
                            probability(0.0, 1.0),
 //                           moves(0, GAME::MOVES_COUNT),
-                           moves(-1, 1), // directions
+                           moves(-1, GAME::MOVES_COUNT- 2), // directions
                            crossover(1, GA::DEPTH-1),
                            mutate(0, GA::DEPTH),
                            parent(0, GA::POPULATION_SIZE),

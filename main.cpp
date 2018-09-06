@@ -1,7 +1,7 @@
 //#include <stdio.h>
 #include <iostream>
 #include <chrono>
-
+#include <array>
 #include <chipmunk/chipmunk.h>
 #include "../nlohmann/json.hpp"
 
@@ -145,14 +145,20 @@ using namespace std::chrono;
 
 // ********************************************************************************************************************
 
+
 int main() {
     Simulation gold_standart;
     Simulation dirty_sim;
     int round{-1}, tick_index{0}, global_tick_index{0};
-    int my_player_id, enemy_player_id;
+    int my_player_id{0}, enemy_player_id{1};
     int my_lives, enemy_lives;
     string input_string, input_type;
 
+    array<enemyPrediction, GAME::MOVES_COUNT> enemyPredictions{};
+    int my_prev_move{0}, my_prev_prev_move{0};
+#ifdef LOCAL_RUN
+    json prev_params;
+#endif
     while (true) {
         getline(cin, input_string);
         if (!input_string.length()) {
@@ -180,6 +186,7 @@ int main() {
             // Init round objects
             gold_standart.new_round(params);
             dirty_sim.new_round(params);
+            dirty_sim.link_to(gold_standart);
 
             my_lives = params["my_lives"].get<int>();
             enemy_lives = params["enemy_lives"].get<int>();
@@ -195,53 +202,65 @@ int main() {
                 }
             }
 
+            if (tick_index > 1) {
+                // try to gues enemy move by his/her new position
+                int enemy_prev_prev = 0;
+                double min_error = 0.0 * 999999999.0;
+//                cerr << "----" << endl;
+                for (int m = 0; m < GAME::MOVES_COUNT; m++) {
+                    double err = get_predict_error(enemyPredictions[m], params["enemy_car"]);
+                    if (err < min_error) {
+                        min_error = err;
+                        enemy_prev_prev = m - 1;
+                    }
 
+//                    cerr << enemyPredictions[m].car_pos.x << ';' << enemyPredictions[m].car_pos.y << endl;
+//                    cerr << err << endl;
+                }
+
+                // catch up with "reality" - 1 tick
+                gold_standart.move_car(my_player_id, my_prev_prev_move);
+                gold_standart.move_car(enemy_player_id, enemy_prev_prev);
+                gold_standart.step();
+            }
 
             if (tick_index) {
-                // try to gues enemy move by his/her new position
-                gold_standart.move_car(enemy_player_id, 0);
+                for (int m = 0; m < GAME::MOVES_COUNT; m++) {
+                    dirty_sim.reset();
+                    dirty_sim.move_car(my_player_id, my_prev_move);
+                    dirty_sim.move_car(enemy_player_id, m - 1);
+                    dirty_sim.step();
+                    dirty_sim.step();
 
-
-
-                dirty_sim.check(my_player_id, params);
-
+                    enemyPredictions[m].car_pos = cpBodyGetPosition(dirty_sim.cars[enemy_player_id]->car_body);
+                    enemyPredictions[m].rear_wheel_pos = cpBodyGetPosition(
+                            dirty_sim.cars[enemy_player_id]->rear_wheel_body);
+                    enemyPredictions[m].front_wheel_pos = cpBodyGetPosition(
+                            dirty_sim.cars[enemy_player_id]->front_wheel_body);
+                }
+#ifdef LOCAL_RUN
+                gold_standart.check(my_player_id, prev_params);
+#endif
+#ifdef REWIND_VIEWER
+                // TODO: draw current tick by params and dirty prediction
                 gold_standart.map->draw(gold_standart.rewind);
-                gold_standart.draw(params);
-                dirty_sim.draw(params);
-                dirty_sim.rewind.end_frame();
-
-                // catch up with "reality"
-                gold_standart.step();
-                dirty_sim.copy_from(gold_standart);
-
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.step();
-                dirty_sim.reset();
+                gold_standart.draw(prev_params);
+//                dirty_sim.draw(params);
+                gold_standart.rewind.end_frame();
+#endif
             }
 
 #ifdef LOCAL_RUN
-            gold_standart.check(my_player_id, params);
+            prev_params = params;
 #endif
-#ifdef REWIND_VIEWER
-//
-#endif
-
-            int move(0);
+            my_prev_prev_move = my_prev_move;
             if (tick_index < 200) {
-                move = 0;
+                my_prev_move = 0;
             } else {
-                move = 1;
+                my_prev_move = 1;
             }
             json command;
-            switch (move) {
+            switch (my_prev_move) {
                 case 0:
                     command["command"] = "stop";
                     break;
@@ -255,11 +274,6 @@ int main() {
                     command["command"] = "stop";
             }
             cout << command.dump() << endl;
-            gold_standart.move_car(my_player_id, move);
-
-//            dirty_sim.move_car(my_player_id, move);
-//            dirty_sim.move_car(enemy_player_id, 0);
-//            dirty_sim.step();
 
             tick_index++;
             global_tick_index++;

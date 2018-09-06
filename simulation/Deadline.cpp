@@ -5,10 +5,11 @@ Deadline::~Deadline() {
     cpBodyFree(body);
 }
 
-Deadline::Deadline(Deadline::Type _type, cpFloat max_length, cpFloat max_height) : type{_type} {
+Deadline::Deadline(Deadline::Type _type, cpFloat max_length, cpFloat max_height) : type{_type}, body_linked{nullptr} {
     body = cpBodyNewKinematic();
     shape = cpSegmentShapeNew(body, cpv(0.0, 0.0), cpv(max_length, 0.0), 2.0);
     cpShapeSetSensor(shape, static_cast<cpBool>(true));
+    cpVect position;
     if (type == ASC) {
         position = cpv(0.0, 10.0);
     } else {
@@ -56,11 +57,10 @@ void Deadline::draw(RewindClient &rw_client) {
 #endif
 
 void Deadline::reset() {
-    cpBodySetPosition(body, position);
+    copy_body_position(body, body_linked);
 }
 
-void Deadline::copy_from(Deadline *deadline) {
-    position = cpBodyGetPosition(deadline->body);
-    reset();
+void Deadline::link_to(Deadline *deadline) {
+    body_linked = deadline->body;
 }
 

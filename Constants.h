@@ -20,7 +20,7 @@ namespace GA {
 }
 
 namespace GAME {
-//    constexpr int MOVES_COUNT = 3;
+    constexpr int MOVES_COUNT = 3;
     constexpr int MAX_ROUND_TICKS = 1000;
 
     constexpr double SIMULATION_DT = 0.016;

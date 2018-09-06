@@ -3,10 +3,10 @@
 #include <vector>
 #include <array>
 
-Car::Car(const json &params, cpSpace *_space, double mirror,
-         int _player_id, cpVect pos) : space_attached{_space}, player_id{_player_id}, alive{true},
-                                       car_speed{cpvzero}, rear_wheel_speed{cpvzero}, front_wheel_speed{cpvzero},
-                                       car_angle_speed{0.0}, rear_wheel_angle_speed{0.0}, front_wheel_angle_speed{0.0} {
+Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
+         cpVect pos) : space_attached{_space}, player_id{_player_id}, alive{true},
+                       car_body_linked{nullptr}, rear_wheel_body_linked{nullptr}, front_wheel_body_linked{nullptr} {
+
     car_group = static_cast<cpGroup>(player_id + 1);
     button_collision_type = static_cast<cpCollisionType>((player_id + 1) * 10);
 
@@ -67,11 +67,12 @@ Car::Car(const json &params, cpSpace *_space, double mirror,
     cpShapeSetFriction(rear_wheel_shape, params["rear_wheel_friction"].get<cpFloat>());
     cpShapeSetElasticity(rear_wheel_shape, params["rear_wheel_elasticity"].get<cpFloat>());
 
-    rear_wheel_groove = cpGrooveJointNew( car_body,rear_wheel_body,
+    rear_wheel_groove = cpGrooveJointNew(car_body, rear_wheel_body,
                                          cpv(params["rear_wheel_damp_position"][0].get<cpFloat>() * mirror,
                                              params["rear_wheel_damp_position"][1].get<cpFloat>()),
                                          cpv(params["rear_wheel_damp_position"][0].get<cpFloat>() * mirror,
-                                             params["rear_wheel_damp_position"][1].get<cpFloat>() - 1.5 * params["rear_wheel_damp_length"].get<cpFloat>()),
+                                             params["rear_wheel_damp_position"][1].get<cpFloat>() -
+                                             1.5 * params["rear_wheel_damp_length"].get<cpFloat>()),
                                          cpvzero);
 
     rear_wheel_dump = cpDampedSpringNew(rear_wheel_body,
@@ -108,12 +109,13 @@ Car::Car(const json &params, cpSpace *_space, double mirror,
     cpShapeSetFriction(front_wheel_shape, params["front_wheel_friction"].get<cpFloat>());
     cpShapeSetElasticity(front_wheel_shape, params["front_wheel_elasticity"].get<cpFloat>());
 
-    front_wheel_groove = cpGrooveJointNew( car_body,front_wheel_body,
-                                         cpv(params["front_wheel_damp_position"][0].get<cpFloat>() * mirror,
-                                             params["front_wheel_damp_position"][1].get<cpFloat>()),
-                                         cpv(params["front_wheel_damp_position"][0].get<cpFloat>() * mirror,
-                                             params["front_wheel_damp_position"][1].get<cpFloat>() - 1.5 * params["front_wheel_damp_length"].get<cpFloat>()),
-                                         cpvzero);
+    front_wheel_groove = cpGrooveJointNew(car_body, front_wheel_body,
+                                          cpv(params["front_wheel_damp_position"][0].get<cpFloat>() * mirror,
+                                              params["front_wheel_damp_position"][1].get<cpFloat>()),
+                                          cpv(params["front_wheel_damp_position"][0].get<cpFloat>() * mirror,
+                                              params["front_wheel_damp_position"][1].get<cpFloat>() -
+                                              1.5 * params["front_wheel_damp_length"].get<cpFloat>()),
+                                          cpvzero);
 
     front_wheel_dump = cpDampedSpringNew(front_wheel_body,
                                          car_body,
@@ -122,7 +124,6 @@ Car::Car(const json &params, cpSpace *_space, double mirror,
                                          params["front_wheel_damp_length"].get<cpFloat>(),
                                          params["front_wheel_damp_stiffness"].get<cpFloat>(),
                                          params["front_wheel_damp_damping"].get<cpFloat>());
-
 
 
     if (drive_type == DRIVE::FF || drive_type == DRIVE::AWD) {
@@ -244,19 +245,6 @@ void Car::detach_constraints(cpSpace *space) {
 
 #ifdef REWIND_VIEWER
 
-void draw_poly(RewindClient &rw_client, cpBody *body, cpShape *poly, uint32_t color) {
-    int count = cpPolyShapeGetCount(poly);
-    const cpVect &first = cpBodyLocalToWorld(body, cpPolyShapeGetVert(poly, 0));
-    cpVect prev = first;
-
-    for (int i = 1; i < count; i++) {
-        const cpVect &curr = cpBodyLocalToWorld(body, cpPolyShapeGetVert(poly, i));
-        rw_client.line(prev.x, prev.y, curr.x, curr.y, color);
-        prev = curr;
-    }
-    rw_client.line(prev.x, prev.y, first.x, first.y, color);
-}
-
 void draw_wheel(RewindClient &rw_client, cpBody *wheel_body, cpShape *wheel_shape,
                 uint32_t wheel_color, uint32_t line_color, bool square) {
 
@@ -274,8 +262,6 @@ void draw_wheel(RewindClient &rw_client, cpBody *wheel_body, cpShape *wheel_shap
                        rear_pos.y + radius * sin(angle), line_color);
     }
 }
-
-#include <math.h>
 
 void Car::draw(RewindClient &rw_client) {
 
@@ -305,39 +291,15 @@ void Car::draw(RewindClient &rw_client) {
 
 #endif
 
-void Car::copy_from(Car *car) {
-
-    car_position = cpBodyGetPosition(car->car_body);
-    car_angle = cpBodyGetAngle(car->car_body);
-    rear_wheel_position = cpBodyGetPosition(car->rear_wheel_body);
-    rear_wheel_angle = cpBodyGetAngle(car->rear_wheel_body);
-    front_wheel_position = cpBodyGetPosition(car->front_wheel_body);
-    front_wheel_angle = cpBodyGetAngle(car->front_wheel_body);
-
-    car_angle_speed = cpBodyGetAngularVelocity(car->car_body);
-    car_speed = cpBodyGetVelocity(car->car_body);
-    rear_wheel_angle_speed = cpBodyGetAngularVelocity(car->rear_wheel_body);
-    rear_wheel_speed = cpBodyGetVelocity(car->rear_wheel_body);
-    front_wheel_angle_speed = cpBodyGetAngularVelocity(car->front_wheel_body);
-    front_wheel_speed = cpBodyGetVelocity(car->front_wheel_body);
-
-    reset();
-}
-
 void Car::reset() {
     alive = true;
+    copy_body_state(car_body, car_body_linked);
+    copy_body_state(rear_wheel_body, rear_wheel_body_linked);
+    copy_body_state(front_wheel_body, front_wheel_body_linked);
+}
 
-    cpBodySetPosition(car_body, car_position);
-    cpBodySetAngle(car_body, car_angle);
-    cpBodySetPosition(rear_wheel_body, rear_wheel_position);
-    cpBodySetAngle(rear_wheel_body, rear_wheel_angle);
-    cpBodySetPosition(front_wheel_body, front_wheel_position);
-    cpBodySetAngle(front_wheel_body, front_wheel_angle);
-
-    cpBodySetVelocity(car_body, car_speed);
-    cpBodySetAngularVelocity(car_body, car_angle_speed);
-    cpBodySetVelocity(rear_wheel_body, rear_wheel_speed);
-    cpBodySetAngularVelocity(rear_wheel_body, rear_wheel_angle_speed);
-    cpBodySetVelocity(front_wheel_body, front_wheel_speed);
-    cpBodySetAngularVelocity(front_wheel_body, front_wheel_angle_speed);
+void Car::link_to(Car *car) {
+    car_body_linked = car->car_body;
+    rear_wheel_body_linked = car->rear_wheel_body;
+    front_wheel_body_linked = car->front_wheel_body;
 }

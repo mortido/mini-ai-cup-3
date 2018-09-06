@@ -108,66 +108,22 @@ void Simulation::check(int my_player_id, const json &params) {
 
 #endif
 
-
 void Simulation::move_car(int player_id, int move) {
     cars[player_id]->move(move);
 }
 
-void Simulation::copy_from(const Simulation &sim) {
-//    map->detach(space);
-//    deadline->detach(space);
-//    cars[0]->detach(space);
-//    cars[1]->detach(space);
-
-    deadline->copy_from(sim.deadline.get());
-    cars[0]->copy_from(sim.cars[0].get());
-    cars[1]->copy_from(sim.cars[1].get());
-
-
-
-//    map->attach(space);
-//    deadline->attach(space);
-//    cars[0]->attach(space);
-//    cars[1]->attach(space);
+void Simulation::link_to(const Simulation &sim) {
+    deadline->link_to(sim.deadline.get());
+    cars[0] ->link_to(sim.cars[0].get());
+    cars[1] ->link_to(sim.cars[1].get());
 }
 
 void Simulation::reset() {
-//    map->detach(space);
-//    deadline->detach(space);
-//    cars[0]->detach(space);
-//    cars[1]->detach(space);
+
+    // TODO: reset deadline timer.
 
     cars[0]->reset();
     cars[1]->reset();
     deadline->reset();
     cpSpaceSetCollisionPersistence(space, 0);
-
-//    cpSpaceReindexShapesForBody(space, cars[0]->car_body);
-//    cpSpaceReindexShapesForBody(space, cars[0]->rear_wheel_body);
-//    cpSpaceReindexShapesForBody(space, cars[0]->front_wheel_body);
-//    cpSpaceReindexShapesForBody(space, cars[1]->car_body);
-//    cpSpaceReindexShapesForBody(space, cars[1]->rear_wheel_body);
-//    cpSpaceReindexShapesForBody(space, cars[1]->front_wheel_body);
-//    cpSpaceReindexStatic(space);
-//    cpSpaceReindexShape(space, deadline->shape);
-
-//    map->detach(space);
-//    deadline->detach(space);
-//    cars[0]->detach(space);
-//    cars[1]->detach(space);
-//
-//    cpSpaceFree(space);
-//    space = cpSpaceNew();
-//    cpSpaceSetGravity(space, GAME::GRAVITY);
-//    cpSpaceSetDamping(space, GAME::DAMPING);
-
-//    cpCollisionHandler *ch1 = cpSpaceAddWildcardHandler(space, 10);
-//    cpCollisionHandler *ch2 = cpSpaceAddWildcardHandler(space, 20);
-////
-//    map->attach(space);
-//    deadline->attach(space);
-//    cars[0]->attach(space);
-//    cars[1]->attach(space);
-
-    // TODO: reset deadline.
 }

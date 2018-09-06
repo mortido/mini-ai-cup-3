@@ -29,7 +29,7 @@ public:
     void step();
     void move_car(int player_id, int move);
     void reset();
-    void copy_from(const Simulation &sim);
+    void link_to(const Simulation &sim);
     cpFloat get_closest_point_to_button(int player_id);
 
 #ifdef LOCAL_RUN

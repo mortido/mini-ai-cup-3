@@ -2,12 +2,13 @@
 #define MINI_AI_CUP_3_CAR_H
 
 #include <chipmunk/chipmunk.h>
+#include "../../nlohmann/json.hpp"
+
+#include "utils.hpp"
 
 #ifdef REWIND_VIEWER
 #include "../RewindClient.h"
 #endif
-
-#include "../../nlohmann/json.hpp"
 
 using json = nlohmann::json;
 
@@ -21,8 +22,6 @@ namespace DRIVE {
 
 class Car {
 private:
-
-
 
 public:
     cpFloat torque;
@@ -49,10 +48,11 @@ public:
     cpFloat front_wheel_radius, rear_wheel_radius;
 
     // STATE *****************
-    cpFloat car_angle, rear_wheel_angle, front_wheel_angle;
-    cpFloat car_angle_speed, rear_wheel_angle_speed, front_wheel_angle_speed;
-    cpVect car_position, rear_wheel_position, front_wheel_position;
-    cpVect car_speed, rear_wheel_speed, front_wheel_speed;
+//    cpFloat car_angle, rear_wheel_angle, front_wheel_angle;
+//    cpFloat car_angle_speed, rear_wheel_angle_speed, front_wheel_angle_speed;
+//    cpVect car_position, rear_wheel_position, front_wheel_position;
+//    cpVect car_speed, rear_wheel_speed, front_wheel_speed;
+    cpBody *car_body_linked, *front_wheel_body_linked, *rear_wheel_body_linked;
 
     Car(const json &params, cpSpace *_space, double mirror, int player_id, cpVect pos);
     virtual ~Car();
@@ -64,7 +64,7 @@ public:
     void detach_constraints(cpSpace *space);
 
     void move(int direction);
-    void copy_from(Car *car);
+    void link_to(Car *car);
     void reset();
 
 #ifdef REWIND_VIEWER
