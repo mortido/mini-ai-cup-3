@@ -104,7 +104,7 @@ static const cpConstraintClass klass = {
 cpSlideJoint *
 cpSlideJointAlloc(void)
 {
-	return (cpSlideJoint *)cpcalloc(1, sizeof(cpSlideJoint));
+	return (cpSlideJoint *) cpcalloc(1, sizeof(cpSlideJoint));
 }
 
 cpSlideJoint *

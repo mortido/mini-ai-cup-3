@@ -84,7 +84,7 @@ static const cpConstraintClass klass = {
 cpGearJoint *
 cpGearJointAlloc(void)
 {
-	return (cpGearJoint *)cpcalloc(1, sizeof(cpGearJoint));
+	return (cpGearJoint *) cpcalloc(1, sizeof(cpGearJoint));
 }
 
 cpGearJoint *

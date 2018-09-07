@@ -156,7 +156,7 @@ PairFromPool(cpBBTree *tree)
 		int count = CP_BUFFER_BYTES/sizeof(Pair);
 		cpAssertHard(count, "Internal Error: Buffer size is too small.");
 		
-		Pair *buffer = (Pair *)cpcalloc(1, CP_BUFFER_BYTES);
+		Pair *buffer = (Pair *) cpcalloc(1, CP_BUFFER_BYTES);
 		cpArrayPush(tree->allocatedBuffers, buffer);
 		
 		// push all but the first one, return the first instead
@@ -245,7 +245,7 @@ NodeFromPool(cpBBTree *tree)
 		int count = CP_BUFFER_BYTES/sizeof(Node);
 		cpAssertHard(count, "Internal Error: Buffer size is too small.");
 		
-		Node *buffer = (Node *)cpcalloc(1, CP_BUFFER_BYTES);
+		Node *buffer = (Node *) cpcalloc(1, CP_BUFFER_BYTES);
 		cpArrayPush(tree->allocatedBuffers, buffer);
 		
 		// push all but the first one, return the first instead
@@ -541,7 +541,7 @@ LeafAddPairs(Node *leaf, cpBBTree *tree)
 cpBBTree *
 cpBBTreeAlloc(void)
 {
-	return (cpBBTree *)cpcalloc(1, sizeof(cpBBTree));
+	return (cpBBTree *) cpcalloc(1, sizeof(cpBBTree));
 }
 
 static int
@@ -757,7 +757,7 @@ partitionNodes(cpBBTree *tree, Node **nodes, int count)
 	cpBool splitWidth = (bb.r - bb.l > bb.t - bb.b);
 	
 	// Sort the bounds and use the median as the splitting point
-	cpFloat *bounds = (cpFloat *)cpcalloc(count*2, sizeof(cpFloat));
+	cpFloat *bounds = (cpFloat *) cpcalloc(count * 2, sizeof(cpFloat));
 	if(splitWidth){
 		for(int i=0; i<count; i++){
 			bounds[2*i + 0] = nodes[i]->bb.l;
@@ -837,7 +837,7 @@ cpBBTreeOptimize(cpSpatialIndex *index)
 	if(!root) return;
 	
 	int count = cpBBTreeCount(tree);
-	Node **nodes = (Node **)cpcalloc(count, sizeof(Node *));
+	Node **nodes = (Node **) cpcalloc(count, sizeof(Node *));
 	Node **cursor = nodes;
 	
 	cpHashSetEach(tree->leaves, (cpHashSetIteratorFunc)fillNodeArray, &cursor);

@@ -45,10 +45,10 @@ cpHashSetFree(cpHashSet *set)
 {
 	if(set){
 		cpfree(set->table);
-		
+
 		cpArrayFreeEach(set->allocatedBuffers, cpfree);
 		cpArrayFree(set->allocatedBuffers);
-		
+
 		cpfree(set);
 	}
 }
@@ -56,7 +56,7 @@ cpHashSetFree(cpHashSet *set)
 cpHashSet *
 cpHashSetNew(int size, cpHashSetEqlFunc eqlFunc)
 {
-	cpHashSet *set = (cpHashSet *)cpcalloc(1, sizeof(cpHashSet));
+	cpHashSet *set = (cpHashSet *) cpcalloc(1, sizeof(cpHashSet));
 	
 	set->size = next_prime(size);
 	set->entries = 0;
@@ -64,7 +64,7 @@ cpHashSetNew(int size, cpHashSetEqlFunc eqlFunc)
 	set->eql = eqlFunc;
 	set->default_value = NULL;
 	
-	set->table = (cpHashSetBin **)cpcalloc(set->size, sizeof(cpHashSetBin *));
+	set->table = (cpHashSetBin **) cpcalloc(set->size, sizeof(cpHashSetBin *));
 	set->pooledBins = NULL;
 	
 	set->allocatedBuffers = cpArrayNew(0);
@@ -90,7 +90,7 @@ cpHashSetResize(cpHashSet *set)
 	// Get the next approximate doubled prime.
 	unsigned int newSize = next_prime(set->size + 1);
 	// Allocate a new table.
-	cpHashSetBin **newTable = (cpHashSetBin **)cpcalloc(newSize, sizeof(cpHashSetBin *));
+	cpHashSetBin **newTable = (cpHashSetBin **) cpcalloc(newSize, sizeof(cpHashSetBin *));
 	
 	// Iterate over the chains.
 	for(unsigned int i=0; i<set->size; i++){
@@ -106,7 +106,7 @@ cpHashSetResize(cpHashSet *set)
 			bin = next;
 		}
 	}
-	
+
 	cpfree(set->table);
 	
 	set->table = newTable;
@@ -134,7 +134,7 @@ getUnusedBin(cpHashSet *set)
 		int count = CP_BUFFER_BYTES/sizeof(cpHashSetBin);
 		cpAssertHard(count, "Internal Error: Buffer size is too small.");
 		
-		cpHashSetBin *buffer = (cpHashSetBin *)cpcalloc(1, CP_BUFFER_BYTES);
+		cpHashSetBin *buffer = (cpHashSetBin *) cpcalloc(1, CP_BUFFER_BYTES);
 		cpArrayPush(set->allocatedBuffers, buffer);
 		
 		// push all but the first one, return it instead

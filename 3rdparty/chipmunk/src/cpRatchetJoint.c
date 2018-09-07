@@ -104,7 +104,7 @@ static const cpConstraintClass klass = {
 cpRatchetJoint *
 cpRatchetJointAlloc(void)
 {
-	return (cpRatchetJoint *)cpcalloc(1, sizeof(cpRatchetJoint));
+	return (cpRatchetJoint *) cpcalloc(1, sizeof(cpRatchetJoint));
 }
 
 cpRatchetJoint *

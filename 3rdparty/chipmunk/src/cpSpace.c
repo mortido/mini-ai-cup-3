@@ -52,7 +52,7 @@ handlerSetEql(cpCollisionHandler *check, cpCollisionHandler *pair)
 static void *
 handlerSetTrans(cpCollisionHandler *handler, void *unused)
 {
-	cpCollisionHandler *copy = (cpCollisionHandler *)cpcalloc(1, sizeof(cpCollisionHandler));
+	cpCollisionHandler *copy = (cpCollisionHandler *) cpcalloc(1, sizeof(cpCollisionHandler));
 	memcpy(copy, handler, sizeof(cpCollisionHandler));
 	
 	return copy;
@@ -106,14 +106,14 @@ cpCollisionHandler cpCollisionHandlerDoNothing = {
 static cpVect ShapeVelocityFunc(cpShape *shape){return shape->body->v;}
 
 // Used for disposing of collision handlers.
-static void FreeWrap(void *ptr, void *unused){cpfree(ptr);}
+static void FreeWrap(void *ptr, void *unused){ cpfree(ptr);}
 
 //MARK: Memory Management Functions
 
 cpSpace *
 cpSpaceAlloc(void)
 {
-	return (cpSpace *)cpcalloc(1, sizeof(cpSpace));
+	return (cpSpace *) cpcalloc(1, sizeof(cpSpace));
 }
 
 cpSpace*
@@ -206,12 +206,12 @@ cpSpaceDestroy(cpSpace *space)
 	cpArrayFree(space->pooledArbiters);
 	
 	if(space->allocatedBuffers){
-		cpArrayFreeEach(space->allocatedBuffers, cpfree);
+        cpArrayFreeEach(space->allocatedBuffers, cpfree);
 		cpArrayFree(space->allocatedBuffers);
 	}
 	
 	if(space->postStepCallbacks){
-		cpArrayFreeEach(space->postStepCallbacks, cpfree);
+        cpArrayFreeEach(space->postStepCallbacks, cpfree);
 		cpArrayFree(space->postStepCallbacks);
 	}
 	
@@ -224,7 +224,7 @@ cpSpaceFree(cpSpace *space)
 {
 	if(space){
 		cpSpaceDestroy(space);
-		cpfree(space);
+        cpfree(space);
 	}
 }
 

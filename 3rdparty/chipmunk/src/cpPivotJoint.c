@@ -85,7 +85,7 @@ static const cpConstraintClass klass = {
 cpPivotJoint *
 cpPivotJointAlloc(void)
 {
-	return (cpPivotJoint *)cpcalloc(1, sizeof(cpPivotJoint));
+	return (cpPivotJoint *) cpcalloc(1, sizeof(cpPivotJoint));
 }
 
 cpPivotJoint *

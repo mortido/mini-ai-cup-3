@@ -68,14 +68,14 @@ MakeTableCell(cpSweep1D *sweep, void *obj)
 cpSweep1D *
 cpSweep1DAlloc(void)
 {
-	return (cpSweep1D *)cpcalloc(1, sizeof(cpSweep1D));
+	return (cpSweep1D *) cpcalloc(1, sizeof(cpSweep1D));
 }
 
 static void
 ResizeTable(cpSweep1D *sweep, int size)
 {
 	sweep->max = size;
-	sweep->table = (TableCell *)cprealloc(sweep->table, size*sizeof(TableCell));
+	sweep->table = (TableCell *) cprealloc(sweep->table, size * sizeof(TableCell));
 }
 
 cpSpatialIndex *

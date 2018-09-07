@@ -29,7 +29,7 @@ cpMarchCells(
 	// TODO range assertions and short circuit for 0 sized windows.
 	
 	// Keep a copy of the previous row to avoid double lookups.
-	cpFloat *buffer = (cpFloat *)cpcalloc(x_samples, sizeof(cpFloat));
+	cpFloat *buffer = (cpFloat *) cpcalloc(x_samples, sizeof(cpFloat));
 	for(unsigned long i=0; i<x_samples; i++) buffer[i] = sample(cpv(cpflerp(bb.l, bb.r, i*x_denom), bb.b), sample_data);
 	
 	for(unsigned long j=0; j<y_samples-1; j++){
@@ -51,7 +51,7 @@ cpMarchCells(
 			cell(t, a, b, c, d, x0, x1, y0, y1, segment, segment_data);
 		}
 	}
-	
+
 	cpfree(buffer);
 }
 

@@ -27,11 +27,11 @@
 cpArray *
 cpArrayNew(int size)
 {
-	cpArray *arr = (cpArray *)cpcalloc(1, sizeof(cpArray));
+	cpArray *arr = (cpArray *) cpcalloc(1, sizeof(cpArray));
 	
 	arr->num = 0;
 	arr->max = (size ? size : 4);
-	arr->arr = (void **)cpcalloc(arr->max, sizeof(void*));
+	arr->arr = (void **) cpcalloc(arr->max, sizeof(void *));
 	
 	return arr;
 }
@@ -42,7 +42,7 @@ cpArrayFree(cpArray *arr)
 	if(arr){
 		cpfree(arr->arr);
 		arr->arr = NULL;
-		
+
 		cpfree(arr);
 	}
 }
@@ -52,7 +52,7 @@ cpArrayPush(cpArray *arr, void *object)
 {
 	if(arr->num == arr->max){
 		arr->max = 3*(arr->max + 1)/2;
-		arr->arr = (void **)cprealloc(arr->arr, arr->max*sizeof(void*));
+		arr->arr = (void **) cprealloc(arr->arr, arr->max * sizeof(void *));
 	}
 	
 	arr->arr[arr->num] = object;

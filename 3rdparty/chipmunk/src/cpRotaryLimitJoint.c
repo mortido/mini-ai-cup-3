@@ -101,7 +101,7 @@ static const cpConstraintClass klass = {
 cpRotaryLimitJoint *
 cpRotaryLimitJointAlloc(void)
 {
-	return (cpRotaryLimitJoint *)cpcalloc(1, sizeof(cpRotaryLimitJoint));
+	return (cpRotaryLimitJoint *) cpcalloc(1, sizeof(cpRotaryLimitJoint));
 }
 
 cpRotaryLimitJoint *

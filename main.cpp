@@ -143,9 +143,20 @@ using namespace std::chrono;
 //}
 
 // ********************************************************************************************************************
+//extern "C" {
+//#include <chipmunk/dmm.h>
+//}
 
+#include <memory>
+
+#include <chipmunk/heap.h>
 
 int main() {
+
+    size_t heap_size = 1024*1024*1;
+    unsigned char *heap = (unsigned char *)malloc(heap_size);
+    heapInit(heap, heap_size);
+
     Simulation gold_standart;
     Simulation dirty_sim;
 
@@ -177,11 +188,13 @@ int main() {
 
 #ifdef LOCAL_RUN
             if (round) {
+                heapPrint();
                 cerr << "round " << round << " pos_diff_sum: " << gold_standart.car_pos_error.x << " ; ";
                 cerr << gold_standart.car_pos_error.y;
                 cerr << " squared =" << state["params"]["proto_car"].value("squared_wheels", false) << endl;
-                cerr << "dirty_pos_diff_sum: " << dirty_sim.car_pos_error.x << " ; ";
-                cerr << dirty_sim.car_pos_error.y << endl;
+//                cerr << "dirty_pos_diff_sum: " << dirty_sim.car_pos_error.x << " ; ";
+//                cerr << dirty_sim.car_pos_error.y << endl;
+                cerr << getBytesToCopy() << endl;
             }
 #endif
 

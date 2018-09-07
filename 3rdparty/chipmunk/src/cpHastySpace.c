@@ -357,7 +357,7 @@ cpHastySpaceGetThreads(cpSpace *space)
 cpSpace *
 cpHastySpaceNew(void)
 {
-	cpHastySpace *hasty = (cpHastySpace *)cpcalloc(1, sizeof(cpHastySpace));
+	cpHastySpace *hasty = (cpHastySpace *) cpcalloc(1, sizeof(cpHastySpace));
 	cpSpaceInit((cpSpace *)hasty);
 	
 	pthread_mutex_init(&hasty->mutex, NULL);

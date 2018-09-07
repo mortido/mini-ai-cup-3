@@ -113,7 +113,7 @@ static const cpConstraintClass klass = {
 cpGrooveJoint *
 cpGrooveJointAlloc(void)
 {
-	return (cpGrooveJoint *)cpcalloc(1, sizeof(cpGrooveJoint));
+	return (cpGrooveJoint *) cpcalloc(1, sizeof(cpGrooveJoint));
 }
 
 cpGrooveJoint *

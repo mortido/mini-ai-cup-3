@@ -285,7 +285,7 @@ cpShapesCollide(const cpShape *a, const cpShape *b)
 cpCircleShape *
 cpCircleShapeAlloc(void)
 {
-	return (cpCircleShape *)cpcalloc(1, sizeof(cpCircleShape));
+	return (cpCircleShape *) cpcalloc(1, sizeof(cpCircleShape));
 }
 
 static cpBB
@@ -371,7 +371,7 @@ cpCircleShapeGetRadius(const cpShape *shape)
 cpSegmentShape *
 cpSegmentShapeAlloc(void)
 {
-	return (cpSegmentShape *)cpcalloc(1, sizeof(cpSegmentShape));
+	return (cpSegmentShape *) cpcalloc(1, sizeof(cpSegmentShape));
 }
 
 static cpBB

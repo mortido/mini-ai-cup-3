@@ -92,7 +92,7 @@ static const cpConstraintClass klass = {
 cpDampedSpring *
 cpDampedSpringAlloc(void)
 {
-	return (cpDampedSpring *)cpcalloc(1, sizeof(cpDampedSpring));
+	return (cpDampedSpring *) cpcalloc(1, sizeof(cpDampedSpring));
 }
 
 cpDampedSpring *

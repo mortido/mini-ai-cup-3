@@ -27,7 +27,7 @@ cpPolylineMake(int capacity)
 {
 	capacity = (capacity > DEFAULT_POLYLINE_CAPACITY ? capacity : DEFAULT_POLYLINE_CAPACITY);
 	
-	cpPolyline *line = (cpPolyline *)cpcalloc(1, cpPolylineSizeForCapacity(capacity));
+	cpPolyline *line = (cpPolyline *) cpcalloc(1, cpPolylineSizeForCapacity(capacity));
 	line->count = 0;
 	line->capacity = capacity;
 	
@@ -236,7 +236,7 @@ cpPolylineSimplifyCurves(cpPolyline *line, cpFloat tol)
 cpPolylineSet *
 cpPolylineSetAlloc(void)
 {
-	return (cpPolylineSet *)cpcalloc(1, sizeof(cpPolylineSet));
+	return (cpPolylineSet *) cpcalloc(1, sizeof(cpPolylineSet));
 }
 
 cpPolylineSet *
@@ -264,7 +264,7 @@ cpPolylineSetDestroy(cpPolylineSet *set, cpBool freePolylines)
 			cpPolylineFree(set->lines[i]);
 		}
 	}
-	
+
 	cpfree(set->lines);
 }
 
@@ -313,7 +313,7 @@ cpPolylineSetPush(cpPolylineSet *set, cpPolyline *line)
   set->count++;
   if(set->count > set->capacity){
     set->capacity *= 2;
-    set->lines = cprealloc(set->lines, set->capacity*sizeof(cpPolyline));
+    set->lines = cprealloc(set->lines, set->capacity * sizeof(cpPolyline));
   }
   
 	set->lines[set->count - 1] = line;

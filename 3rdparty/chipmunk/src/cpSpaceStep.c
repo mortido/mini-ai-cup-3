@@ -45,7 +45,7 @@ cpSpaceAddPostStepCallback(cpSpace *space, cpPostStepFunc func, void *key, void 
 		"Post-step callbacks will not called until the end of the next call to cpSpaceStep() or the next query.");
 	
 	if(!cpSpaceGetPostStepCallback(space, key)){
-		cpPostStepCallback *callback = (cpPostStepCallback *)cpcalloc(1, sizeof(cpPostStepCallback));
+		cpPostStepCallback *callback = (cpPostStepCallback *) cpcalloc(1, sizeof(cpPostStepCallback));
 		callback->func = (func ? func : PostStepDoNothing);
 		callback->key = key;
 		callback->data = data;
@@ -121,7 +121,7 @@ typedef struct cpContactBuffer {
 static cpContactBufferHeader *
 cpSpaceAllocContactBuffer(cpSpace *space)
 {
-	cpContactBuffer *buffer = (cpContactBuffer *)cpcalloc(1, sizeof(cpContactBuffer));
+	cpContactBuffer *buffer = (cpContactBuffer *) cpcalloc(1, sizeof(cpContactBuffer));
 	cpArrayPush(space->allocatedBuffers, buffer);
 	return (cpContactBufferHeader *)buffer;
 }
@@ -192,7 +192,7 @@ cpSpaceArbiterSetTrans(cpShape **shapes, cpSpace *space)
 		int count = CP_BUFFER_BYTES/sizeof(cpArbiter);
 		cpAssertHard(count, "Internal Error: Buffer size too small.");
 		
-		cpArbiter *buffer = (cpArbiter *)cpcalloc(1, CP_BUFFER_BYTES);
+		cpArbiter *buffer = (cpArbiter *) cpcalloc(1, CP_BUFFER_BYTES);
 		cpArrayPush(space->allocatedBuffers, buffer);
 		
 		for(int i=0; i<count; i++) cpArrayPush(space->pooledArbiters, buffer + i);

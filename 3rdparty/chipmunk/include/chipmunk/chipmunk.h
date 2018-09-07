@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include "heap.h"
 
 #ifdef WIN32
 	// For alloca().
@@ -53,7 +54,8 @@ CP_EXPORT void cpMessage(const char *condition, const char *file, int line, int 
 #define cpAssertHard(__condition__, ...) if(!(__condition__)){cpMessage(#__condition__, __FILE__, __LINE__, 1, 1, __VA_ARGS__); abort();}
 
 #include "chipmunk_types.h"
-	
+//#include "shmHeap.h"
+
 /// @defgroup misc Misc
 /// @{
 
@@ -64,17 +66,17 @@ CP_EXPORT void cpMessage(const char *condition, const char *file, int line, int 
 
 #ifndef cpcalloc
 	/// Chipmunk calloc() alias.
-	#define cpcalloc calloc
+	#define cpcalloc heapCalloc//calloc
 #endif
 
 #ifndef cprealloc
 	/// Chipmunk realloc() alias.
-	#define cprealloc realloc
+	#define cprealloc heapRealloc//realloc
 #endif
 
 #ifndef cpfree
 	/// Chipmunk free() alias.
-	#define cpfree free
+	#define cpfree heapFree//free
 #endif
 
 typedef struct cpArray cpArray;

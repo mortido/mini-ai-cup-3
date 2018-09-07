@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
 project(mini-ai-cup-3)
 
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
 add_subdirectory(3rdparty/csimplesocket)
 add_subdirectory(3rdparty/chipmunk)
 

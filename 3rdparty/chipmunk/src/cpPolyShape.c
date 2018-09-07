@@ -25,7 +25,7 @@
 cpPolyShape *
 cpPolyShapeAlloc(void)
 {
-	return (cpPolyShape *)cpcalloc(1, sizeof(cpPolyShape));
+	return (cpPolyShape *) cpcalloc(1, sizeof(cpPolyShape));
 }
 
 static void
@@ -150,7 +150,7 @@ SetVerts(cpPolyShape *poly, int count, const cpVect *verts)
 	if(count <= CP_POLY_SHAPE_INLINE_ALLOC){
 		poly->planes = poly->_planes;
 	} else {
-		poly->planes = (struct cpSplittingPlane *)cpcalloc(2*count, sizeof(struct cpSplittingPlane));
+		poly->planes = (struct cpSplittingPlane *) cpcalloc(2 * count, sizeof(struct cpSplittingPlane));
 	}
 	
 	for(int i=0; i<count; i++){

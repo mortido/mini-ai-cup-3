@@ -87,7 +87,7 @@ static const cpConstraintClass klass = {
 cpDampedRotarySpring *
 cpDampedRotarySpringAlloc(void)
 {
-	return (cpDampedRotarySpring *)cpcalloc(1, sizeof(cpDampedRotarySpring));
+	return (cpDampedRotarySpring *) cpcalloc(1, sizeof(cpDampedRotarySpring));
 }
 
 cpDampedRotarySpring *

@@ -27,7 +27,7 @@
 cpBody*
 cpBodyAlloc(void)
 {
-	return (cpBody *)cpcalloc(1, sizeof(cpBody));
+	return (cpBody *) cpcalloc(1, sizeof(cpBody));
 }
 
 cpBody *

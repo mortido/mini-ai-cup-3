@@ -91,7 +91,7 @@ static const cpConstraintClass klass = {
 cpPinJoint *
 cpPinJointAlloc(void)
 {
-	return (cpPinJoint *)cpcalloc(1, sizeof(cpPinJoint));
+	return (cpPinJoint *) cpcalloc(1, sizeof(cpPinJoint));
 }
 
 cpPinJoint *

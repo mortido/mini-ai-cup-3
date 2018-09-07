@@ -80,7 +80,7 @@ static const cpConstraintClass klass = {
 cpSimpleMotor *
 cpSimpleMotorAlloc(void)
 {
-	return (cpSimpleMotor *)cpcalloc(1, sizeof(cpSimpleMotor));
+	return (cpSimpleMotor *) cpcalloc(1, sizeof(cpSimpleMotor));
 }
 
 cpSimpleMotor *

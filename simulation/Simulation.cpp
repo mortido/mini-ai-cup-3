@@ -142,7 +142,7 @@ cpSpaceArbiterSetTrans(cpShape **shapes, cpSpace *space)
         int count = CP_BUFFER_BYTES/sizeof(cpArbiter);
         cpAssertHard(count, "Internal Error: Buffer size too small.");
 
-        cpArbiter *buffer = (cpArbiter *)cpcalloc(1, CP_BUFFER_BYTES);
+        cpArbiter *buffer = (cpArbiter *) cpcalloc(1, CP_BUFFER_BYTES);
         cpArrayPush(space->allocatedBuffers, buffer);
 
         for(int i=0; i<count; i++) cpArrayPush(space->pooledArbiters, buffer + i);
