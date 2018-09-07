@@ -16,7 +16,7 @@ public:
         DESC=1
     };
 
-    cpBody *body, *body_linked;
+    cpBody *body;
     cpShape *shape;
     Type type;
 
@@ -25,8 +25,6 @@ public:
     void detach(cpSpace *space);
     void attach(cpSpace *space);
     void move();
-    void link_to(Deadline *deadline);
-    void reset();
 
 #ifdef REWIND_VIEWER
     void draw(RewindClient &rw_client);

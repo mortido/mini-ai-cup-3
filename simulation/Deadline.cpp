@@ -5,7 +5,7 @@ Deadline::~Deadline() {
     cpBodyFree(body);
 }
 
-Deadline::Deadline(Deadline::Type _type, cpFloat max_length, cpFloat max_height) : type{_type}, body_linked{nullptr} {
+Deadline::Deadline(Deadline::Type _type, cpFloat max_length, cpFloat max_height) : type{_type}{
     body = cpBodyNewKinematic();
     shape = cpSegmentShapeNew(body, cpv(0.0, 0.0), cpv(max_length, 0.0), 2.0);
     cpShapeSetSensor(shape, static_cast<cpBool>(true));
@@ -55,13 +55,3 @@ void Deadline::draw(RewindClient &rw_client) {
 }
 
 #endif
-
-void Deadline::reset() {
-    copy_body_position(body, body_linked);
-}
-
-void Deadline::link_to(Deadline *deadline) {
-    body_linked = deadline->body;
-    deadline->shape->userData=shape;
-}
-

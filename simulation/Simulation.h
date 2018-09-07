@@ -13,12 +13,15 @@
 
 using json = nlohmann::json;
 
+#define HEAP_SIZE 1024*1024*16
+
 class Simulation {
 private:
-
+    void *heap, *buffer;
+    int copy_size, saved_tick;
 public:
     int sim_tick_index;
-    cpSpace *space, *linked_space;
+    cpSpace *space;
     std::unique_ptr<Map> map;
     std::unique_ptr<Deadline> deadline;
     std::array<std::unique_ptr<Car>, 2> cars;
@@ -29,8 +32,8 @@ public:
     void new_round(const json &params);
     void step();
     void move_car(int player_id, int move);
-    void reset();
-    void link_to(const Simulation &sim);
+    void restore();
+    void save();
     cpFloat get_closest_point_to_button(int player_id);
 
 #ifdef LOCAL_RUN

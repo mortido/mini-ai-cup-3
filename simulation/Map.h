@@ -23,7 +23,6 @@ public:
     virtual ~Map();
     void detach(cpSpace *space);
     void attach(cpSpace *space);
-    void link_to(Map *map);
 
 #ifdef REWIND_VIEWER
     void draw(RewindClient &rw_client);

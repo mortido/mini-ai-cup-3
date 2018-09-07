@@ -47,13 +47,6 @@ public:
     bool squared_wheels;
     cpFloat front_wheel_radius, rear_wheel_radius;
 
-    // STATE *****************
-//    cpFloat car_angle, rear_wheel_angle, front_wheel_angle;
-//    cpFloat car_angle_speed, rear_wheel_angle_speed, front_wheel_angle_speed;
-//    cpVect car_position, rear_wheel_position, front_wheel_position;
-//    cpVect car_speed, rear_wheel_speed, front_wheel_speed;
-    Car *linked_car;
-
     Car(const json &params, cpSpace *_space, double mirror, int player_id, cpVect pos);
     virtual ~Car();
 
@@ -64,8 +57,6 @@ public:
     void detach_constraints(cpSpace *space);
 
     void move(int direction);
-    void link_to(Car *car);
-    void reset();
 
 #ifdef REWIND_VIEWER
 

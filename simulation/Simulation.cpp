@@ -3,43 +3,49 @@
 
 Simulation::Simulation() : space{nullptr}, sim_tick_index{0}
 #ifdef REWIND_VIEWER
-                           ,rewind(RewindClient::instance())
+        , rewind(RewindClient::instance())
 #endif
-                           {
+{
+    // Allocate heap for space and buffer to copy state.
+    heap = malloc(HEAP_SIZE);
+    buffer = malloc(HEAP_SIZE);
+    heapInit((unsigned char *) heap, HEAP_SIZE);
 }
 
 Simulation::~Simulation() {
     cpSpaceFree(space);
+    free(heap);
+    free(buffer);
 }
 
-static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive){
+static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive) {
     *alive = false;
     return cpFalse;
 }
 
 void Simulation::new_round(const json &params) {
 #ifdef LOCAL_RUN
-    car_pos_error.x=0.0;
-    car_pos_error.y=0.0;
+    car_pos_error.x = 0.0;
+    car_pos_error.y = 0.0;
 #endif
 
-if(space){
-    map->detach(space);
-    deadline->detach(space);
+    if (space) {
+        map->detach(space);
+        deadline->detach(space);
 //        cars[0]->detach_shapes(space);
 //        cars[1]->detach_shapes(space);
 //        cars[0]->detach_bodies(space);
 //        cars[1]->detach_bodies(space);
 //        cars[0]->detach_constraints(space);
 //        cars[1]->detach_constraints(space);
-    cars[0]->detach(space);
-    cars[1]->detach(space);
-}else{
-    space = cpSpaceNew();
-    cpSpaceSetGravity(space, GAME::GRAVITY); // 0 -700
-    cpSpaceSetDamping(space, GAME::DAMPING); // 0.85
+        cars[0]->detach(space);
+        cars[1]->detach(space);
+    } else {
+        space = cpSpaceNew();
+        cpSpaceSetGravity(space, GAME::GRAVITY); // 0 -700
+        cpSpaceSetDamping(space, GAME::DAMPING); // 0.85
 //        cpSpaceSetCollisionPersistence(space, 0);
-}
+    }
 
     map.reset(new Map(params["proto_map"], space));
     deadline.reset(new Deadline(Deadline::ASC, 1800, 800));
@@ -74,15 +80,17 @@ void Simulation::step() {
 #ifdef REWIND_VIEWER
 
 void Simulation::draw(json &params) {
-//    map->draw(rewind);
+    map->draw(rewind);
 
-    rewind.circle(params["my_car"][3][0].get<double>(), params["my_car"][3][1].get<double>(), cars[0]->rear_wheel_radius, 0x3FCC0000);
-    rewind.circle(params["my_car"][4][0].get<double>(), params["my_car"][4][1].get<double>(), cars[0]->front_wheel_radius, 0x3FCC0000);
+    rewind.circle(params["my_car"][3][0].get<double>(), params["my_car"][3][1].get<double>(),
+                  cars[0]->rear_wheel_radius, 0x3FCC0000);
+    rewind.circle(params["my_car"][4][0].get<double>(), params["my_car"][4][1].get<double>(),
+                  cars[0]->front_wheel_radius, 0x3FCC0000);
 
     cars[0]->draw(rewind);
     cars[1]->draw(rewind);
     deadline->draw(rewind);
-//    rewind.end_frame();
+    rewind.end_frame();
 }
 
 #endif
@@ -110,24 +118,16 @@ void Simulation::move_car(int player_id, int move) {
     cars[player_id]->move(move);
 }
 
-void Simulation::link_to(const Simulation &sim) {
-    map->link_to(sim.map.get());
-    deadline->link_to(sim.deadline.get());
-    cars[0] ->link_to(sim.cars[0].get());
-    cars[1] ->link_to(sim.cars[1].get());
-    linked_space = sim.space;
-}
-
-
 #include <utility>
 #include <chipmunk/chipmunk_structs.h>
-extern "C"{
+
+extern "C" {
 #include <chipmunk/chipmunk_private.h>
 }
 
 #include <iostream>
 
-static cpBool cachedArbitersRemoveAll(cpArbiter *arb, cpSpace *space){
+static cpBool cachedArbitersRemoveAll(cpArbiter *arb, cpSpace *space) {
     arb->contacts = NULL;
     arb->count = 0;
     cpArrayPush(space->pooledArbiters, arb);
@@ -135,38 +135,38 @@ static cpBool cachedArbitersRemoveAll(cpArbiter *arb, cpSpace *space){
 }
 
 static void *
-cpSpaceArbiterSetTrans(cpShape **shapes, cpSpace *space)
-{
-    if(space->pooledArbiters->num == 0){
+cpSpaceArbiterSetTrans(cpShape **shapes, cpSpace *space) {
+    if (space->pooledArbiters->num == 0) {
         // arbiter pool is exhausted, make more
-        int count = CP_BUFFER_BYTES/sizeof(cpArbiter);
+        int count = CP_BUFFER_BYTES / sizeof(cpArbiter);
         cpAssertHard(count, "Internal Error: Buffer size too small.");
 
         cpArbiter *buffer = (cpArbiter *) cpcalloc(1, CP_BUFFER_BYTES);
         cpArrayPush(space->allocatedBuffers, buffer);
 
-        for(int i=0; i<count; i++) cpArrayPush(space->pooledArbiters, buffer + i);
+        for (int i = 0; i < count; i++) cpArrayPush(space->pooledArbiters, buffer + i);
     }
 
-    return cpArbiterInit((cpArbiter *)cpArrayPop(space->pooledArbiters), shapes[0], shapes[1]);
+    return cpArbiterInit((cpArbiter *) cpArrayPop(space->pooledArbiters), shapes[0], shapes[1]);
 }
 
 static inline cpCollisionHandler *
-cpSpaceLookupHandler(cpSpace *space, cpCollisionType a, cpCollisionType b, cpCollisionHandler *defaultValue)
-{
+cpSpaceLookupHandler(cpSpace *space, cpCollisionType a, cpCollisionType b, cpCollisionHandler *defaultValue) {
     cpCollisionType types[] = {a, b};
-    cpCollisionHandler *handler = (cpCollisionHandler *)cpHashSetFind(space->collisionHandlers, CP_HASH_PAIR(a, b), types);
+    cpCollisionHandler *handler = (cpCollisionHandler *) cpHashSetFind(space->collisionHandlers, CP_HASH_PAIR(a, b),
+                                                                       types);
     return (handler ? handler : defaultValue);
 }
 
-static void copyCachedArbiter(cpArbiter *arb, std::pair<cpSpace *, cpSpace*> spaces){
-    const cpShape *shape_pair[] = {(cpShape*)arb->a->userData, (cpShape*)arb->b->userData};
+static void copyCachedArbiter(cpArbiter *arb, std::pair<cpSpace *, cpSpace *> spaces) {
+    const cpShape *shape_pair[] = {(cpShape *) arb->a->userData, (cpShape *) arb->b->userData};
 
 //    std::cerr << "ARB: " << arb->a << "->" << arb->a->userData << " ; ";
 //    std::cerr << arb->b << "->" << arb->b->userData << std::endl;
 
-    cpHashValue arbHashID = CP_HASH_PAIR((cpHashValue)arb->a->userData, (cpHashValue)arb->b->userData);
-    cpArbiter *shadow_arb = (cpArbiter *)cpHashSetInsert(spaces.first->cachedArbiters, arbHashID, shape_pair, (cpHashSetTransFunc)cpSpaceArbiterSetTrans, spaces.first);
+    cpHashValue arbHashID = CP_HASH_PAIR((cpHashValue) arb->a->userData, (cpHashValue) arb->b->userData);
+    cpArbiter *shadow_arb = (cpArbiter *) cpHashSetInsert(spaces.first->cachedArbiters, arbHashID, shape_pair,
+                                                          (cpHashSetTransFunc) cpSpaceArbiterSetTrans, spaces.first);
 
     // Shift arbiter time stamp (don't update stamp on space as it is used for contacts buffer).
     shadow_arb->stamp = arb->stamp + spaces.first->stamp - spaces.second->stamp;
@@ -183,7 +183,7 @@ static void copyCachedArbiter(cpArbiter *arb, std::pair<cpSpace *, cpSpace*> spa
 
     cpSpacePushFreshContactBuffer(spaces.first);
     shadow_arb->contacts = cpContactBufferGetArray(spaces.first);
-    memcpy(shadow_arb->contacts, arb->contacts, arb->count*sizeof(struct cpContact));
+    memcpy(shadow_arb->contacts, arb->contacts, arb->count * sizeof(struct cpContact));
     cpSpacePushContacts(spaces.first, shadow_arb->count);
 
     // Iterate over the possible pairs to look for hash value matches.
@@ -195,15 +195,18 @@ static void copyCachedArbiter(cpArbiter *arb, std::pair<cpSpace *, cpSpace*> spa
 
     cpCollisionType typeA = shadow_arb->a->type, typeB = shadow_arb->b->type;
     cpCollisionHandler *defaultHandler = &spaces.first->defaultHandler;
-    cpCollisionHandler *handler = shadow_arb->handler = cpSpaceLookupHandler(spaces.first, typeA, typeB, defaultHandler);
+    cpCollisionHandler *handler = shadow_arb->handler = cpSpaceLookupHandler(spaces.first, typeA, typeB,
+                                                                             defaultHandler);
 
     // Check if the types match, but don't swap for a default handler which use the wildcard for type A.
     cpBool swapped = shadow_arb->swapped = (typeA != handler->typeA && handler->typeA != CP_WILDCARD_COLLISION_TYPE);
 
-    if(handler != defaultHandler || spaces.first->usesWildcards){
+    if (handler != defaultHandler || spaces.first->usesWildcards) {
         // The order of the main handler swaps the wildcard handlers too. Uffda.
-        shadow_arb->handlerA = cpSpaceLookupHandler(spaces.first, (swapped ? typeB : typeA), CP_WILDCARD_COLLISION_TYPE, &cpCollisionHandlerDoNothing);
-        shadow_arb->handlerB = cpSpaceLookupHandler(spaces.first, (swapped ? typeA : typeB), CP_WILDCARD_COLLISION_TYPE, &cpCollisionHandlerDoNothing);
+        shadow_arb->handlerA = cpSpaceLookupHandler(spaces.first, (swapped ? typeB : typeA), CP_WILDCARD_COLLISION_TYPE,
+                                                    &cpCollisionHandlerDoNothing);
+        shadow_arb->handlerB = cpSpaceLookupHandler(spaces.first, (swapped ? typeA : typeB), CP_WILDCARD_COLLISION_TYPE,
+                                                    &cpCollisionHandlerDoNothing);
     }
 
     // Narrow-phase collision detection.
@@ -217,27 +220,13 @@ static void copyCachedArbiter(cpArbiter *arb, std::pair<cpSpace *, cpSpace*> spa
     // Time stamp the arbiter so we know it was used recently.
 }
 
-void Simulation::reset() {
-    cars[0]->reset();
-    cars[1]->reset();
-    deadline->reset();
+void Simulation::restore() {
+    sim_tick_index = saved_tick;
+    memccpy(heap, buffer, copy_size, sizeof(char));
+}
 
-    space->stamp+=5;
-
-    // Reset and empty the arbiter lists.
-    for(int i=0; i<space->arbiters->num; i++){
-        cpArbiter *arb = (cpArbiter *)space->arbiters->arr[i];
-        arb->state = CP_ARBITER_STATE_NORMAL;
-
-        // If both bodies are awake, unthread the arbiter from the contact graph.
-        if(!cpBodyIsSleeping(arb->body_a) && !cpBodyIsSleeping(arb->body_b)){
-            cpArbiterUnthread(arb);
-        }
-    }
-    space->arbiters->num = 0;
-
-    cpHashSetFilter(space->cachedArbiters, (cpHashSetFilterFunc)cachedArbitersRemoveAll, space);
-
-//    std::pair<cpSpace *, cpSpace*> spaces = std::make_pair(space, linked_space);
-//    cpHashSetEach(linked_space->cachedArbiters, ( cpHashSetIteratorFunc)copyCachedArbiter, &spaces);
+void Simulation::save() {
+    saved_tick = sim_tick_index;
+    copy_size = static_cast<int>(getBytesToCopy() / sizeof(char));
+    memccpy(buffer, heap, copy_size, sizeof(char));
 }
