@@ -15,9 +15,10 @@ using json = nlohmann::json;
 
 class Simulation {
 private:
-    int sim_tick_index;
+
 public:
-    cpSpace *space;
+    int sim_tick_index;
+    cpSpace *space, *linked_space;
     std::unique_ptr<Map> map;
     std::unique_ptr<Deadline> deadline;
     std::array<std::unique_ptr<Car>, 2> cars;

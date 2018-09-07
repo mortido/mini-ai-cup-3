@@ -9,11 +9,28 @@ struct enemyPrediction {
     cpVect car_pos, rear_wheel_pos, front_wheel_pos;
 };
 
+static inline void copy_damp_state(cpDampedSpring *to, cpDampedSpring *from){
+    to->jAcc = from->jAcc;
+    to->target_vrn = from->target_vrn;
+    to->v_coef = from->v_coef;
+}
+
+static inline void copy_motor_state(cpSimpleMotor *to, cpSimpleMotor *from){
+    to->jAcc = from->jAcc;
+}
+
+static inline void copy_groove_state(cpGrooveJoint *to, cpGrooveJoint *from){
+    to->jAcc = from->jAcc;
+    to->bias = from->bias;
+}
+
 static inline void copy_body_state(cpBody *to, cpBody *from) {
     to->p = from->p;
     to->a = from->a;
     to->v = from->v;
     to->w = from->w;
+//    to->f = from->f;
+//    to->t = from->t;
     to->v_bias = from->v_bias;
     to->w_bias = from->w_bias;
     to->transform = from->transform;

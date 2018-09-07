@@ -62,5 +62,6 @@ void Deadline::reset() {
 
 void Deadline::link_to(Deadline *deadline) {
     body_linked = deadline->body;
+    deadline->shape->userData=shape;
 }
 

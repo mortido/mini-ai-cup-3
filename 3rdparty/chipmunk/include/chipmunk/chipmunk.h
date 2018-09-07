@@ -59,7 +59,7 @@ CP_EXPORT void cpMessage(const char *condition, const char *file, int line, int 
 
 /// Allocated size for various Chipmunk buffers
 #ifndef CP_BUFFER_BYTES
-	#define CP_BUFFER_BYTES (32*1024)
+	#define CP_BUFFER_BYTES (1*1024)
 #endif
 
 #ifndef cpcalloc

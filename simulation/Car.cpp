@@ -5,7 +5,7 @@
 
 Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
          cpVect pos) : space_attached{_space}, player_id{_player_id}, alive{true},
-                       car_body_linked{nullptr}, rear_wheel_body_linked{nullptr}, front_wheel_body_linked{nullptr} {
+                      linked_car{nullptr} {
 
     car_group = static_cast<cpGroup>(player_id + 1);
     button_collision_type = static_cast<cpCollisionType>((player_id + 1) * 10);
@@ -293,13 +293,25 @@ void Car::draw(RewindClient &rw_client) {
 
 void Car::reset() {
     alive = true;
-    copy_body_state(car_body, car_body_linked);
-    copy_body_state(rear_wheel_body, rear_wheel_body_linked);
-    copy_body_state(front_wheel_body, front_wheel_body_linked);
+    copy_body_state(car_body, linked_car->car_body);
+    copy_body_state(rear_wheel_body, linked_car->rear_wheel_body);
+    copy_body_state(front_wheel_body, linked_car->front_wheel_body);
+
+    copy_damp_state((cpDampedSpring *)rear_wheel_dump, (cpDampedSpring *)linked_car->rear_wheel_dump);
+    copy_groove_state((cpGrooveJoint *)rear_wheel_groove, (cpGrooveJoint *)linked_car->rear_wheel_groove);
+
+    copy_damp_state((cpDampedSpring *)front_wheel_dump, (cpDampedSpring *)linked_car->front_wheel_dump);
+    copy_groove_state((cpGrooveJoint *)front_wheel_groove, (cpGrooveJoint *)linked_car->front_wheel_groove);
+
+    for(int i=0;i<engines.size();i++){
+        copy_motor_state((cpSimpleMotor *)engines[i], (cpSimpleMotor *)linked_car->engines[i]);
+    }
 }
 
 void Car::link_to(Car *car) {
-    car_body_linked = car->car_body;
-    rear_wheel_body_linked = car->rear_wheel_body;
-    front_wheel_body_linked = car->front_wheel_body;
+    linked_car = car;
+    car->car_shape->userData = car_shape;
+    car->button_shape->userData = button_shape;
+    car->rear_wheel_shape->userData = rear_wheel_shape;
+    car->front_wheel_shape->userData = front_wheel_shape;
 }

@@ -52,7 +52,7 @@ public:
 //    cpFloat car_angle_speed, rear_wheel_angle_speed, front_wheel_angle_speed;
 //    cpVect car_position, rear_wheel_position, front_wheel_position;
 //    cpVect car_speed, rear_wheel_speed, front_wheel_speed;
-    cpBody *car_body_linked, *front_wheel_body_linked, *rear_wheel_body_linked;
+    Car *linked_car;
 
     Car(const json &params, cpSpace *_space, double mirror, int player_id, cpVect pos);
     virtual ~Car();

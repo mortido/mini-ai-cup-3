@@ -92,4 +92,12 @@ void Map::draw(RewindClient &rw_client) {
 
 }
 
+#include <chipmunk/chipmunk_structs.h>
+
+void Map::link_to(Map *map) {
+    for (int i=0;i<shapes.size();i++){
+        map->shapes[i]->userData = shapes[i];
+    }
+}
+
 #endif

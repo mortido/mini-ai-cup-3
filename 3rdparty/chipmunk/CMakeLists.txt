@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
 #add_library(chipmunk INTERFACE)
-#target_link_libraries(chipmunk INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bin/libchipmunk.so)
+##target_link_libraries(chipmunk INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bin/libchipmunk.so)
+#target_link_libraries(chipmunk INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bin/chipmunk.dll)
 #target_include_directories(chipmunk INTERFACE include)
 
 

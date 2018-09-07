@@ -1,4 +1,3 @@
-//#include <stdio.h>
 #include <iostream>
 #include <chrono>
 #include <array>
@@ -149,10 +148,13 @@ using namespace std::chrono;
 int main() {
     Simulation gold_standart;
     Simulation dirty_sim;
+
     int round{-1}, tick_index{0}, global_tick_index{0};
     int my_player_id{0}, enemy_player_id{1};
     int my_lives, enemy_lives;
+
     string input_string, input_type;
+    high_resolution_clock::time_point start_time;
 
     array<enemyPrediction, GAME::MOVES_COUNT> enemyPredictions{};
     int my_prev_move{0}, my_prev_prev_move{0};
@@ -203,10 +205,16 @@ int main() {
             }
 
             if (tick_index > 1) {
+#ifdef LOCAL_RUN
+                dirty_sim.reset();
+                dirty_sim.step();
+                dirty_sim.step();
+                dirty_sim.check(my_player_id, params);
+#endif
                 // try to gues enemy move by his/her new position
                 int enemy_prev_prev = 0;
-                double min_error = 0.0 * 999999999.0;
-//                cerr << "----" << endl;
+                double min_error = 999999999.0;
+//                cerr << gold_standart.sim_tick_index << "----" << endl;
                 for (int m = 0; m < GAME::MOVES_COUNT; m++) {
                     double err = get_predict_error(enemyPredictions[m], params["enemy_car"]);
                     if (err < min_error) {
@@ -217,20 +225,29 @@ int main() {
 //                    cerr << enemyPredictions[m].car_pos.x << ';' << enemyPredictions[m].car_pos.y << endl;
 //                    cerr << err << endl;
                 }
-
-                // catch up with "reality" - 1 tick
+//                cerr << enemy_prev_prev << endl;
+//                 catch up with "reality" - 1 tick
                 gold_standart.move_car(my_player_id, my_prev_prev_move);
                 gold_standart.move_car(enemy_player_id, enemy_prev_prev);
                 gold_standart.step();
+#ifdef LOCAL_RUN
+                gold_standart.check(my_player_id, prev_params);
+//                dirty_sim.reset();
+//                dirty_sim.step();
+//                dirty_sim.check(my_player_id, params);
+#endif
             }
 
+//            cpSpaceSetCollisionPersistence(dirty_sim.space, 0 );
             if (tick_index) {
                 for (int m = 0; m < GAME::MOVES_COUNT; m++) {
+//                    start_time = NOW;
                     dirty_sim.reset();
+//                    cerr << ELAPSED_TIME << endl;
                     dirty_sim.move_car(my_player_id, my_prev_move);
                     dirty_sim.move_car(enemy_player_id, m - 1);
                     dirty_sim.step();
-                    dirty_sim.step();
+                    dirty_sim.step(); // commands doesn't matters for second step.
 
                     enemyPredictions[m].car_pos = cpBodyGetPosition(dirty_sim.cars[enemy_player_id]->car_body);
                     enemyPredictions[m].rear_wheel_pos = cpBodyGetPosition(
@@ -238,14 +255,13 @@ int main() {
                     enemyPredictions[m].front_wheel_pos = cpBodyGetPosition(
                             dirty_sim.cars[enemy_player_id]->front_wheel_body);
                 }
-#ifdef LOCAL_RUN
-                gold_standart.check(my_player_id, prev_params);
-#endif
+
 #ifdef REWIND_VIEWER
+//cerr<< tick_index << endl;
                 // TODO: draw current tick by params and dirty prediction
                 gold_standart.map->draw(gold_standart.rewind);
-                gold_standart.draw(prev_params);
-//                dirty_sim.draw(params);
+//                gold_standart.draw(prev_params);
+                dirty_sim.draw(params);
                 gold_standart.rewind.end_frame();
 #endif
             }
@@ -284,194 +300,3 @@ int main() {
 
     return 0;
 }
-
-// ********************************************************************************************************************
-//int main() {
-//    double time_bank = 0.0*120.0;
-//
-//#ifdef LOCAL_RUN
-//    time_bank = time_bank * 17.0 / 9.0;
-//#endif
-//
-//    // make preparations
-//    Solver solver;
-//    Simulation simulation;
-//    Randomizer::init();
-//
-//    high_resolution_clock::time_point start_time;
-//    string input_string, input_type;
-//    while (true) {
-//        getline(cin, input_string);
-//        start_time = NOW;
-//
-//        // parse inputs
-//        auto state = nlohmann::json::parse(input_string);
-//        input_type = state["type"].get<std::string>();
-//
-//        if (input_type == "new_match") {
-//            // init game constants
-////            GameConstants::initConstants(state["params"]);
-//            simulation.new_round(state["params"]);
-//            solver.time_limit =
-//                    time_bank / ((simulation.my_lives + simulation.enemy_lives - 1) * GAME::MAX_ROUND_TICKS);
-//            cerr << "TIME LIMIT IS " << solver.time_limit << endl;
-//        } else if (input_type == "tick") {
-//            simulation.update_tick(state["params"]);
-//            if (simulation.tick_index == 0) {
-//                solver.init(simulation);
-//            }
-////            cerr << "TIME BEFORE SOLVE " << ELAPSED_TIME << endl;
-//            // find best move
-//            solver.solve(simulation, start_time);
-////            cerr << "TIME AFTER SOLVE " << ELAPSED_TIME << endl;
-//
-////            solver.best_solutions[simulation.my_player_id].moves[0] = 0;
-////            if(simulation.tick_index==50){
-////                solver.best_solutions[simulation.my_player_id].moves[0] = 1;
-////            }
-//            // write best solution
-//            cout << solver.best_solutions[simulation.my_player_id].to_json().dump() << endl;
-////            cerr << "round " << simulation.round << " tick " << simulation.tick_index << " simulations "
-////                 << solver.simulations
-////                 << endl;
-////            cerr << solver.best_solutions[simulation.my_player_id].fitness << endl;
-////            cerr << solver.best_solutions[simulation.my_player_id].moves[0] << endl;
-//
-//            cerr << simulation.tick_index << ":";
-//            cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>() << "; ";
-//            cerr << cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>() << endl;
-//
-//            simulation.cars[simulation.my_player_id]->move(solver.best_solutions[simulation.my_player_id].moves[0]);
-//            simulation.cars[simulation.enemy_player_id]->move(0);
-//        } else {
-//            cerr << input_type << endl;
-//            break;
-//        }
-//
-//        time_bank -= ELAPSED_TIME;
-//#ifdef REWIND_VIEWER
-//        if (input_type == "tick") {
-//            simulation.rewind.message("%d - ", simulation.tick_index);
-//            simulation.rewind.message("%f - ", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).x - state["params"]["my_car"][0][0].get<cpFloat>());
-//            simulation.rewind.message("%f", cpBodyGetPosition(simulation.cars[simulation.my_player_id]->car_body).y - state["params"]["my_car"][0][1].get<cpFloat>());
-//            simulation.draw();
-//            simulation.simulate_tick();
-//        }
-//#endif
-//    }
-//
-//    return 0;
-//}
-
-//*********************************************************************************************************************
-//int main() {
-//    double time_bank = 120.0;
-//
-//#ifdef LOCAL_RUN
-//    time_bank = time_bank * 17.0 / 9.0;
-//#endif
-//#ifdef REWIND_VIEWER
-//
-//    auto &rewind = RewindClient::instance();
-//
-//#endif
-//
-//    high_resolution_clock::time_point start_time;
-//    string input_string, input_type;
-//
-//    Simulation simulation;
-////    cpSpace *space = cpSpaceNew();
-////    cpSpaceSetGravity(space, GAME::GRAVITY);
-////    std::unique_ptr<Map> map;
-//    std::unique_ptr<Car> car;
-//    json proto_car;
-//    cerr << std::setprecision(16) << std::fixed;
-//    int tick{0};
-//    int round(-1);
-//    while (true) {
-//        getline(cin, input_string);
-//        start_time = NOW;
-//
-//        // parse inputs
-//        auto state = nlohmann::json::parse(input_string);
-//        input_type = state["type"].get<std::string>();
-//
-//        if (input_type == "new_match") {
-//            round++;
-//            cerr << "round" << endl;
-//            auto params = state["params"];
-//            tick = 0;
-//
-//            if (round == 0) {
-//                simulation.map = std::unique_ptr<Map>(new Map(params["proto_map"], simulation.space));
-//                proto_car = params["proto_car"];
-//                car = unique_ptr<Car>(new Car(proto_car, simulation.space, 1.0, 0));
-//            } else {
-//                break;
-//            }
-//        } else if (input_type == "tick") {
-//            auto params = state["params"];
-//
-//            if (tick == 0) {
-//                params["my_car"];
-//                // 0 - pos
-//                // 1 - angle
-//                // 2 - mirror
-//                // 3 - front wheel
-//                // 4 - rear wheel
-////                car = unique_ptr<Car>(new Car(proto_car, simulation.space, params["my_car"][2].get<int>(), 1));
-//                car->set_from_json(params["my_car"]);
-////                cpBodySetPosition(car->car_body,
-////                                  cpv(params["my_car"][0][0].get<cpFloat>(), params["my_car"][0][1].get<cpFloat>()));
-////                cpBodySetPosition(car->front_wheel_body,
-////                                  cpv(params["my_car"][4][0].get<cpFloat>(), params["my_car"][4][1].get<cpFloat>()));
-////                cpBodySetPosition(car->rear_wheel_body,
-////                                  cpv(params["my_car"][3][0].get<cpFloat>(), params["my_car"][3][1].get<cpFloat>()));
-//
-//
-//            }
-////            cerr << tick << ":" << cpBodyGetPosition(car->car_body).x << "; " << cpBodyGetPosition(car->car_body).y  << "|";
-////            cerr << cpBodyGetPosition(car->front_wheel_body).x << "; " << cpBodyGetPosition(car->front_wheel_body).y << "|";
-////            cerr << cpBodyGetPosition(car->rear_wheel_body).x << "; " << cpBodyGetPosition(car->rear_wheel_body).y  << endl;
-////
-////            cerr << tick << ":" << params["my_car"][0][0].get<cpFloat>() << "; " << params["my_car"][0][1].get<cpFloat>() << "|";
-////            cerr << params["my_car"][4][0].get<cpFloat>() << "; " << params["my_car"][4][1].get<cpFloat>() << "|";
-////            cerr << params["my_car"][3][0].get<cpFloat>() << "; " << params["my_car"][3][1].get<cpFloat>() << endl;
-////            cerr << "TIME BEFORE SOLVE " << ELAPSED_TIME << endl;
-//
-//            cerr << tick << ":";
-//            cerr << cpBodyGetPosition(car->car_body).x - params["my_car"][0][0].get<cpFloat>() << "; ";
-//            cerr << cpBodyGetPosition(car->car_body).y - params["my_car"][0][1].get<cpFloat>() << endl;
-//
-//            if (tick < 600) {
-//                cout << R"({"command":"stop"})" << endl;
-//                car->move(0);
-////                for (auto *motor:car->engines) {
-////                    cpSimpleMotorSetRate(motor, 0.0);
-////                }
-//            } else if (tick < 700) {
-//                cout << R"({"command":"left"})" << endl;
-//                car->move(-1);
-////                for (auto *motor:car->engines) {
-////                    cpSimpleMotorSetRate(motor, car->max_speed);
-////                }
-//            } else {
-//                break;
-//            }
-//            cpSpaceStep(simulation.space, GAME::SIMULATION_DT);
-//            tick++;
-//
-//#ifdef REWIND_VIEWER
-//            car->draw(rewind);
-//            simulation.map->draw(rewind);
-//            rewind.end_frame();
-//#endif
-//        } else {
-//            break;
-//        }
-//        time_bank -= ELAPSED_TIME;
-//    }
-////    cpSpaceFree(space);
-//    cerr << "BYE!" << endl;
-//    return 0;
-//}
