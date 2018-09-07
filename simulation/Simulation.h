@@ -18,7 +18,8 @@ using json = nlohmann::json;
 class Simulation {
 private:
     void *heap, *buffer;
-    int copy_size, saved_tick;
+    size_t copy_size;
+    int saved_tick;
 public:
     int sim_tick_index;
     cpSpace *space;

@@ -640,7 +640,7 @@ size_t getBytesToCopy(void) {
         curr = curr->right;
     }
     // ASUME RIGHT MOST BLOCK IS ALWAYS NOT ALLOCATED.
-    return (unsigned char*)curr - (unsigned char*)privData;
+    return (unsigned char*)curr - (unsigned char*)privData + sizeof(AllocStruct);
 //    return (privData->heap - alloc_struct->data) + alloc_struct->size + 1;
 
 }

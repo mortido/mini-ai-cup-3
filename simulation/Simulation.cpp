@@ -18,6 +18,17 @@ Simulation::~Simulation() {
     free(buffer);
 }
 
+void Simulation::restore() {
+    sim_tick_index = saved_tick;
+    memcpy(heap, buffer, copy_size);
+}
+
+void Simulation::save() {
+    saved_tick = sim_tick_index;
+    copy_size = getBytesToCopy();
+    memcpy(buffer, heap, copy_size);
+}
+
 static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive) {
     *alive = false;
     return cpFalse;
@@ -220,13 +231,3 @@ static void copyCachedArbiter(cpArbiter *arb, std::pair<cpSpace *, cpSpace *> sp
     // Time stamp the arbiter so we know it was used recently.
 }
 
-void Simulation::restore() {
-    sim_tick_index = saved_tick;
-    memccpy(heap, buffer, copy_size, sizeof(char));
-}
-
-void Simulation::save() {
-    saved_tick = sim_tick_index;
-    copy_size = static_cast<int>(getBytesToCopy() / sizeof(char));
-    memccpy(buffer, heap, copy_size, sizeof(char));
-}

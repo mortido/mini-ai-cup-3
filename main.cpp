@@ -178,10 +178,22 @@ int main() {
 
 #ifdef LOCAL_RUN
             if (round) {
-                cerr << "round " << round << " pos_diff_sum: " << simulation.car_pos_error.x << " ; ";
+                cerr << "round " << round << " car_pos_diff_sum: " << simulation.car_pos_error.x << " ; ";
                 cerr << simulation.car_pos_error.y;
                 cerr << " squared =" << state["params"]["proto_car"].value("squared_wheels", false) << endl;
                 cerr << "BYTES TO COPY " << getBytesToCopy() << endl;
+//                cerr << "1000 cycles of (restore)" << endl;
+//
+//                start_time = NOW;
+//                for(int i=0;i<1000;i++){
+//                    for(int j=0;j<50;j++) {
+//                        simulation.step();
+//                    }
+////                    simulation.step();
+//                    simulation.restore();
+//                }
+//
+//                cerr << "time = " << ELAPSED_TIME << endl;
             }
 #endif
 
@@ -204,19 +216,20 @@ int main() {
             if (tick_index > 1) {
                 // try to gues enemy move by his/her new position
                 int enemy_prev_prev = 0;
-//                double min_error = 999999999.0;
-////                cerr << gold_standart.sim_tick_index << "----" << endl;
-//                for (int m = 0; m < GAME::MOVES_COUNT; m++) {
-//                    double err = get_predict_error(enemyPredictions[m], params["enemy_car"]);
-//                    if (err < min_error) {
-//                        min_error = err;
-//                        enemy_prev_prev = m - 1;
-//                    }
-//
-////                    cerr << enemyPredictions[m].car_pos.x << ';' << enemyPredictions[m].car_pos.y << endl;
-////                    cerr << err << endl;
-//                }
-////                cerr << enemy_prev_prev << endl;
+                double min_error = 999999999.0;
+//                cerr << gold_standart.sim_tick_index << "----" << endl;
+                for (int m = 0; m < GAME::MOVES_COUNT; m++) {
+                    double err = get_predict_error(enemyPredictions[m], params["enemy_car"]);
+                    if (err < min_error) {
+                        min_error = err;
+                        enemy_prev_prev = m - 1;
+                    }
+
+//                    cerr << enemyPredictions[m].car_pos.x << ';' << enemyPredictions[m].car_pos.y << endl;
+//                    cerr << err << endl;
+                }
+                cerr << min_error << endl;
+//                cerr << enemy_prev_prev << endl;
 
 
                 // catch up with "reality" - 1 tick
@@ -232,36 +245,25 @@ int main() {
             }
 
             simulation.save();
-//            simulation.step();
-//            simulation.step();
-//            simulation.step();
-//            simulation.step();
-//            simulation.step();
-//            simulation.step();
-//            simulation.step();
-//            simulation.step();
-//            simulation.step();
-            simulation.restore();
 
             if (tick_index) {
-//                for (int m = 0; m < GAME::MOVES_COUNT; m++) {
-////                    start_time = NOW;
-//                    dirty_sim.restore();
-////                    cerr << ELAPSED_TIME << endl;
-//                    dirty_sim.move_car(my_player_id, my_prev_move);
-//                    dirty_sim.move_car(enemy_player_id, m - 1);
-//                    dirty_sim.step();
-//                    dirty_sim.step(); // commands doesn't matters for second step.
+                for (int m = 0; m < GAME::MOVES_COUNT; m++) {
+                    simulation.restore();
+                    simulation.move_car(my_player_id, my_prev_move);
+                    simulation.move_car(enemy_player_id, m - 1);
+                    simulation.step();
+                    simulation.step(); // commands doesn't matters for second step.
 //
-//                    enemyPredictions[m].car_pos = cpBodyGetPosition(dirty_sim.cars[enemy_player_id]->car_body);
-//                    enemyPredictions[m].rear_wheel_pos = cpBodyGetPosition(
-//                            dirty_sim.cars[enemy_player_id]->rear_wheel_body);
-//                    enemyPredictions[m].front_wheel_pos = cpBodyGetPosition(
-//                            dirty_sim.cars[enemy_player_id]->front_wheel_body);
-//                }
+                    enemyPredictions[m].car_pos = cpBodyGetPosition(simulation.cars[enemy_player_id]->car_body);
+                    enemyPredictions[m].rear_wheel_pos = cpBodyGetPosition(
+                            simulation.cars[enemy_player_id]->rear_wheel_body);
+                    enemyPredictions[m].front_wheel_pos = cpBodyGetPosition(
+                            simulation.cars[enemy_player_id]->front_wheel_body);
+                }
 
 #ifdef REWIND_VIEWER
-                simulation.draw(params);
+                simulation.restore();
+                simulation.draw(prev_params);
 #endif
             }
 
