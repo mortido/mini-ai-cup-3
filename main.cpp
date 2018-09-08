@@ -228,11 +228,12 @@ int main() {
 //                    cerr << enemyPredictions[m].car_pos.x << ';' << enemyPredictions[m].car_pos.y << endl;
 //                    cerr << err << endl;
                 }
-                cerr << min_error << endl;
+//                cerr << min_error << endl;
 //                cerr << enemy_prev_prev << endl;
 
 
                 // catch up with "reality" - 1 tick
+                simulation.restore();
                 simulation.move_car(my_player_id, my_prev_prev_move);
                 simulation.move_car(enemy_player_id, enemy_prev_prev);
                 simulation.step();
@@ -301,3 +302,5 @@ int main() {
 
     return 0;
 }
+
+//source ./miniaicups/madcars/Runners/local-runner-venv/bin/activate
