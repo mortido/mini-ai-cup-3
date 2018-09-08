@@ -88,7 +88,13 @@ void Simulation::step() {
 
 #ifdef REWIND_VIEWER
 
-void Simulation::draw(json &params) {
+void Simulation::draw(json &params, int my_player) {
+    rewind.message("x_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->car_body).x - params["my_car"][0][0].get<cpFloat>());
+    rewind.message("y_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->car_body).y - params["my_car"][0][1].get<cpFloat>());
+    rewind.message("rear_x_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->rear_wheel_body).x - params["my_car"][3][0].get<cpFloat>());
+    rewind.message("rear_y_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->rear_wheel_body).y - params["my_car"][3][1].get<cpFloat>());
+    rewind.message("front_x_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->front_wheel_body).x - params["my_car"][4][0].get<cpFloat>());
+    rewind.message("front_y_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->front_wheel_body).y - params["my_car"][4][1].get<cpFloat>());
     map->draw(rewind);
 
     rewind.circle(params["my_car"][3][0].get<double>(), params["my_car"][3][1].get<double>(),

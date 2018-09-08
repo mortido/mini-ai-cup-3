@@ -33,7 +33,9 @@ private:
     // **********************
 
     std::array<PopulationState, PLAYERS_COUNT> population_states;
-    std::array<int, PLAYERS_COUNT> prepare_order;
+    std::array<std::pair<int,int>, PLAYERS_COUNT> prepare_order;
+    int my_frozen_move;
+    bool froze_move;
 
     void evaluate(Simulation &simulation,
                   Solution &test_solution,
@@ -42,12 +44,17 @@ private:
 
 public:
     std::array<Solution, PLAYERS_COUNT> best_solutions;
-    int simulations;
+
     double time_limit;
 
     void solve(Simulation &simulation, high_resolution_clock::time_point &start_time,
                int my_player_id, int enemy_player_id);
+    void new_round(double time_bank, int my_lives, int enemy_lives);
+        void new_tick(int tick_index, int my_prev_move);
 
+#ifdef LOCAL_RUN
+    int simulations;
+#endif
 };
 
 #endif //MINI_AI_CUP_3_SOLVER_H

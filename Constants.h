@@ -7,11 +7,11 @@
 using json = nlohmann::json;
 
 namespace GA {
-    constexpr int DEPTH = 100;
+    constexpr int DEPTH = 50;
     constexpr double THETA = (1.0 - 1.0 / GA::DEPTH);
 
     constexpr int RE_SIM_COUNT = 1;
-    constexpr int POPULATION_SIZE = 50; // min 4;
+    constexpr int POPULATION_SIZE = 25; // min 4;
     constexpr double MUTATION_PROBABILITY = 0.3;
     constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.5;
     constexpr double CHANGE_MOVE_ON_RANDOMIZATION_PROBABILITY = 0.05;

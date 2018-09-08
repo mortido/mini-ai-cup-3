@@ -43,7 +43,7 @@ public:
 #endif
 
 #ifdef REWIND_VIEWER
-    void draw(json &params);
+    void draw(json &params, int my_player);
     RewindClient &rewind;
 #endif
 };

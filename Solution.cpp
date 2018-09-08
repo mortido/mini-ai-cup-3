@@ -73,9 +73,9 @@ void Solution::shift() {
     moves[GA::DEPTH - 1] = Randomizer::GetRandomMove();
 }
 
-json Solution::to_json() {
+json Solution::to_json(int move_index) {
     json command;
-    switch (moves[0]) {
+    switch (moves[move_index]) {
         case 0:
             command["command"] = "stop";
             break;

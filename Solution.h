@@ -24,7 +24,7 @@ public:
     void shift();
     void copy_from(Solution &solution);
 
-    json to_json();
+    json to_json(int move_index);
 
 private:
     void randomize_interval();
