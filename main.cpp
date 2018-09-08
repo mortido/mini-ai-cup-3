@@ -155,7 +155,7 @@ using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
     Simulation simulation;
-    Solver solver;
+//    Solver solver;
 
     double time_bank = 0.0 * 120.0;
     int round{-1}, tick_index{0}, global_tick_index{0};
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
             tick_index = 0;
             my_lives = params["my_lives"].get<int>();
             enemy_lives = params["enemy_lives"].get<int>();
-            solver.new_round(time_bank, my_lives, enemy_lives);
+//            solver.new_round(time_bank, my_lives, enemy_lives);
 
 #ifdef LOCAL_RUN
             if (round) {
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
             simulation.new_round(params);
         } else if (input_type == "tick") {
 
-            solver.new_tick(tick_index, my_prev_move);
+//            solver.new_tick(tick_index, my_prev_move);
             if (global_tick_index == 0) {
                 // init player positions once per game
                 if (params["my_car"][2].get<int>() == 1) {
@@ -284,31 +284,44 @@ int main(int argc, char *argv[]) {
                             simulation.cars[enemy_player_id]->front_wheel_body);
                 }
             }
-            cerr << "---------------------" << endl;
+
             my_prev_prev_move = my_prev_move;
-            cerr << "---------------------" << endl;
-
 //            solver.solve(simulation,start_time,my_player_id, enemy_player_id);
-            cerr << "---------------------" << endl;
+//            my_prev_move = solver.best_solutions[my_player_id].moves[----555---];
+//            cout << solver.best_solutions[my_player_id].to_json(tick_index > 0 ? 1: 0).dump() << endl;
 
-            my_prev_move = solver.best_solutions[my_player_id].moves[0];
-            cerr << "---------------------" << endl;
+            if (tick_index < 200) {
+                my_prev_move = 0;
+            } else {
+                my_prev_move = 1;
+            }
+            json command;
+            switch (my_prev_move) {
+                case 0:
+                    command["command"] = "stop";
+                    break;
+                case -1:
+                    command["command"] = "left";
+                    break;
+                case 1:
+                    command["command"] = "right";
+                    break;
+                default:
+                    command["command"] = "stop";
+            }
+            cout << command.dump() << endl;
 
-            cout << solver.best_solutions[my_player_id].to_json(tick_index > 0 ? 1: 0).dump() << endl;
-            cerr << "---------------------" << endl;
             tick_index++;
             global_tick_index++;
             time_bank -= ELAPSED_TIME;
-            cerr << "---------------------" << endl;
 #ifdef LOCAL_RUN
             simulation.restore();
             if (tick_index) {
                 simulation.step();
             }
             simulation.check(my_player_id, params);
-            cerr << "---------------------" << endl;
 #ifdef REWIND_VIEWER
-            simulation.rewind.message("SIMS(%d): %d\\n", GA::DEPTH, solver.simulations);
+//            simulation.rewind.message("SIMS(%d): %d\\n", GA::DEPTH, solver.simulations);
             simulation.draw(params, my_player_id);
 #endif
 #endif
