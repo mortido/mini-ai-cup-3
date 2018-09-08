@@ -15,6 +15,9 @@ void *heapRealloc(void *ptr, size_t size);
 void *heapCalloc(size_t nitems, size_t size);
 size_t getBytesToCopy(void);
 
+size_t heapCopyTo(void *buffer);
+void* heapRestoreFrom(void *buffer, size_t);
+
 #ifdef __cplusplus
 }
 #endif

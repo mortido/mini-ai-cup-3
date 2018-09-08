@@ -12,10 +12,12 @@
 using namespace std;
 using namespace std::chrono;
 
+#ifdef LOCAL_RUN
+#include <fstream>
+#endif
+
 #ifdef REWIND_VIEWER
-
 #include "RewindClient.h"
-
 #endif
 
 #define NOW high_resolution_clock::now()
@@ -147,7 +149,7 @@ using namespace std::chrono;
 //#include <chipmunk/dmm.h>
 //}
 
-int main() {
+int main(int argc, char *argv[]) {
     Simulation simulation;
 
     int round{-1}, tick_index{0}, global_tick_index{0};
@@ -161,9 +163,30 @@ int main() {
     int my_prev_move{0}, my_prev_prev_move{0};
 #ifdef LOCAL_RUN
     json prev_params;
+//    std::fstream file;
+//    if (argc == 1) {
+//        file.open("data.json", std::ios::out);
+//    } else {
+//        file.open(argv[1], std::ios::in);
+//    }
 #endif
     while (true) {
+#ifdef LOCAL_RUN
+        if (argc == 1) {
+            getline(cin, input_string);
+//            file << input_string << std::endl;
+//            file.close();
+//            file.open("data.json", std::ios::out);
+        } else {
+//            getline(file, input_string);
+//            if (file.eof()) {
+//                break;
+//            }
+        }
+#else
         getline(cin, input_string);
+#endif
+
         if (!input_string.length()) {
             break;
         }
@@ -178,7 +201,7 @@ int main() {
 
 #ifdef LOCAL_RUN
             if (round) {
-                cerr << "round " << round << " car_pos_diff_sum: " << simulation.car_pos_error.x << " ; ";
+                cerr << "round " << round << " pos_diff_sum: " << simulation.car_pos_error.x << " ; ";
                 cerr << simulation.car_pos_error.y;
                 cerr << " squared =" << state["params"]["proto_car"].value("squared_wheels", false) << endl;
                 cerr << "BYTES TO COPY " << getBytesToCopy() << endl;
@@ -217,20 +240,13 @@ int main() {
                 // try to gues enemy move by his/her new position
                 int enemy_prev_prev = 0;
                 double min_error = 999999999.0;
-//                cerr << gold_standart.sim_tick_index << "----" << endl;
                 for (int m = 0; m < GAME::MOVES_COUNT; m++) {
                     double err = get_predict_error(enemyPredictions[m], params["enemy_car"]);
                     if (err < min_error) {
                         min_error = err;
                         enemy_prev_prev = m - 1;
                     }
-
-//                    cerr << enemyPredictions[m].car_pos.x << ';' << enemyPredictions[m].car_pos.y << endl;
-//                    cerr << err << endl;
                 }
-//                cerr << min_error << endl;
-//                cerr << enemy_prev_prev << endl;
-
 
                 // catch up with "reality" - 1 tick
                 simulation.restore();
@@ -239,22 +255,22 @@ int main() {
                 simulation.step();
 #ifdef LOCAL_RUN
                 simulation.check(my_player_id, prev_params);
-//                dirty_sim.reset();
-//                dirty_sim.step();
-//                dirty_sim.check(my_player_id, params);
 #endif
             }
 
+            // TODO: REMOVE
             simulation.save();
+            simulation.step();
+            simulation.restore();
 
             if (tick_index) {
+                // simulate 3 enemy moves and store themfor later prediction
                 for (int m = 0; m < GAME::MOVES_COUNT; m++) {
                     simulation.restore();
                     simulation.move_car(my_player_id, my_prev_move);
                     simulation.move_car(enemy_player_id, m - 1);
                     simulation.step();
                     simulation.step(); // commands doesn't matters for second step.
-//
                     enemyPredictions[m].car_pos = cpBodyGetPosition(simulation.cars[enemy_player_id]->car_body);
                     enemyPredictions[m].rear_wheel_pos = cpBodyGetPosition(
                             simulation.cars[enemy_player_id]->rear_wheel_body);
@@ -302,5 +318,3 @@ int main() {
 
     return 0;
 }
-
-//source ./miniaicups/madcars/Runners/local-runner-venv/bin/activate

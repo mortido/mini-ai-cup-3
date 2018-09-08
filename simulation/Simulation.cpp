@@ -20,13 +20,12 @@ Simulation::~Simulation() {
 
 void Simulation::restore() {
     sim_tick_index = saved_tick;
-    memcpy(heap, buffer, copy_size);
+    heapRestoreFrom(buffer, copy_size);
 }
 
 void Simulation::save() {
     saved_tick = sim_tick_index;
-    copy_size = getBytesToCopy();
-    memcpy(buffer, heap, copy_size);
+    copy_size = heapCopyTo(buffer);
 }
 
 static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive) {
@@ -43,21 +42,12 @@ void Simulation::new_round(const json &params) {
     if (space) {
         map->detach(space);
         deadline->detach(space);
-//        cars[0]->detach_shapes(space);
-//        cars[1]->detach_shapes(space);
-//        cars[0]->detach_bodies(space);
-//        cars[1]->detach_bodies(space);
-//        cars[0]->detach_constraints(space);
-//        cars[1]->detach_constraints(space);
         cars[0]->detach(space);
         cars[1]->detach(space);
-//        cpSpaceStep(space, GAME::SIMULATION_DT);
-
     } else {
         space = cpSpaceNew();
         cpSpaceSetGravity(space, GAME::GRAVITY); // 0 -700
         cpSpaceSetDamping(space, GAME::DAMPING); // 0.85
-//        cpSpaceSetCollisionPersistence(space, 0);
     }
 
     // That will clear memory before object creation.

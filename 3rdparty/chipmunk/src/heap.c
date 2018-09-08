@@ -1,6 +1,4 @@
 
-#define __STDC_FORMAT_MACROS
-
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -20,7 +18,7 @@
 
 struct allocStruct;
 
-static void _shmHeapFree(void *ptr, int external);
+static void _shmHeapFree(void *ptr);
 
 #define SHM_HEAP_MAGIC 0xDEBB1E83
 
@@ -49,6 +47,7 @@ typedef struct sizeTree {
 } SizeTree;
 
 static SizeTree *sizeTreeRoot = 0;
+static SizeTree *sizeTreeRoot_back = 0;
 
 /* Traverse the tree (tree-verse (HAHA)). */
 static void sizeTreeTraverse(SizeTree *tree) {
@@ -115,6 +114,14 @@ static SizeTree *sizeTreeInsertNode(SizeTree *tree, SizeTree *node) {
     if (tree == NULL) {
         tree = node;
     } else if (tree->size == node->size) {
+//        if (node == tree) {
+//            fprintf(stderr,
+//                    "-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.\n");
+//        }
+//        if (node == tree->list) {
+//            fprintf(stderr,
+//                    "--------------------------aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.\n");
+//        }
         node->list = tree->list;
         tree->list = node;
     } else if (tree->size > node->size) {
@@ -146,8 +153,7 @@ static SizeTree *sizeTreeRemoveNode(SizeTree *tree, SizeTree *node, int *success
                 tree = node->right;
             } else if (node->right == NULL) {
                 /* Right side is empty.  Promote the left side up
-                 * one level.  Note that the left side might also
-                 * be empty. */
+                 * one level. */
                 tree = node->left;
             } else {
                 /* There are left and right entries.  Use the
@@ -169,6 +175,10 @@ static SizeTree *sizeTreeRemoveNode(SizeTree *tree, SizeTree *node, int *success
             while (n) {
                 if (n->list == node) {
                     n->list = node->list;
+//                    if (n->list == n) {
+//                        fprintf(stderr,
+//                                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.\n");
+//                    }
                     *success = 1;
                     break;
                 }
@@ -288,11 +298,10 @@ static AddrTree *addrTreeRemove(AddrTree *tree, AddrTree *node, int *status) {
 /* There is exactly one of these data structures.  It's used to store private
  * data. */
 typedef struct privateData {
-    uint64_t counterFree;
-    uint64_t bytesFree;
-    uint64_t counterMalloc;
-    uint64_t bytesMalloc;
-    size_t bytesToCopy;
+    unsigned char heap_start[0];
+    struct sizeTree *sizeTreeRot;
+    struct addrTree *addrTreeRot;
+    struct allocStruct *last_block;
 } privateData;
 static privateData *privData = NULL;
 
@@ -311,6 +320,8 @@ typedef struct allocStruct {
     /* The actual data. */
     unsigned char data[0];
 } AllocStruct;
+
+
 static size_t AllocStructDataOffset = (size_t) (&((AllocStruct *) 0)->data);
 
 static void *_shmHeapMalloc(size_t size) {
@@ -337,8 +348,6 @@ static void *_shmHeapMalloc(size_t size) {
     if (success == 0) {
         fprintf(stderr, "%s(): ERROR: Didn't find matching addr node\n", __func__);
     }
-
-    privData->bytesMalloc += size;
 
     /* Calculate the total number of bytes required to service this alloc
      * request, and calculate the number of left over bytes in this chunk
@@ -370,18 +379,13 @@ static void *_shmHeapMalloc(size_t size) {
         extra->sizeTreeNode.size = extra->size;
         extra->sizeTreeNode.ptr = extra;
         extra->addrTreeNode.ptr = extra;
-        _shmHeapFree(extra->data, 0);
+        _shmHeapFree(extra->data);
     }
 
     return curr->data;
 }
 
-/* The "external" argument lets us know whether this call is coming from an
- * external source.  If it is, then we want to add the amount of freed memory to
- * our internal counters.  If it's an internal call, then don't add to the
- * internal counters.
- */
-static void _shmHeapFree(void *ptr, int external) {
+static void _shmHeapFree(void *ptr) {
     if (ptr == NULL) {
         return;
     }
@@ -397,10 +401,6 @@ static void _shmHeapFree(void *ptr, int external) {
         fprintf(stderr, "%s(): ERROR: Memory at %p is not currently allocated.\n",
                 __func__, ptr);
         return;
-    }
-
-    if (external) {
-        privData->bytesFree += curr->size;
     }
 
     /* Check to see if the next memory block (a.k.a. the successor) is
@@ -530,20 +530,20 @@ void heapInit(unsigned char *heap, size_t size) {
     /* Create a dummy AllocStruct data structure at the end of this heap.
      * We use that data structure as a flag to let us know it's the end of
      * this heap (and we can't go past it). */
-    AllocStruct *endStruct = (AllocStruct *) (heapEnd - sizeof(AllocStruct));
-    endStruct->magic = SHM_HEAP_MAGIC;
-    endStruct->size = 0;
-    endStruct->allocated = 1;
+    privData->last_block = (AllocStruct *) (heapEnd - sizeof(AllocStruct));
+    privData->last_block->magic = SHM_HEAP_MAGIC;
+    privData->last_block->size = 0;
+    privData->last_block->allocated = 1;
 
-    endStruct->addrTreeNode.ptr = endStruct;
-    addrTreeRoot = addrTreeInsertNode(addrTreeRoot, &endStruct->addrTreeNode);
+    privData->last_block->addrTreeNode.ptr = privData->last_block;
+    addrTreeRoot = addrTreeInsertNode(addrTreeRoot, &privData->last_block->addrTreeNode);
 
-    endStruct->sizeTreeNode.size = 0;
-    endStruct->sizeTreeNode.ptr = endStruct;
-    sizeTreeRoot = sizeTreeInsertNode(sizeTreeRoot, &endStruct->sizeTreeNode);
+    privData->last_block->sizeTreeNode.size = 0;
+    privData->last_block->sizeTreeNode.ptr = privData->last_block;
+    sizeTreeRoot = sizeTreeInsertNode(sizeTreeRoot, &privData->last_block->sizeTreeNode);
 
     /* Adjust size to allow for endStruct. */
-    size -= sizeof(*endStruct);
+    size -= AllocStructDataOffset;
 
     /* Create an AllocStruct data structure that matches the format that is
      * created by shmHeapMalloc().  Then pass it to _shmHeapFree().  This
@@ -552,57 +552,69 @@ void heapInit(unsigned char *heap, size_t size) {
     newStruct->magic = SHM_HEAP_MAGIC;
     newStruct->size = size - AllocStructDataOffset;
     newStruct->allocated = 1;
-    _shmHeapFree(newStruct->data, 0);
+    _shmHeapFree(newStruct->data);
 }
 
 void *heapMalloc(size_t size) {
-    privData->counterMalloc++;
+//    fprintf(stderr, "malloc started\n");
     return _shmHeapMalloc(size);
 }
 
 void heapFree(void *ptr) {
-    privData->counterFree++;
-    _shmHeapFree(ptr, 1);
+//    fprintf(stderr, "free started\n");
+    _shmHeapFree(ptr);
 }
 
 void *heapRealloc(void *ptr, size_t size) {
-    void *new;
+//    fprintf(stderr, "realloc started\n");
+
+    if (size == 0) {
+        fprintf(stderr, "realoc FAILED\n");
+        _shmHeapFree(ptr);
+        return NULL;
+    }
 
     if (!ptr) {
-        new = _shmHeapMalloc(size);
-        if (!new) { return NULL; }
-    } else {
-        size_t old_size = get_size(ptr);
-
-        if (old_size < size) {
-            new = _shmHeapMalloc(size);
-            if (!new) { return NULL; }
-
-            if(old_size) {
-                memcpy(new, ptr, old_size);
-            }
-            _shmHeapFree(ptr, 1);
-        } else {
-            new = ptr;
-        }
+        return _shmHeapMalloc(size);
     }
-    return new;
+
+    size_t old_size = get_size(ptr);
+    if (size <= old_size) {
+        return ptr;
+    }
+//    fprintf(stderr, "Realoc 4 %d => %d\n", old_size, size);
+    void *ptrNew = _shmHeapMalloc(size);
+    if (ptrNew) {
+        memcpy(ptrNew, ptr, old_size);
+        _shmHeapFree(ptr);
+    } else {
+
+    }
+
+    return ptrNew;
+
 };
 
 void *heapCalloc(size_t n, size_t size) {
-    size_t total = n * size;
-    void *p = heapMalloc(total);
+//    fprintf(stderr, "calloc started\n");
+    size_t alloc_size = n * size;
+    void *new = _shmHeapMalloc(alloc_size);
 
-    if (!p) return NULL;
+    if (new) {
+        memset(new, 0, alloc_size);
+//        fprintf(stderr, "calloc success\n");
+        return new;
+    }
 
-    return memset(p, 0, total);
+    fprintf(stderr, "calloc FAIL\n");
+    return NULL;
 }
 
 void heapPrint(void) {
-    fprintf(stderr, "%s(): counterMalloc %" PRIu64 ": bytesMalloc %" PRIu64 ").\n",
-            __func__, privData->counterMalloc, privData->bytesMalloc);
-    fprintf(stderr, "%s(): counterFree %" PRIu64 ": bytesFree %" PRIu64 ").\n",
-            __func__, privData->counterFree, privData->bytesFree);
+//    fprintf(stderr, "%s(): counterMalloc %" PRIu64 ": bytesMalloc %" PRIu64 ").\n",
+//            __func__, privData->counterMalloc, privData->bytesMalloc);
+//    fprintf(stderr, "%s(): counterFree %" PRIu64 ": bytesFree %" PRIu64 ").\n",
+//            __func__, privData->counterFree, privData->bytesFree);
 
     fprintf(stderr, "This is the Size Tree:\n");
     sizeTreeTraverse(sizeTreeRoot);
@@ -613,34 +625,41 @@ void heapPrint(void) {
     fprintf(stderr, "\n");
 }
 
-//static AllocStruct * getBiggestAllocated(AddrTree *node){
-//    if(node==NULL){
-//        return NULL;
-//    }
-//    AllocStruct *result=getBiggestAllocated(node->right);
-//    if(result==NULL){
-//
-//        if(node->ptr->allocated){
-//            return node->ptr;
-//        }else {
-//            result=getBiggestAllocated(node->left);
-//        }
-//    }
-//    return result;
-//}
-
-size_t getBytesToCopy(void) {
-//    AllocStruct *alloc_struct = getBiggestAllocated(addrTreeRoot->left);
-//    if(!alloc_struct){
-//        return 0;
-//    }
-//    return (alloc_struct->data-(unsigned char*)privData) + alloc_struct->size;
-    AddrTree* curr = addrTreeRoot->left;
-    while (curr->right!=NULL){
+size_t heapCopyTo(void *buffer) {
+    AddrTree *curr = addrTreeRoot->left;
+    while (curr->right != NULL) {
         curr = curr->right;
     }
     // ASUME RIGHT MOST BLOCK IS ALWAYS NOT ALLOCATED.
-    return (unsigned char*)curr - (unsigned char*)privData + sizeof(AllocStruct);
-//    return (privData->heap - alloc_struct->data) + alloc_struct->size + 1;
+    size_t bytes_to_copy =
+            (unsigned char *) curr - (unsigned char *) privData + sizeof(unsigned char) + sizeof(AllocStruct);
 
+    privData->addrTreeRot = addrTreeRoot;
+    privData->sizeTreeRot = sizeTreeRoot;
+
+    memcpy(buffer, privData->heap_start, bytes_to_copy);
+
+    memcpy(buffer + ((unsigned char *) privData->last_block - privData->heap_start), privData->last_block,
+           AllocStructDataOffset);
+
+    return bytes_to_copy;
+}
+
+void *heapRestoreFrom(void *buffer, size_t bytes_to_copy) {
+    memcpy(privData->heap_start, buffer, bytes_to_copy);
+
+    addrTreeRoot = privData->addrTreeRot;
+    sizeTreeRoot = privData->sizeTreeRot;
+
+    memcpy(privData->last_block, buffer + ((unsigned char *) privData->last_block - privData->heap_start),
+           AllocStructDataOffset);
+}
+
+size_t getBytesToCopy(void){
+    AddrTree *curr = addrTreeRoot->left;
+    while (curr->right != NULL) {
+        curr = curr->right;
+    }
+    // ASUME RIGHT MOST BLOCK IS ALWAYS NOT ALLOCATED.
+    return (unsigned char *) curr - (unsigned char *) privData + sizeof(unsigned char) + sizeof(AllocStruct);
 }
