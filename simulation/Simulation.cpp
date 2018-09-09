@@ -19,6 +19,8 @@ Simulation::~Simulation() {
 }
 
 void Simulation::restore() {
+    cars[0]->alive = true;
+    cars[1]->alive = true;
     sim_tick_index = saved_tick;
     heapRestoreFrom(buffer, copy_size);
 }
@@ -29,6 +31,7 @@ void Simulation::save() {
 }
 
 static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive) {
+
     *alive = false;
     return cpFalse;
 }
@@ -88,36 +91,87 @@ void Simulation::step() {
 
 #ifdef REWIND_VIEWER
 
-void Simulation::draw(json &params, int my_player) {
-    rewind.message("x_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->car_body).x - params["my_car"][0][0].get<cpFloat>());
-    rewind.message("y_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->car_body).y - params["my_car"][0][1].get<cpFloat>());
-    rewind.message("rear_x_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->rear_wheel_body).x - params["my_car"][3][0].get<cpFloat>());
-    rewind.message("rear_y_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->rear_wheel_body).y - params["my_car"][3][1].get<cpFloat>());
-    rewind.message("front_x_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->front_wheel_body).x - params["my_car"][4][0].get<cpFloat>());
-    rewind.message("front_y_dif: %.6f\\n", cpBodyGetPosition(cars[my_player]->front_wheel_body).y - params["my_car"][4][1].get<cpFloat>());
+void Simulation::draw(json &params, int my_player, std::array<Solution, 2> best_solutions) {
+    rewind.message("FIT: %.6f\\n\\n", best_solutions[my_player].fitness);
+    rewind.message("x_dif: %.6f\\n",                   cpBodyGetPosition(cars[my_player]->car_body).x - params["my_car"][0][0].get<cpFloat>());
+    rewind.message("y_dif: %.6f\\n",
+                   cpBodyGetPosition(cars[my_player]->car_body).y - params["my_car"][0][1].get<cpFloat>());
+    rewind.message("rear_x_dif: %.6f\\n",
+                   cpBodyGetPosition(cars[my_player]->rear_wheel_body).x - params["my_car"][3][0].get<cpFloat>());
+    rewind.message("rear_y_dif: %.6f\\n",
+                   cpBodyGetPosition(cars[my_player]->rear_wheel_body).y - params["my_car"][3][1].get<cpFloat>());
+    rewind.message("front_x_dif: %.6f\\n",
+                   cpBodyGetPosition(cars[my_player]->front_wheel_body).x - params["my_car"][4][0].get<cpFloat>());
+    rewind.message("front_y_dif: %.6f\\n",
+                   cpBodyGetPosition(cars[my_player]->front_wheel_body).y - params["my_car"][4][1].get<cpFloat>());
+
+    rewind.message("deadline_dif: %.6f\\n",
+                   cpBodyGetPosition(deadline->body).y - params["deadline_position"].get<cpFloat>());
+
+    rewind.message("\\nleft car:\\n");
+    for (int i = 0; i < GA::DEPTH; i++) {
+        rewind.message("%d, ", best_solutions[0].moves[i]);
+    }
+    rewind.message("\\nright car:\\n");
+    for (int i = 0; i < GA::DEPTH; i++) {
+        rewind.message("%d, ", best_solutions[1].moves[i]);
+    }
+    rewind.message("\\n");
+
     map->draw(rewind);
 
     rewind.circle(params["my_car"][3][0].get<double>(), params["my_car"][3][1].get<double>(),
                   cars[0]->rear_wheel_radius, 0x3FCC0000);
     rewind.circle(params["my_car"][4][0].get<double>(), params["my_car"][4][1].get<double>(),
                   cars[0]->front_wheel_radius, 0x3FCC0000);
-
+//
     cars[0]->draw(rewind);
     cars[1]->draw(rewind);
     deadline->draw(rewind);
+
+    rewind.CurrentLayer = 2;
+
+    for (int i = 0; i < GA::DEPTH; i++) {
+        cars[0]->move(best_solutions[0].moves[i]);
+        cars[1]->move(best_solutions[1].moves[i]);
+        step();
+        cars[0]->draw(rewind, true);
+        cars[1]->draw(rewind, true);
+    }
+
+    rewind.CurrentLayer = rewind.DEFAULT_LAYER;
+
+
     rewind.end_frame();
 }
 
 #endif
 
 cpFloat Simulation::get_closest_point_to_button(int player_id) {
-//    cpShape *
-//    cpSpacePointQueryNearest(cpSpace *space, cpVect point, cpFloat maxDistance, cpShapeFilter filter, cpPointQueryInfo *out)
-//
-//    cpPointQueryInfo queryInfo;
-//
-//    cpSpacePointQueryNearest(space, , 500.0, &queryInfo);
-    return 0;
+    cpVect p1 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 0));
+    cpVect p2 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 1));
+    cpVect cp_middle = cpvmult(p1+p2,0.5);
+
+    cpPointQueryInfo queryInfo;
+    if(cpSpacePointQueryNearest(space, cp_middle, 500.0, cars[player_id]->car_filter, &queryInfo)){
+        return queryInfo.distance;
+    }else{
+        return 500.0;
+    }
+}
+
+cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
+    cpVect p1 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 0));
+    cpVect p2 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 1));
+    cpVect cp_middle = cpvmult(p1+p2,0.5);
+
+    cpPointQueryInfo queryInfo;
+    if(cpSpacePointQueryNearest(space, cp_middle, 2000.0,
+            cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,cars[me]->car_category), &queryInfo)){
+        return queryInfo.distance;
+    }else{
+        return 2000.0;
+    }
 }
 
 #ifdef LOCAL_RUN

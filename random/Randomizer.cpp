@@ -7,9 +7,9 @@ Randomizer::Randomizer() : rng(2707),
                            probability(0.0, 1.0),
 //                           moves(0, GAME::MOVES_COUNT),
                            moves(-1, GAME::MOVES_COUNT- 2), // directions
-                           crossover(1, GA::DEPTH-1),
-                           mutate(0, GA::DEPTH),
-                           parent(0, GA::POPULATION_SIZE),
+                           crossover(1, GA::DEPTH-2),
+                           mutate(0, GA::DEPTH-1),
+                           parent(0, GA::POPULATION_SIZE-1),
                            coin(0, 2) {
 
 }

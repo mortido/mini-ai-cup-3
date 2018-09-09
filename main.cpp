@@ -26,6 +26,7 @@ using namespace std::chrono;
 
 #define NOW high_resolution_clock::now()
 #define ELAPSED_TIME duration_cast<duration<double>>(NOW - start_time).count()
+// python ./miniaicups/madcars/Runners/localrunner.py -f ./mini-ai-cup-3/cmake-build-release/mini-ai-cup-3 -s ./smartguy
 
 //int main() {
 //    double time_bank = 0.0 * 120.0;
@@ -155,9 +156,9 @@ using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
     Simulation simulation;
-//    Solver solver;
+    Solver solver;
 
-    double time_bank = 0.0 * 120.0;
+    double time_bank = 120.0;
     int round{-1}, tick_index{0}, global_tick_index{0};
 
     int my_player_id{0}, enemy_player_id{1};
@@ -168,7 +169,7 @@ int main(int argc, char *argv[]) {
 
     array<enemyPrediction, GAME::MOVES_COUNT> enemyPredictions{};
     int my_prev_move{0}, my_prev_prev_move{0};
-
+    Randomizer::init();
 
 #ifdef LOCAL_RUN
     time_bank = time_bank * 17.0 / 9.0;
@@ -209,7 +210,7 @@ int main(int argc, char *argv[]) {
             tick_index = 0;
             my_lives = params["my_lives"].get<int>();
             enemy_lives = params["enemy_lives"].get<int>();
-//            solver.new_round(time_bank, my_lives, enemy_lives);
+            solver.new_round(time_bank, my_lives, enemy_lives);
 
 #ifdef LOCAL_RUN
             if (round) {
@@ -234,9 +235,8 @@ int main(int argc, char *argv[]) {
 
             // Init round objects
             simulation.new_round(params);
-        } else if (input_type == "tick") {
 
-//            solver.new_tick(tick_index, my_prev_move);
+        } else if (input_type == "tick") {
             if (global_tick_index == 0) {
                 // init player positions once per game
                 if (params["my_car"][2].get<int>() == 1) {
@@ -246,6 +246,11 @@ int main(int argc, char *argv[]) {
                     my_player_id = 1;
                     enemy_player_id = 0;
                 }
+            }
+
+            solver.new_tick(tick_index, my_prev_move, my_player_id, enemy_player_id);
+            if (tick_index) {
+                simulation.restore();
             }
 
             if (tick_index > 1) {
@@ -286,34 +291,12 @@ int main(int argc, char *argv[]) {
             }
 
             my_prev_prev_move = my_prev_move;
-//            solver.solve(simulation,start_time,my_player_id, enemy_player_id);
-//            my_prev_move = solver.best_solutions[my_player_id].moves[----555---];
-//            cout << solver.best_solutions[my_player_id].to_json(tick_index > 0 ? 1: 0).dump() << endl;
+            solver.solve(simulation,start_time);
+            my_prev_move = solver.best_solutions[my_player_id].moves[tick_index > 0];
+            cout << solver.best_solutions[my_player_id].to_json(tick_index > 0).dump() << endl;
 
-            if (tick_index < 200) {
-                my_prev_move = 0;
-            } else {
-                my_prev_move = 1;
-            }
-            json command;
-            switch (my_prev_move) {
-                case 0:
-                    command["command"] = "stop";
-                    break;
-                case -1:
-                    command["command"] = "left";
-                    break;
-                case 1:
-                    command["command"] = "right";
-                    break;
-                default:
-                    command["command"] = "stop";
-            }
-            cout << command.dump() << endl;
-
-            tick_index++;
-            global_tick_index++;
             time_bank -= ELAPSED_TIME;
+
 #ifdef LOCAL_RUN
             simulation.restore();
             if (tick_index) {
@@ -321,10 +304,15 @@ int main(int argc, char *argv[]) {
             }
             simulation.check(my_player_id, params);
 #ifdef REWIND_VIEWER
-//            simulation.rewind.message("SIMS(%d): %d\\n", GA::DEPTH, solver.simulations);
-            simulation.draw(params, my_player_id);
+            simulation.rewind.message("TL: %.6f of %.6f\\n", ELAPSED_TIME, solver.time_limit);
+            simulation.rewind.message("GENERATIONS: %.d\\n", solver.generation);
+            simulation.rewind.message("SIMS(2x%d by %d): %d\\n", GA::POPULATION_SIZE, GA::DEPTH, solver.simulations);
+            simulation.draw(params, my_player_id, solver.best_solutions);
 #endif
 #endif
+
+            tick_index++;
+            global_tick_index++;
         } else {
             break;
         }

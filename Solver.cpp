@@ -9,20 +9,23 @@
 #define LIMIT ELAPSED_TIME < time_limit
 #endif
 
-void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &start_time,
-                   int my_player_id, int enemy_player_id) {
-    int iteration = 0;
+void Solver::solve_2(Simulation &simulation, high_resolution_clock::time_point &start_time){
+
+    // solve for enemy
+    // solve for me
 
 
-    prepare_order[0] = std::make_pair(enemy_player_id, my_player_id);
-    prepare_order[1] = std::make_pair(my_player_id, enemy_player_id);
+}
 
-    // shift previous best moves
-    if (froze_move) {
-        for (int player = 0; player < PLAYERS_COUNT; player++) {
-            best_solutions[player].shift();
-        }
-    }
+void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &start_time) {
+    generation = 0;
+
+//    // shift previous best moves
+//    if (froze_move) {
+//        for (int player = 0; player < PLAYERS_COUNT; player++) {
+//            best_solutions[player].shift();
+//        }
+//    }
 
     // prepare populations (my player last)
     for (auto players: prepare_order) {
@@ -36,7 +39,7 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
             best_solutions[players.first].shift();
             previous[0].copy_from(best_solutions[players.first]);
 
-            evaluate(simulation, previous[0], best_solutions, players.first,players.second);
+            evaluate(simulation, previous[0], best_solutions, players.first, players.second);
             best = &previous[0];
 
             idx++;
@@ -45,8 +48,7 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
         // fill with random chromosomes
         for (; idx < GA::POPULATION_SIZE; idx++) {
             previous[idx].randomize();
-
-            evaluate(simulation, previous[idx], best_solutions, players.first,players.second);
+            evaluate(simulation, previous[idx], best_solutions, players.first, players.second);
             if (!best || (previous[idx].fitness > best->fitness)) {
                 best = &previous[idx];
             }
@@ -60,7 +62,7 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
         // TODO: try not optimize enemy on last iteration (maybe set max_iter/time for them)...
 //        int solve_for_id = (iteration % GA::SOLVE_ENEMY_EVERY_N_TURNS)
 //                           ? my_player_id : enemy_player_id;
-        auto players =  (iteration % GA::SOLVE_ENEMY_EVERY_N_TURNS) ? prepare_order[1] : prepare_order[0];
+        auto players = (generation % GA::SOLVE_ENEMY_EVERY_N_TURNS) ? prepare_order[1] : prepare_order[0];
         int solve_for_id = players.first;
 
         population_t &current = *population_states[solve_for_id].current;
@@ -71,14 +73,15 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
         if (solve_for_id != prev_solve_id) {
             // re-evaluate best solution as enemies was updated too
             // TODO: may be track that enemies was actually updated...
-            evaluate(simulation, *best, best_solutions, players.first,players.second);
+            evaluate(simulation, *best, best_solutions, players.first, players.second);
             prev_solve_id = solve_for_id;
         }
 
         // trick: copy best chromosome and mutate it
         current[0].copy_from(*best);
         current[0].mutate();
-        evaluate(simulation, current[0], best_solutions,players.first,players.second);
+
+        evaluate(simulation, current[0], best_solutions, players.first, players.second);
         if (best->fitness < current[0].fitness) {
             best = &current[0];
         }
@@ -88,13 +91,12 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
 
             auto parents = population_states[solve_for_id].get_parent_indexes();
             current[idx].merge(previous[parents.first], previous[parents.second]);
-
             // Mutate with some chance.
             if (Randomizer::GetProbability() <= GA::MUTATION_PROBABILITY) {
                 current[idx].mutate();
             }
 
-            evaluate(simulation, current[idx], best_solutions, players.first,players.second);
+            evaluate(simulation, current[idx], best_solutions, players.first, players.second);
             if (best->fitness < current[idx].fitness) {
                 best = &current[idx];
             }
@@ -103,61 +105,89 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
         // swap prev and current populations, save best.
         population_states[solve_for_id].swap();
         best_solutions[solve_for_id].copy_from(*best);
-        iteration++;
+        generation++;
     }
 }
 
 void Solver::evaluate(Simulation &simulation,
                       Solution &test_solution,
-                      std::array<Solution, PLAYERS_COUNT> &best_solutions,
+                      std::array<Solution, PLAYERS_COUNT> &best_sols,
                       int my_id, int enemy_id) {
 
     simulation.restore();
     double mul(1.0);
     double fitness(0.0);
+    for (int i = 0; i < GA::DEPTH; i++) {
 
-//    // TODO: simulate
-//    for (int i = 0; i < GA::DEPTH; i++) {
-//
-//        // Apply moves.
-//        for (int p = 0; p < PLAYERS_COUNT; p++) {
-//            simulation.cars[p]->move(p == my_id ? test_solution.moves[i] : best_solutions[p].moves[i]);
-//        }
-//
-//        // TODO: adaptive step DT (late steps less precise?)
-//        // if all alive:
-////        simulation.simulate_tick();
-//
-//        // in case of somebody death.
-//        if (!simulation.cars[0]->alive || !simulation.cars[1]->alive) {
-//            double points = simulation.cars[my_id]->alive ? 100500 : -100500;
-//            while (i < GA::DEPTH) {
-//                test_solution.fitness += points * mul;
-//                mul *= GA::THETA;
-//            }
-//            break;
-//        }
-//
-//        // TODO: evaluate position
-//        double min_dist = simulation.get_closest_point_to_button(my_id);
-//
-//        min_dist = simulation.get_closest_point_to_button(enemy_id);
-//
-//        fitness += Randomizer::GetProbability() * mul;
-//        mul *= GA::THETA;
-//    }
+        // Apply moves.
+        int m = 0;
+        for (int p = 0; p < PLAYERS_COUNT; p++) {
+            if (i==0 && p == my_player_id && froze_move) {
+                m = my_frozen_move;
+            } else {
+                m = p == my_id ? test_solution.moves[i] : best_sols[p].moves[i];
+            }
 
+            simulation.cars[p]->move(m);
+        }
+
+        // TODO: adaptive step DT (late steps less precise?)
+        simulation.step();
+
+        if (!simulation.cars[my_id]->alive) {
+            while (i < GA::DEPTH) {
+                fitness += -9000.0 * mul;
+                mul *= GA::THETA;
+                i++;
+            }
+            break;
+        } else {
+            double min_dist = simulation.get_closest_point_to_button(my_id);
+            fitness += min_dist;
+            // TODO: min_dist = (min_dist - a) / b
+//            fitness += min_dist / (1.0 + abs(min_dist)) * mul;
+        }
+
+        if (!simulation.cars[enemy_id]->alive) {
+            while (i < GA::DEPTH) {
+                fitness += 9000.0 * mul;
+                mul *= GA::THETA;
+                i++;
+            }
+            break;
+        } else {
+            double min_dist = simulation.get_closest_point_to_button(enemy_id);
+            fitness += -min_dist;
+//            // TODO: min_dist = (min_dist - a) / b
+//            fitness += -min_dist *1.5/ (1.0 + abs(min_dist)) * mul;
+        }
+
+        fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
+
+        mul *= GA::THETA;
+    }
+//    cpBody *c = simulation.cars[my_id]->car_body;
+//    fitness += cpBodyLocalToWorld(c, cpBodyGetCenterOfGravity(c)).y;
     test_solution.fitness = fitness;
-
 
 #ifdef LOCAL_RUN
     simulations++;
 #endif
 }
 
-void Solver::new_tick(int tick_index, int my_prev_move) {
+void Solver::new_tick(int tick_index, int my_prev_move, int _my_player_id, int _enemy_player_id) {
+#ifdef LOCAL_RUN
+    simulations = 0;
+#endif
     froze_move = tick_index > 0;
     my_frozen_move = my_prev_move;
+
+    if (tick_index == 0) {
+        my_player_id = _my_player_id;
+        enemy_player_id = _enemy_player_id;
+        prepare_order[0] = std::make_pair(enemy_player_id, my_player_id);
+        prepare_order[1] = std::make_pair(my_player_id, enemy_player_id);
+    }
 }
 
 void Solver::new_round(double time_bank, int my_lives, int enemy_lives) {

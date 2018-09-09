@@ -4,10 +4,11 @@
 #include <array>
 
 Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
-         cpVect pos) : space_attached{_space}, player_id{_player_id}, alive{true}{
+         cpVect pos) : space_attached{_space}, player_id{_player_id}, alive{true} {
 
     car_group = static_cast<cpGroup>(player_id + 1);
     button_collision_type = static_cast<cpCollisionType>((player_id + 1) * 10);
+    car_category = static_cast<cpBitmask>(1 << player_id);
 
     torque = params["torque"].get<cpFloat>();
     max_speed = params["max_speed"].get<cpFloat>();
@@ -28,7 +29,7 @@ Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
     car_shape = cpPolyShapeNew(car_body, static_cast<int>(car_poly.size()), car_poly.data(), cpTransformIdentity, 0.0);
     cpShapeSetFriction(car_shape, params["car_body_friction"].get<cpFloat>());
     cpShapeSetElasticity(car_shape, params["car_body_elasticity"].get<cpFloat>());
-    car_filter = cpShapeFilterNew(car_group, CP_ALL_CATEGORIES, CP_ALL_CATEGORIES);
+    car_filter = cpShapeFilterNew(car_group, car_category, CP_ALL_CATEGORIES);
     cpShapeSetFilter(car_shape, car_filter);
 
     std::vector<cpVect> button_poly;
@@ -68,7 +69,8 @@ Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
 
     rear_wheel_groove = cpGrooveJointNew(car_body, rear_wheel_body,
                                          cpv(params["rear_wheel_damp_position"][0].get<cpFloat>() * mirror,
-                                             params["rear_wheel_damp_position"][1].get<cpFloat>()),
+                                             params["rear_wheel_damp_position"][1].get<cpFloat>() -
+                                             params["rear_wheel_groove_offset"].get<cpFloat>()),
                                          cpv(params["rear_wheel_damp_position"][0].get<cpFloat>() * mirror,
                                              params["rear_wheel_damp_position"][1].get<cpFloat>() -
                                              1.5 * params["rear_wheel_damp_length"].get<cpFloat>()),
@@ -110,7 +112,8 @@ Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
 
     front_wheel_groove = cpGrooveJointNew(car_body, front_wheel_body,
                                           cpv(params["front_wheel_damp_position"][0].get<cpFloat>() * mirror,
-                                              params["front_wheel_damp_position"][1].get<cpFloat>()),
+                                              params["front_wheel_damp_position"][1].get<cpFloat>() -
+                                              params["front_wheel_groove_offset"].get<cpFloat>()),
                                           cpv(params["front_wheel_damp_position"][0].get<cpFloat>() * mirror,
                                               params["front_wheel_damp_position"][1].get<cpFloat>() -
                                               1.5 * params["front_wheel_damp_length"].get<cpFloat>()),
@@ -262,27 +265,37 @@ void draw_wheel(RewindClient &rw_client, cpBody *wheel_body, cpShape *wheel_shap
     }
 }
 
-void Car::draw(RewindClient &rw_client) {
+void Car::draw(RewindClient &rw_client, bool shadow) {
 
-    uint32_t gray = 0x7F7F7F;
-    uint32_t dark_gray = 0x333333;
-    uint32_t black = 0x000000;
-    uint32_t wheel_color = 0x7F7F7F7F;
-    uint32_t center_gravity_color = 0xf4ad42;
-    uint32_t stop_color = black;
-    uint32_t car_color = black;
-    uint32_t button_color = player_id % 2 ? 0xFF0000 : 0x0000FF;
+
+    uint32_t car_lines = 0xFF000000;
+    uint32_t wheel_color = 0xFF7F7F7F;
+    uint32_t center_gravity_color = 0xFFf4ad42;
+    uint32_t car_color = 0xFF000000;
+    uint32_t button_color = player_id % 2 ? 0xFFFF0000 : 0xFF0000FF;
+
+    if (shadow) {
+        car_lines &= 0x10FFFFFF;
+        wheel_color &= 0x10FFFFFF;
+        center_gravity_color &= 0x10FFFFFF;
+        car_color &= 0x10FFFFFF;
+        button_color &= 0x10FFFFFF;
+
+        car_lines = 0xAAAAAA;
+        car_color = 0xAAAAAA;
+        button_color = player_id % 2 ? 0xFF550000 : 0xFF0000AA;
+    }
 
 //    cpCircleShapeGetOffset(fro)
     const cpVect &car_center = cpBodyLocalToWorld(car_body, cpBodyGetCenterOfGravity(car_body));
     rw_client.circle(car_center.x, car_center.y, 3.0, center_gravity_color);
-    rw_client.line(car_center.x, car_center.y - 5.0, car_center.x, car_center.y + 5.0, black);
-    rw_client.line(car_center.x - 5.0, car_center.y, car_center.x + 5.0, car_center.y, black);
+    rw_client.line(car_center.x, car_center.y - 5.0, car_center.x, car_center.y + 5.0, car_lines);
+    rw_client.line(car_center.x - 5.0, car_center.y, car_center.x + 5.0, car_center.y, car_lines);
 
-    draw_wheel(rw_client, rear_wheel_body, rear_wheel_shape, wheel_color, black,
+    draw_wheel(rw_client, rear_wheel_body, rear_wheel_shape, wheel_color, car_lines,
                squared_wheels);
     draw_wheel(rw_client, front_wheel_body, front_wheel_shape, wheel_color,
-               black, squared_wheels);
+               car_lines, squared_wheels);
 
     draw_poly(rw_client, car_body, car_shape, car_color);
     draw_poly(rw_client, car_body, button_shape, button_color);

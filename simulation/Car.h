@@ -42,6 +42,7 @@ public:
 
     DRIVE::Type drive_type;
     cpGroup car_group;
+    cpBitmask car_category;
     cpShapeFilter car_filter;
     cpCollisionType button_collision_type;
     bool squared_wheels;
@@ -60,7 +61,7 @@ public:
 
 #ifdef REWIND_VIEWER
 
-    void draw(RewindClient &rw_client);
+    void draw(RewindClient &rw_client, bool shadow=false);
 
 #endif
 };

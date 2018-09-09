@@ -39,6 +39,10 @@ Map::Map(const json &params, cpSpace *space) {
         cpShapeSetElasticity(ground_segment, GAME::MAP_ELASTICITY);
         shapes.push_back(ground_segment);
     }
+
+    for(auto s:shapes){
+        cpShapeSetFilter(s, cpShapeFilterNew(CP_NO_GROUP, 8,CP_ALL_CATEGORIES));
+    }
 }
 
 void Map::attach(cpSpace *space) {

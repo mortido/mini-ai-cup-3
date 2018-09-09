@@ -46,11 +46,12 @@ public:
     std::array<Solution, PLAYERS_COUNT> best_solutions;
 
     double time_limit;
+    int my_player_id, enemy_player_id;
+    int generation;
 
-    void solve(Simulation &simulation, high_resolution_clock::time_point &start_time,
-               int my_player_id, int enemy_player_id);
+    void solve(Simulation &simulation, high_resolution_clock::time_point &start_time);
     void new_round(double time_bank, int my_lives, int enemy_lives);
-        void new_tick(int tick_index, int my_prev_move);
+        void new_tick(int tick_index, int my_prev_move, int my_player_id, int enemy_player_id);
 
 #ifdef LOCAL_RUN
     int simulations;

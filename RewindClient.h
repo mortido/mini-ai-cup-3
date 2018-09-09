@@ -37,6 +37,8 @@ public:
     ///Default layer to draw primitives
     constexpr static int DEFAULT_LAYER = 3;
 
+    int CurrentLayer = DEFAULT_LAYER;
+
     enum Color : uint32_t {
         COLOR_RED = 0xFF0000,
         COLOR_GREEN = 0x00FF00,
@@ -70,7 +72,7 @@ public:
     void circle(double x, double y, double r, uint32_t color, size_t layer = DEFAULT_LAYER) {
         static const char *fmt =
                 R"({"type": "circle", "x": %lf, "y": %lf, "r": %lf, "color": %u, "layer": %u})";
-        send(format(fmt, x, y, r, color, layer));
+        send(format(fmt, x, y, r, color, CurrentLayer));
     }
 
     void popup(double x, double y, double r, std::string text) {
@@ -82,13 +84,13 @@ public:
     void rect(double x1, double y1, double x2, double y2, uint32_t color, size_t layer = DEFAULT_LAYER) {
         static const char *fmt =
                 R"({"type": "rectangle", "x1": %lf, "y1": %lf, "x2": %lf, "y2": %lf, "color": %u, "layer": %u})";
-        send(format(fmt, x1, y1, x2, y2, color, layer));
+        send(format(fmt, x1, y1, x2, y2, color, CurrentLayer));
     }
 
     void line(double x1, double y1, double x2, double y2, uint32_t color, size_t layer = DEFAULT_LAYER) {
         static const char *fmt =
                 R"({"type": "line", "x1": %lf, "y1": %lf, "x2": %lf, "y2": %lf, "color": %u, "layer": %u})";
-        send(format(fmt, x1, y1, x2, y2, color, layer));
+        send(format(fmt, x1, y1, x2, y2, color, CurrentLayer));
     }
 
     /**

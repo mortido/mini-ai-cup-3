@@ -11,6 +11,10 @@
 
 #include "../../nlohmann/json.hpp"
 
+#ifdef REWIND_VIEWER
+#include "../Solution.h"
+#endif
+
 using json = nlohmann::json;
 
 #define HEAP_SIZE 1024*1024*16
@@ -36,6 +40,7 @@ public:
     void restore();
     void save();
     cpFloat get_closest_point_to_button(int player_id);
+    cpFloat get_my_distance_to_enemy_button(int me, int enemy);
 
 #ifdef LOCAL_RUN
     cpVect car_pos_error;
@@ -43,7 +48,7 @@ public:
 #endif
 
 #ifdef REWIND_VIEWER
-    void draw(json &params, int my_player);
+    void draw(json &params, int my_player, std::array<Solution, 2> best_solutions);
     RewindClient &rewind;
 #endif
 };
