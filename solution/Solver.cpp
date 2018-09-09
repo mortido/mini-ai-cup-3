@@ -4,9 +4,8 @@
 #define ELAPSED_TIME duration_cast<duration<double>>(NOW - start_time).count()
 
 
-
 void Solver::_solve(Simulation &simulation, high_resolution_clock::time_point &start_time,
-                   double time_limit, int my_id, int enemy_id) {
+                    double time_limit, int my_id, int enemy_id) {
 
 #ifdef DEBUG
 #define LIMIT iteration < GA::DEBUG_ITERATIONS_LIMIT
@@ -39,7 +38,7 @@ void Solver::_solve(Simulation &simulation, high_resolution_clock::time_point &s
     }
 
     while (LIMIT) {
-        population_t &current =  *population.current;
+        population_t &current = *population.current;
         population_t &previous = *population.previous;
 
         // trick: copy best chromosome and mutate it
@@ -71,9 +70,9 @@ void Solver::_solve(Simulation &simulation, high_resolution_clock::time_point &s
         population.swap();
 
 //#ifdef LOCAL_RUN
-        if(my_id==my_player_id){
+        if (my_id == my_player_id) {
             my_generations++;
-        } else{
+        } else {
             enemy_generations++;
         }
 //#endif
@@ -105,7 +104,7 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
     }
 
     _solve(simulation, start_time, enemy_TL, enemy_player_id, my_player_id);
-    _solve(simulation, start_time, my_TL, my_player_id,enemy_player_id);
+    _solve(simulation, start_time, my_TL, my_player_id, enemy_player_id);
 }
 
 void Solver::evaluate(Simulation &simulation,
@@ -161,18 +160,21 @@ void Solver::evaluate(Simulation &simulation,
 //            fitness += -min_dist *1.5/ (1.0 + abs(min_dist)) * mul;
         }
 
-        fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
-
+//        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
+//            cpBody *c = simulation.cars[my_id]->car_body;
+//            fitness += cpBodyLocalToWorld(c, cpBodyGetCenterOfGravity(c)).y;
+//        } else {
+            fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
+//        }
         mul *= GA::THETA;
     }
-//    cpBody *c = simulation.cars[my_id]->car_body;
-//    fitness += cpBodyLocalToWorld(c, cpBodyGetCenterOfGravity(c)).y;
+
     test_solution.fitness = fitness;
 
 //#ifdef LOCAL_RUN
-    if(my_id==my_player_id){
+    if (my_id == my_player_id) {
         my_simulations++;
-    } else{
+    } else {
         enemy_simulations++;
     }
 //#endif
