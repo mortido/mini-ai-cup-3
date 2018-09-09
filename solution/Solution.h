@@ -7,7 +7,7 @@
 #include "Constants.h"
 #include "random/Randomizer.h"
 
-#include "../nlohmann/json.hpp"
+#include "../../nlohmann/json.hpp"
 
 using json = nlohmann::json;
 

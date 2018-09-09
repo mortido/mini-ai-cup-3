@@ -1,22 +1,22 @@
 #ifndef MINI_AI_CUP_3_CONSTANTS_H
 #define MINI_AI_CUP_3_CONSTANTS_H
 
-#include "../nlohmann/json.hpp"
+#include "../../nlohmann/json.hpp"
 #include <chipmunk/chipmunk.h>
 
 using json = nlohmann::json;
 
 namespace GA {
-    constexpr int DEPTH = 30;
+    constexpr int DEPTH = 40;
+    constexpr int POPULATION_SIZE = 5; // min 4;
     constexpr double THETA = (1.0 - 1.0 / GA::DEPTH);
 
-    constexpr int RE_SIM_COUNT = 1;
-    constexpr int POPULATION_SIZE = 10; // min 4;
     constexpr double MUTATION_PROBABILITY = 0.3;
     constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.5;
     constexpr double CHANGE_MOVE_ON_RANDOMIZATION_PROBABILITY = 0.05;
+
     constexpr int DEBUG_ITERATIONS_LIMIT = 100;
-    constexpr int SOLVE_ENEMY_EVERY_N_TURNS = 5; // 1 enemy calculation, 2 my...
+    constexpr double ENEMY_TIME_COEFF = 0.33;
 }
 
 namespace GAME {

@@ -2,7 +2,7 @@
 #define MINI_AI_CUP_3_CAR_H
 
 #include <chipmunk/chipmunk.h>
-#include "../../nlohmann/json.hpp"
+#include "../../../nlohmann/json.hpp"
 
 #include "utils.hpp"
 

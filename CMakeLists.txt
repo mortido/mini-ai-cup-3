@@ -5,13 +5,13 @@ SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 add_subdirectory(3rdparty/csimplesocket)
-add_subdirectory(3rdparty/chipmunk)
+add_subdirectory(chipmunk_src)
 
 # Add DEBUG directive
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_STANDARD 11)
-set(SOURCE_FILES main.cpp Solution.cpp Constants.cpp Solver.cpp random/Randomizer.cpp simulation/Simulation.cpp simulation/Car.cpp simulation/Car.h simulation/Map.cpp simulation/Map.h simulation/Deadline.cpp)
-#file(GLOB CHIPMUNK_SOURCES chipmunk/src/*.c)
+set(SOURCE_FILES solution/main.cpp solution/Solution.cpp solution/Constants.cpp solution/Solver.cpp solution/random/Randomizer.cpp solution/simulation/Simulation.cpp solution/simulation/Car.cpp solution/simulation/Car.h solution/simulation/Map.cpp solution/simulation/Map.h solution/simulation/Deadline.cpp)
+#file(GLOB CHIPMUNK_SOURCES chipmunk_src/src/*.c)
 
 add_executable(mini-ai-cup-3 ${SOURCE_FILES})# ${CHIPMUNK_SOURCES})
 target_link_libraries(mini-ai-cup-3 csimplesocket chipmunk)

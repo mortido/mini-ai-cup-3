@@ -2,7 +2,7 @@
 #define MINI_AI_CUP_3_UTILS_HPP
 
 #include <chipmunk/chipmunk.h>
-#include "../../nlohmann/json.hpp"
+#include "../../../nlohmann/json.hpp"
 
 struct enemyPrediction {
     cpVect car_pos, rear_wheel_pos, front_wheel_pos;

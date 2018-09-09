@@ -9,7 +9,7 @@
 #include "Deadline.h"
 #include <chipmunk/chipmunk.h>
 
-#include "../../nlohmann/json.hpp"
+#include "../../../nlohmann/json.hpp"
 
 #ifdef REWIND_VIEWER
 #include "../Solution.h"
@@ -23,8 +23,8 @@ class Simulation {
 private:
     void *heap, *buffer;
     size_t copy_size;
-    int saved_tick;
 public:
+    int saved_tick;
     int sim_tick_index;
     cpSpace *space;
     std::unique_ptr<Map> map;
