@@ -41,6 +41,7 @@ public:
     void save();
     cpFloat get_closest_point_to_button(int player_id);
     cpFloat get_my_distance_to_enemy_button(int me, int enemy);
+    cpFloat get_button_lowest_position(int player_id);
 
 #ifdef LOCAL_RUN
     cpVect car_pos_error;

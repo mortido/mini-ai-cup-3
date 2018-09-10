@@ -3,6 +3,22 @@
 
 std::unique_ptr<Randomizer> Randomizer::instance;
 
+#ifdef OPTIMIZATION_RUN
+Randomizer::Randomizer(int seed) : rng(seed),
+                           probability(0.0, 1.0),
+//                           moves(0, GAME::MOVES_COUNT),
+                           moves(-1, GAME::MOVES_COUNT- 2), // directions
+                           crossover(1, GA::DEPTH-2),
+                           mutate(0, GA::DEPTH-1),
+                           parent(0, GA::POPULATION_SIZE-1),
+                           coin(0, 2) {
+
+}
+
+void Randomizer::init(int seed) {
+    instance = std::unique_ptr<Randomizer>(new Randomizer(seed));
+}
+#else
 Randomizer::Randomizer() : rng(2707),
                            probability(0.0, 1.0),
 //                           moves(0, GAME::MOVES_COUNT),
@@ -17,6 +33,7 @@ Randomizer::Randomizer() : rng(2707),
 void Randomizer::init() {
     instance = std::unique_ptr<Randomizer>(new Randomizer());
 }
+#endif
 
 double Randomizer::GetProbability() {
     return instance->probability(instance->rng);

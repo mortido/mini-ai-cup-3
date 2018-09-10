@@ -113,10 +113,10 @@ void Solver::evaluate(Simulation &simulation,
                       int my_id, int enemy_id) {
 
     simulation.restore();
-    double mul(1.0);
     double fitness(0.0);
-    for (int i = 0; i < GA::DEPTH; i++) {
+    double mul(1.0), mul2(1.0);
 
+    for (int i = 0; i < GA::DEPTH; i++) {
         // Apply moves.
         int m = 0;
         for (int p = 0; p < PLAYERS_COUNT; p++) {
@@ -132,6 +132,95 @@ void Solver::evaluate(Simulation &simulation,
         // TODO: adaptive step DT (late steps less precise?)
         simulation.step();
 
+#ifdef OPTIMIZATION_RUN
+        GameConstants *c = GameConstants::INSTANCE();
+
+        if (!simulation.cars[my_id]->alive) {
+            while (i < GA::DEPTH) {
+                fitness += -9000.0 * mul;
+                mul *= GA::THETA;
+                i++;
+            }
+            break;
+        } else {
+            double min_dist = simulation.get_closest_point_to_button(my_id);
+            if (c->use_sigmoid) {
+                min_dist = c->my_danger_sig_coeff * (min_dist - c->my_danger_shift);
+                min_dist = min_dist / (1.0 + abs(min_dist));
+            }
+
+            if (c->my_danger_theta == 1) {
+                min_dist *= mul;
+            } else if (c->my_danger_theta == 2) {
+                min_dist *= mul2;
+            }
+
+            fitness += min_dist * c->my_danger_coeff;
+        }
+
+        if (!simulation.cars[enemy_id]->alive) {
+            while (i < GA::DEPTH) {
+                fitness += 9000.0 * mul;
+                mul *= GA::THETA;
+                i++;
+            }
+            break;
+        } else {
+            double min_dist = simulation.get_closest_point_to_button(enemy_id);
+            if (c->use_sigmoid) {
+                min_dist = c->enemy_danger_sig_coeff * (min_dist - c->enemy_danger_shift);
+                min_dist = min_dist / (1.0 + abs(min_dist));
+            }
+
+            if (c->enemy_danger_theta == 1) {
+                min_dist *= mul;
+            } else if (c->enemy_danger_theta == 2) {
+                min_dist *= mul2;
+            }
+
+            fitness -= min_dist * c->enemy_danger_coeff;
+        }
+
+        double aim = 0;
+        if (c->aim_type && (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE || c->aim_type==3)) {
+            aim = simulation.get_button_lowest_position(my_id);
+            if (c->aim_type == 2) {
+                aim -= simulation.get_button_lowest_position(enemy_id);
+            }
+
+            if (c->use_sigmoid) {
+                aim = c->aim_safety_sig_coeff * (aim - c->aim_safety_shift);
+                aim = aim / (1.0 + abs(aim));
+            }
+            aim *= c->aim_safety_coeff;
+
+            if(c->aim_type==3){
+                double aim2 = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
+                if (c->use_sigmoid) {
+                    aim2 = c->aim_attack_sig_coeff * (aim2 - c->aim_attack_shift);
+                    aim2 = aim2 / (1.0 + abs(aim2));
+                }
+                aim2 *= - c->aim_attack_coeff;
+                aim += aim2;
+            }
+        } else {
+            aim = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
+            if (c->use_sigmoid) {
+                aim = c->aim_attack_sig_coeff * (aim - c->aim_attack_shift);
+                aim = aim / (1.0 + abs(aim));
+            }
+            aim *= - c->aim_attack_coeff;
+        }
+
+        if (c->aim_theta == 1) {
+            aim *= mul;
+        } else if (c->aim_theta == 2) {
+            aim *= mul2;
+        }
+
+        fitness += aim;
+
+#else
         if (!simulation.cars[my_id]->alive) {
             while (i < GA::DEPTH) {
                 fitness += -9000.0 * mul;
@@ -142,7 +231,7 @@ void Solver::evaluate(Simulation &simulation,
         } else {
             double min_dist = simulation.get_closest_point_to_button(my_id);
             fitness += min_dist;
-            // TODO: min_dist = (min_dist - a) / b
+            // TODO: min_dist = b * (min_dist - a)
 //            fitness += min_dist / (1.0 + abs(min_dist)) * mul;
         }
 
@@ -166,7 +255,10 @@ void Solver::evaluate(Simulation &simulation,
 //        } else {
             fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
 //        }
+#endif
+
         mul *= GA::THETA;
+        mul2 *= GA::THETA_PLUS;
     }
 
     test_solution.fitness = fitness;

@@ -10,6 +10,7 @@ namespace GA {
     constexpr int DEPTH = 40;
     constexpr int POPULATION_SIZE = 5; // min 4;
     constexpr double THETA = (1.0 - 1.0 / GA::DEPTH);
+    constexpr double THETA_PLUS = (1.0 + 1.0 / GA::DEPTH);
 
     constexpr double MUTATION_PROBABILITY = 0.3;
     constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.5;
@@ -38,18 +39,50 @@ namespace GAME {
     constexpr double MAP_ELASTICITY = 0.0;
 }
 
-//class GameConstants {
-//
-//private:
-//    int max_game_ticks;
-//
-//    static std::unique_ptr<GameConstants> instance;
-//    GameConstants(const json &json);
-//
-//public:
-//    static void initConstants(const json &json);
-//
-//    static int MAX_GAME_TICKS();
-//};
+#ifdef OPTIMIZATION_RUN
+
+class GameConstants {
+
+private:
+
+    static std::unique_ptr<GameConstants> instance;
+    GameConstants(int argc, char *argv[]);
+
+public:
+    int  mutate_type;
+    int crossover_type;
+    int randomization_type;
+
+    int aim_type;
+    int aim_theta;
+    int my_danger_theta;
+    int enemy_danger_theta;
+
+    double aim_safety_coeff;
+    double aim_attack_coeff;
+    double my_danger_coeff;
+    double enemy_danger_coeff;
+
+    int use_sigmoid;
+    double aim_safety_shift;
+    double aim_attack_shift;
+    double my_danger_shift;
+    double enemy_danger_shift;
+
+    double aim_safety_sig_coeff;
+    double aim_attack_sig_coeff;
+    double my_danger_sig_coeff;
+    double enemy_danger_sig_coeff;
+
+
+    static void initConstants(int argc, char *argv[]);
+
+    static GameConstants* INSTANCE();
+};
+#endif
 
 #endif //MINI_AI_CUP_3_CONSTANTS_H
+
+
+
+

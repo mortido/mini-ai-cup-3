@@ -100,17 +100,52 @@ void Solution::copy_from(Solution &solution) {
 }
 
 void Solution::randomize() {
+#ifdef OPTIMIZATION_RUN
+    if (GameConstants::INSTANCE()->randomization_type) {
+        randomize_shuffle();
+    } else {
+        randomize_interval();
+    }
+#else
     randomize_interval();
+#endif
 }
 
 void Solution::mutate() {
+#ifdef OPTIMIZATION_RUN
+    if (GameConstants::INSTANCE()->mutate_type == 2) {
+        mutate_slice_all_random();
+    } else if (GameConstants::INSTANCE()->mutate_type == 1) {
+        mutate_single_gen();
+    } else {
+        mutate_slice();
+    }
+#else
     mutate_slice();
+#endif
 }
 
 void Solution::merge(Solution &solution1, Solution &solution2) {
+#ifdef OPTIMIZATION_RUN
+    if (GameConstants::INSTANCE()->crossover_type) {
+        if (Randomizer::FlipCoin()) {
+            merge_shuffle(solution1, solution2);
+        } else {
+            merge_shuffle(solution2, solution1);
+        }
+    } else {
+        if (Randomizer::FlipCoin()) {
+            merge_crossover(solution1, solution2);
+        } else {
+            merge_crossover(solution2, solution1);
+        }
+    }
+#else
     if (Randomizer::FlipCoin()) {
         merge_crossover(solution1, solution2);
     } else {
         merge_crossover(solution2, solution1);
     }
+#endif
+
 }

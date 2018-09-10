@@ -160,6 +160,12 @@ cpFloat Simulation::get_closest_point_to_button(int player_id) {
     }
 }
 
+cpFloat Simulation::get_button_lowest_position(int player_id) {
+    cpVect p1 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 0));
+    cpVect p2 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 1));
+    return cpvmult(p1+p2,0.5).y;
+}
+
 cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
     cpVect p1 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 0));
     cpVect p2 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 1));

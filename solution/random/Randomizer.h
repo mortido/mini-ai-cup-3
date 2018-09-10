@@ -14,10 +14,18 @@ private:
     std::uniform_int_distribution<int> mutate;
     std::uniform_int_distribution<int> parent;
     std::uniform_int_distribution<int> coin;
+#ifdef OPTIMIZATION_RUN
+    explicit Randomizer(int seed);
+#else
     Randomizer();
+#endif
 public:
-
+#ifdef OPTIMIZATION_RUN
+    static void init(int seed);
+#else
     static void init();
+#endif
+
     static double GetProbability();
     static int GetRandomMove();
     static int GetCrossoverPoint();

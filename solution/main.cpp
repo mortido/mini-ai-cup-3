@@ -37,6 +37,12 @@ static inline std::string format(const char *fmt, Args... args) {
 }
 
 int main(int argc, char *argv[]) {
+#ifdef OPTIMIZATION_RUN
+    GameConstants::initConstants(argc, argv);
+    Randomizer::init(stoi(argv[argc-1]));
+#else
+    Randomizer::init();
+#endif
     Simulation simulation;
     Solver solver;
 
@@ -52,7 +58,6 @@ int main(int argc, char *argv[]) {
 
     array<enemyPrediction, GAME::MOVES_COUNT> enemyPredictions{};
     int my_prev_move{0}, my_prev_prev_move{0};
-    Randomizer::init();
 
 #ifdef LOCAL_RUN
     time_bank = time_bank * 17.0 / 9.0;
@@ -184,9 +189,9 @@ int main(int argc, char *argv[]) {
                                format("ENEMY GENERATIONS: %.d\n", solver.enemy_generations) +
                                format("ENEMY SIMS: %d\n", solver.enemy_simulations) +
                                format("x_dif: %.6f\n", cpBodyGetPosition(simulation.cars[my_player_id]->car_body).x -
-                                                        params["my_car"][0][0].get<cpFloat>()) +
+                                                       params["my_car"][0][0].get<cpFloat>()) +
                                format("y_dif: %.6f\n", cpBodyGetPosition(simulation.cars[my_player_id]->car_body).y -
-                                                        params["my_car"][0][1].get<cpFloat>()) +
+                                                       params["my_car"][0][1].get<cpFloat>()) +
                                format("rear_x_dif: %.6f\n",
                                       cpBodyGetPosition(simulation.cars[my_player_id]->rear_wheel_body).x -
                                       params["my_car"][3][0].get<cpFloat>()) +
