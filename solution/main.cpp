@@ -39,7 +39,7 @@ static inline std::string format(const char *fmt, Args... args) {
 int main(int argc, char *argv[]) {
 #ifdef OPTIMIZATION_RUN
     GameConstants::initConstants(argc, argv);
-    Randomizer::init(stoi(argv[argc-1]));
+    Randomizer::init(stoi(argv[argc - 1]));
 #else
     Randomizer::init();
 #endif
@@ -60,7 +60,6 @@ int main(int argc, char *argv[]) {
     int my_prev_move{0}, my_prev_prev_move{0};
 
 #ifdef LOCAL_RUN
-    time_bank = time_bank * 17.0 / 9.0;
 //    std::fstream file;
 //    if (argc == 1) {
 //        file.open("data.json", std::ios::out);
@@ -98,6 +97,12 @@ int main(int argc, char *argv[]) {
             tick_index = 0;
             my_lives = params["my_lives"].get<int>();
             enemy_lives = params["enemy_lives"].get<int>();
+#ifdef CALC_TIME_BANK
+            if (round == 0) {
+                time_bank = time_bank * (my_lives + enemy_lives - 1) / 9.0;
+                //TODO: output timebank
+            }
+#endif
             time_limit = time_bank / ((my_lives + enemy_lives - 1) * GAME::MAX_ROUND_TICKS);
 
 #ifdef LOCAL_RUN
