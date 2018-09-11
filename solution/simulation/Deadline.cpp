@@ -7,7 +7,16 @@ Deadline::~Deadline() {
 
 Deadline::Deadline(Deadline::Type _type, cpFloat max_length, cpFloat max_height) : type{_type}{
     body = cpBodyNewKinematic();
-    shape = cpSegmentShapeNew(body, cpv(0.0, 0.0), cpv(max_length, 0.0), 2.0);
+
+    std::array<cpVect, 4> verts {
+        cpv(0.0, 2.0),
+        cpv(max_length, 2),
+        cpv(max_length, -max_height),
+        cpv(0, -max_height),
+    };
+//    pymunk.Poly(self.line_body, [(0, 2), (max_length, 2), (max_length, -max_height), (0, -max_height)])
+//    shape = cpSegmentShapeNew(body, cpv(0.0, 0.0), cpv(max_length, 0.0), 2.0);
+    shape = cpPolyShapeNew(body, 4, verts.data(),cpTransformIdentity, 0);
     cpShapeSetSensor(shape, static_cast<cpBool>(true));
     cpShapeSetFilter(shape, cpShapeFilterNew(CP_NO_GROUP, 8,CP_ALL_CATEGORIES));
     cpVect position;

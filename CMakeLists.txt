@@ -16,6 +16,6 @@ set(SOURCE_FILES solution/main.cpp solution/Solution.cpp solution/Constants.cpp 
 add_executable(mini-ai-cup-3 ${SOURCE_FILES})# ${CHIPMUNK_SOURCES})
 target_link_libraries(mini-ai-cup-3 csimplesocket chipmunk)
 #target_compile_definitions(mini-ai-cup-3 PRIVATE LOCAL_RUN REWIND_VIEWER)
-target_compile_definitions(mini-ai-cup-3 PRIVATE OPTIMIZATION_RUN CALC_TIME_BANK)
-#target_compile_definitions(mini-ai-cup-3 PRIVATE CALC_TIME_BANK)
+#target_compile_definitions(mini-ai-cup-3 PRIVATE OPTIMIZATION_RUN CALC_TIME_BANK)
+target_compile_definitions(mini-ai-cup-3 PRIVATE CALC_TIME_BANK)
 #target_compile_options(mini-ai-cup-3 PRIVATE -ffast-math)
