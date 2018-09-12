@@ -219,6 +219,7 @@ int main(int argc, char *argv[]) {
             }
             simulation.check(my_player_id, params);
 #ifdef REWIND_VIEWER
+            simulation.rewind.message("TICK: %d ME: %d ENEMY: %d\\n", tick_index, my_lives, enemy_lives);
             simulation.rewind.message("TL: %.6f of %.6f\\n", ELAPSED_TIME, time_limit);
             simulation.rewind.message("MY GENERATIONS(2x%d by %d): %.d\\n", GA::POPULATION_SIZE, GA::DEPTH,
                                       solver.my_generations);

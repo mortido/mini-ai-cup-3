@@ -114,7 +114,7 @@ void Solver::evaluate(Simulation &simulation,
 
     simulation.restore();
     double fitness(0.0);
-    double mul(1.0), mul2(0.35/6.8);
+    double mul(1.0), mul2(0.35 / 6.8);
 
     for (int i = 0; i < GA::DEPTH; i++) {
         // Apply moves.
@@ -247,9 +247,13 @@ void Solver::evaluate(Simulation &simulation,
 
 
 //        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
-        fitness += (simulation.get_button_lowest_position(my_id)-simulation.get_button_lowest_position(enemy_id)) * 1.9 * mul2;
+        fitness += (simulation.get_button_lowest_position(my_id) - simulation.get_button_lowest_position(enemy_id)) * 1.9 * mul;
 //        } else {
-        fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id)* mul;
+        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
+            fitness += std::min(50.0, simulation.get_my_distance_to_enemy_button(enemy_id, my_id)) * mul;
+        } else {
+            fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
+        }
 //        fitness += simulation.get_my_distance_to_enemy_button(enemy_id, my_id) * mul;
 //        }
 

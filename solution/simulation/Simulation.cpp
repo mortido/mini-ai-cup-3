@@ -83,9 +83,26 @@ void Simulation::new_round(const json &params) {
 void Simulation::step() {
     if (GAME::TICK_TO_DEADLINE - sim_tick_index < 1) {
         deadline->move();
-    }
+//        if (sim_tick_index - saved_tick > GA::DEPTH / 2) {
+//            deadline->move();
+//        }
+        if (sim_tick_index - saved_tick > GA::DEPTH * 0.6) {
+            deadline->move();
+        }
+//        if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
+//            deadline->move();
+//        }
 
-    cpSpaceStep(space, GAME::SIMULATION_DT);
+    }
+//    if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
+//        cpSpaceStep(space, GAME::SIMULATION_DT * 3);
+//    }
+//        else
+            if (sim_tick_index - saved_tick > GA::DEPTH * 0.6) {
+        cpSpaceStep(space, GAME::SIMULATION_DT * 2);
+    } else {
+        cpSpaceStep(space, GAME::SIMULATION_DT);
+    }
     sim_tick_index++;
 }
 
@@ -93,7 +110,8 @@ void Simulation::step() {
 
 void Simulation::draw(json &params, int my_player, std::array<Solution, 2> best_solutions) {
     rewind.message("FIT: %.6f\\n\\n", best_solutions[my_player].fitness);
-    rewind.message("x_dif: %.6f\\n",                   cpBodyGetPosition(cars[my_player]->car_body).x - params["my_car"][0][0].get<cpFloat>());
+    rewind.message("x_dif: %.6f\\n",
+                   cpBodyGetPosition(cars[my_player]->car_body).x - params["my_car"][0][0].get<cpFloat>());
     rewind.message("y_dif: %.6f\\n",
                    cpBodyGetPosition(cars[my_player]->car_body).y - params["my_car"][0][1].get<cpFloat>());
     rewind.message("rear_x_dif: %.6f\\n",
@@ -150,32 +168,42 @@ void Simulation::draw(json &params, int my_player, std::array<Solution, 2> best_
 cpFloat Simulation::get_closest_point_to_button(int player_id) {
     cpVect p1 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 0));
     cpVect p2 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 1));
-    cpVect cp_middle = cpvmult(p1+p2,0.5);
+    cpVect cp_middle = cpvmult(p1 + p2, 0.5);
 
     cpPointQueryInfo queryInfo;
-    if(cpSpacePointQueryNearest(space, cp_middle, 500.0, cars[player_id]->car_filter, &queryInfo)){
-        return queryInfo.distance;
-    }else{
-        return 500.0;
+    double dist = 500.0;
+    if (cpSpacePointQueryNearest(space, cp_middle, dist, cars[player_id]->car_filter, &queryInfo)) {
+        dist = std::min(dist, queryInfo.distance);
     }
+
+    if (cpSpacePointQueryNearest(space, p1, dist, cars[player_id]->car_filter, &queryInfo)) {
+        dist = std::min(dist, queryInfo.distance);
+    }
+
+    if (cpSpacePointQueryNearest(space, p2, dist, cars[player_id]->car_filter, &queryInfo)) {
+        dist = std::min(dist, queryInfo.distance);
+    }
+
+    return dist;
 }
 
 cpFloat Simulation::get_button_lowest_position(int player_id) {
     cpVect p1 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 0));
     cpVect p2 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 1));
-    return std::min(std::min(cpvmult(p1+p2,0.5).y, p1.y), p2.y);
+    return std::min(std::min(cpvmult(p1 + p2, 0.5).y, p1.y), p2.y);
 }
 
 cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
     cpVect p1 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 0));
     cpVect p2 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 1));
-    cpVect cp_middle = cpvmult(p1+p2,0.5);
+    cpVect cp_middle = cpvmult(p1 + p2, 0.5);
 
     cpPointQueryInfo queryInfo;
-    if(cpSpacePointQueryNearest(space, cp_middle, 2000.0,
-            cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,cars[me]->car_category), &queryInfo)){
+    if (cpSpacePointQueryNearest(space, cp_middle, 2000.0,
+                                 cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,
+                                                  cars[me]->car_category), &queryInfo)) {
         return queryInfo.distance;
-    }else{
+    } else {
         return 2000.0;
     }
 }
