@@ -12,7 +12,7 @@ Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
 
     torque = params["torque"].get<cpFloat>();
     max_speed = params["max_speed"].get<cpFloat>();
-//    external_id = params["external_id"].get<int>();
+    external_id = params["external_id"].get<int>();
     drive_type = params["drive"].get<DRIVE::Type>();
     squared_wheels = params.value("squared_wheels", false);
 

@@ -26,7 +26,6 @@ using namespace std::chrono;
 
 #define NOW high_resolution_clock::now()
 #define ELAPSED_TIME duration_cast<duration<double>>(NOW - start_time).count()
-// python ./miniaicups/madcars/Runners/localrunner.py -f ./mini-ai-cup-3/cmake-build-release/mini-ai-cup-3 -s ./smartguy
 
 template<typename... Args>
 static inline std::string format(const char *fmt, Args... args) {
@@ -46,7 +45,7 @@ int main(int argc, char *argv[]) {
     Simulation simulation;
     Solver solver;
 
-    double time_bank = 120.0;
+    double time_bank = GAME::TIME_BANK;
     double time_limit = 0.020;
     int round{-1}, tick_index{0}, global_tick_index{0};
 

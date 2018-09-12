@@ -49,19 +49,21 @@ void Deadline::move() {
 #ifdef REWIND_VIEWER
 
 void Deadline::draw(RewindClient &rw_client) {
-    cpVect pos = cpBodyGetPosition(body);
+//    cpVect pos = cpBodyGetPosition(body);
 
-    const cpVect &n = cpSegmentShapeGetNormal(shape);
-    const cpVect &a = cpSegmentShapeGetA(shape);
-    const cpVect &b = cpSegmentShapeGetB(shape);
-    const double r = cpSegmentShapeGetRadius(shape);
+    draw_poly(rw_client,body, shape, 0xff6344);
 
-    const cpVect &a1 = a - n * r;
-    const cpVect &b1 = b - n * r;
-    const cpVect &a2 = a + n * r;
-    const cpVect &b2 = b + n * r;
-    rw_client.line(a1.x, a1.y + pos.y, b1.x, b1.y + pos.y, 0xff6344);
-    rw_client.line(a2.x, a2.y + pos.y, b2.x, b2.y + pos.y, 0xff6344);
+//    const cpVect &n = cpSegmentShapeGetNormal(shape);
+//    const cpVect &a = cpSegmentShapeGetA(shape);
+//    const cpVect &b = cpSegmentShapeGetB(shape);
+//    const double r = cpSegmentShapeGetRadius(shape);
+//
+//    const cpVect &a1 = a - n * r;
+//    const cpVect &b1 = b - n * r;
+//    const cpVect &a2 = a + n * r;
+//    const cpVect &b2 = b + n * r;
+//    rw_client.line(a1.x, a1.y + pos.y, b1.x, b1.y + pos.y, 0xff6344);
+//    rw_client.line(a2.x, a2.y + pos.y, b2.x, b2.y + pos.y, 0xff6344);
 }
 
 #endif

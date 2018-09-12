@@ -114,7 +114,7 @@ void Solver::evaluate(Simulation &simulation,
 
     simulation.restore();
     double fitness(0.0);
-    double mul(1.0), mul2(1.0);
+    double mul(1.0), mul2(0.35/6.8);
 
     for (int i = 0; i < GA::DEPTH; i++) {
         // Apply moves.
@@ -228,36 +228,71 @@ void Solver::evaluate(Simulation &simulation,
                 i++;
             }
             break;
-        } else {
-            double min_dist = simulation.get_closest_point_to_button(my_id);
-            fitness += min_dist;
-            // TODO: min_dist = b * (min_dist - a)
-//            fitness += min_dist / (1.0 + abs(min_dist)) * mul;
         }
 
         if (!simulation.cars[enemy_id]->alive) {
             while (i < GA::DEPTH) {
-                fitness += 9000.0 * mul;
+                fitness += 8000.0 * mul;
                 mul *= GA::THETA;
                 i++;
             }
             break;
-        } else {
-            double min_dist = simulation.get_closest_point_to_button(enemy_id);
-            fitness += -min_dist;
-//            // TODO: min_dist = (min_dist - a) / b
-//            fitness += -min_dist *1.5/ (1.0 + abs(min_dist)) * mul;
         }
 
+        double min_dist = simulation.get_closest_point_to_button(my_id);
+        fitness += min_dist * mul;
+
+        min_dist = simulation.get_closest_point_to_button(enemy_id);
+        fitness += -min_dist * 0.9 * mul;
+
+
 //        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
-//            cpBody *c = simulation.cars[my_id]->car_body;
-//            fitness += cpBodyLocalToWorld(c, cpBodyGetCenterOfGravity(c)).y;
+        fitness += (simulation.get_button_lowest_position(my_id)-simulation.get_button_lowest_position(enemy_id)) * 1.9 * mul2;
 //        } else {
-            fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
+        fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id)* mul;
+//        fitness += simulation.get_my_distance_to_enemy_button(enemy_id, my_id) * mul;
 //        }
+
+
+//******************************************
+//        if (!simulation.cars[my_id]->alive) {
+//            while (i < GA::DEPTH) {
+//                fitness += -9000.0 * mul;
+//                mul *= GA::THETA;
+//                i++;
+//            }
+//            break;
+//        } else {
+//            double min_dist = simulation.get_closest_point_to_button(my_id);
+//            fitness += min_dist * mul2 * 0.92;
+//            // TODO: min_dist = b * (min_dist - a)
+////            fitness += min_dist / (1.0 + abs(min_dist)) * mul;
+//        }
+//
+//        if (!simulation.cars[enemy_id]->alive) {
+//            while (i < GA::DEPTH) {
+//                fitness += 8000.0 * mul;
+//                mul *= GA::THETA;
+//                i++;
+//            }
+//            break;
+//        } else {
+//            double min_dist = simulation.get_closest_point_to_button(enemy_id);
+//            fitness += -min_dist * mul2 * 0.83;
+////            // TODO: min_dist = (min_dist - a) / b
+////            fitness += -min_dist *1.5/ (1.0 + abs(min_dist)) * mul;
+//        }
+//
+////        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
+//        fitness += simulation.get_button_lowest_position(my_id) * 0.26 * mul2;
+////        } else {
+//        fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id)*0.92*mul2;
+////        }
 #endif
 
         mul *= GA::THETA;
+        mul2 *= GA::THETA_PLUS;
+        mul2 *= GA::THETA_PLUS;
         mul2 *= GA::THETA_PLUS;
     }
 
