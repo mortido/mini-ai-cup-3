@@ -11,26 +11,15 @@ void GameConstants::initConstants(int argc, char *argv[]) {
 }
 
 GameConstants::GameConstants(int argc, char *argv[]) {
-    mutate_type = std::stoi(argv[1]);
-    crossover_type = std::stoi(argv[2]);
-    randomization_type = std::stoi(argv[3]);
-    aim_type = std::stoi(argv[4]);
-    aim_theta = std::stoi(argv[5]);
-    my_danger_theta = std::stoi(argv[6]);
-    enemy_danger_theta = std::stoi(argv[7]);
-    aim_safety_coeff = std::stod(argv[8]);
-    aim_attack_coeff = std::stod(argv[9]);
-    my_danger_coeff = std::stod(argv[10]);
-    enemy_danger_coeff = std::stod(argv[11]);
-    use_sigmoid = std::stoi(argv[12]);
-    aim_safety_shift = std::stod(argv[13]);
-    aim_attack_shift = std::stod(argv[14]);
-    my_danger_shift = std::stod(argv[15]);
-    enemy_danger_shift = std::stod(argv[16]);
-    aim_safety_sig_coeff = std::stod(argv[17]);
-    aim_attack_sig_coeff = std::stod(argv[18]);
-    my_danger_sig_coeff = std::stod(argv[19]);
-    enemy_danger_sig_coeff = std::stod(argv[20]);
+    a = std::stod(argv[1]);
+    b = std::stod(argv[2]);
+    c = std::stod(argv[3]);
+    d = std::stod(argv[4]);
+    h = std::stod(argv[5]);
+    i = std::stod(argv[6]);
+    e = std::stod(argv[7]);
+    f = std::stod(argv[8]);
+    g = std::stoi(argv[9]);
 }
 
 GameConstants *GameConstants::INSTANCE() {

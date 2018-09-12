@@ -7,8 +7,8 @@
 using json = nlohmann::json;
 
 namespace GA {
-    constexpr int DEPTH = 42;
-    constexpr int POPULATION_SIZE = 5; // min 4;
+    constexpr int DEPTH = 41;
+    constexpr int POPULATION_SIZE = 6; // min 4;
     constexpr double THETA = (1.0 - 1.0 / GA::DEPTH);
     constexpr double THETA_PLUS = (1.0 + 1.0 / GA::DEPTH);
 
@@ -16,7 +16,7 @@ namespace GA {
     constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.5;
     constexpr double CHANGE_MOVE_ON_RANDOMIZATION_PROBABILITY = 0.05;
 
-    constexpr int DEBUG_ITERATIONS_LIMIT = 100;
+    constexpr int DEBUG_ITERATIONS_LIMIT = 2;
     constexpr double ENEMY_TIME_COEFF = 0.33;
 }
 
@@ -51,30 +51,9 @@ private:
     GameConstants(int argc, char *argv[]);
 
 public:
-    int  mutate_type;
-    int crossover_type;
-    int randomization_type;
+    double a,b,c,d,e,f,h,i;
+    int g;
 
-    int aim_type;
-    int aim_theta;
-    int my_danger_theta;
-    int enemy_danger_theta;
-
-    double aim_safety_coeff;
-    double aim_attack_coeff;
-    double my_danger_coeff;
-    double enemy_danger_coeff;
-
-    int use_sigmoid;
-    double aim_safety_shift;
-    double aim_attack_shift;
-    double my_danger_shift;
-    double enemy_danger_shift;
-
-    double aim_safety_sig_coeff;
-    double aim_attack_sig_coeff;
-    double my_danger_sig_coeff;
-    double enemy_danger_sig_coeff;
 
 
     static void initConstants(int argc, char *argv[]);
