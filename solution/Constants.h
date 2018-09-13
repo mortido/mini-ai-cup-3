@@ -7,8 +7,8 @@
 using json = nlohmann::json;
 
 namespace GA {
-    constexpr int DEPTH = 41;
-    constexpr int POPULATION_SIZE = 6; // min 4;
+    constexpr int DEPTH = 42;
+    constexpr int POPULATION_SIZE = 5; // min 4;
     constexpr double THETA = (1.0 - 1.0 / GA::DEPTH);
     constexpr double THETA_PLUS = (1.0 + 1.0 / GA::DEPTH);
 
@@ -51,9 +51,7 @@ private:
     GameConstants(int argc, char *argv[]);
 
 public:
-    double a,b,c,d,e,f,h,i;
-    int g;
-
+    double a,b,c,d,e,f,g;
 
 
     static void initConstants(int argc, char *argv[]);
