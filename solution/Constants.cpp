@@ -18,6 +18,7 @@ GameConstants::GameConstants(int argc, char *argv[]) {
     e = std::stod(argv[5]);
     f = std::stod(argv[6]);
     g = std::stod(argv[7]);
+    h = std::stod(argv[8]);
 }
 
 GameConstants *GameConstants::INSTANCE() {

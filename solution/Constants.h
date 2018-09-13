@@ -51,7 +51,7 @@ private:
     GameConstants(int argc, char *argv[]);
 
 public:
-    double a,b,c,d,e,f,g;
+    double a,b,c,d,e,f,g,h;
 
 
     static void initConstants(int argc, char *argv[]);
