@@ -208,6 +208,7 @@ cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
 //        return 2000.0;
 //    }
 
+
     double dist = 2000.0;
 //    auto f = cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,                                                  cars[me]->car_category);
 //    if (cpSpacePointQueryNearest(space, cp_middle, dist, f, &queryInfo)) {
