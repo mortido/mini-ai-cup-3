@@ -117,3 +117,10 @@ void Solution::merge(Solution &solution1, Solution &solution2) {
         merge_crossover(solution2, solution1);
     }
 }
+
+void Solution::reset_to(int move) {
+    for(int i=0;i<GA::DEPTH;i++){
+        moves[i]=move;
+    }
+
+}

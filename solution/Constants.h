@@ -13,7 +13,7 @@ namespace GA {
     constexpr double THETA_PLUS = (1.0 + 1.0 / GA::DEPTH);
 
     constexpr double MUTATION_PROBABILITY = 0.3;
-    constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.5;
+    constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.1;
     constexpr double CHANGE_MOVE_ON_RANDOMIZATION_PROBABILITY = 0.05;
 
     constexpr int DEBUG_ITERATIONS_LIMIT = 2;

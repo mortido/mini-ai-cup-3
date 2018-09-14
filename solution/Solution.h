@@ -19,6 +19,7 @@ public:
     std::array<int, GA::DEPTH> moves;
 
     void randomize();
+    void reset_to(int move);
     void merge(Solution &solution1, Solution &solution2);
     void mutate();
     void shift();

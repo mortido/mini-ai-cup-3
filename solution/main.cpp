@@ -226,6 +226,10 @@ int main(int argc, char *argv[]) {
             simulation.rewind.message("MY SIMS: %d\\n", solver.my_simulations);
             simulation.rewind.message("ENEMY GENERATIONS: %.d\\n", solver.enemy_generations);
             simulation.rewind.message("ENEMY SIMS: %d\\n", solver.enemy_simulations);
+
+            solver.print_fitness=true;
+            solver.calcFitness(simulation,my_player_id, enemy_player_id,1,1);
+
             simulation.draw(params, my_player_id, solver.best_solutions);
 #endif
 #endif
