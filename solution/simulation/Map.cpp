@@ -2,6 +2,9 @@
 #include "../Constants.h"
 
 #include <iostream>
+#include <math.h>
+
+#define PI 3.14159265358979323846264338327950288
 
 Map::~Map() {
     for (cpShape *shape:shapes) {
@@ -18,11 +21,13 @@ Map::Map(const json &params, cpSpace *space) {
     cpShapeSetSensor(left, true);
     shapes.push_back(left);
 
-    cpShape *top = cpSegmentShapeNew(staticBody, cpv(-bo, GAME::MAX_HEIGHT + bo), cpv(GAME::MAX_WIDTH + bo, GAME::MAX_HEIGHT + bo), 10.0);
+    cpShape *top = cpSegmentShapeNew(staticBody, cpv(-bo, GAME::MAX_HEIGHT + bo),
+                                     cpv(GAME::MAX_WIDTH + bo, GAME::MAX_HEIGHT + bo), 10.0);
     cpShapeSetSensor(top, true);
     shapes.push_back(top);
 
-    cpShape *right = cpSegmentShapeNew(staticBody, cpv(GAME::MAX_WIDTH + bo, GAME::MAX_HEIGHT + bo), cpv(GAME::MAX_WIDTH + bo, -bo), 10.0);
+    cpShape *right = cpSegmentShapeNew(staticBody, cpv(GAME::MAX_WIDTH + bo, GAME::MAX_HEIGHT + bo),
+                                       cpv(GAME::MAX_WIDTH + bo, -bo), 10.0);
     cpShapeSetSensor(right, true);
     shapes.push_back(right);
 
@@ -40,8 +45,75 @@ Map::Map(const json &params, cpSpace *space) {
         shapes.push_back(ground_segment);
     }
 
-    for(auto s:shapes){
-        cpShapeSetFilter(s, cpShapeFilterNew(CP_NO_GROUP, 8,CP_ALL_CATEGORIES));
+    for (auto s:shapes) {
+        cpShapeSetFilter(s, cpShapeFilterNew(CP_NO_GROUP, 8, CP_ALL_CATEGORIES));
+    }
+
+    switch (external_id) {
+        case 3: {
+            double m{0.5};
+            double val{0};
+            int b{10}, t{25};
+            double d{static_cast<double>(t-b)};
+
+            for (int x = 0; x < 120; x++) {
+                for (int y = b; y < t; y++) {
+                    val = m * (y - b) / d;
+                    weights[x][y] = val;
+                }
+            }
+
+            for (int x = 0; x < 120; x++) {
+                for (int y = t; y < 80; y++) {
+                    weights[x][y] = m;
+                }
+            }
+            break;
+        }
+        case 4: {
+            double m1{0.25};
+            double m2{2.0 * (0.5 - m1)};
+            double val{0};
+            for (int t = 0; t <= 30; t++) {
+                val = m1 * t / 30.0;
+                for (int y = 0; y < 39; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
+                }
+                val = 1 - val;
+                for (int y = 41; y < 80; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
+                }
+            }
+            for (int x = 1; x < 30; x++) {
+                for (int y = 0; y < 80; y++) {
+                    val = 0.5 + m2 * (atan2(y - 40, x)) / PI;
+                    weights[29 - x][y] = val;
+                    weights[90 + x][y] = val;
+                }
+            }
+            break;
+        }
+        case 5: {
+            double m{0.5};
+            double val{0};
+
+            for (int x = 10; x < 30; x++) {
+                for (int y = 11; y < 80; y++) {
+                    val = m * (x - 10.0) / 20.0;
+                    weights[119 - x][y] = val;
+                    weights[x][y] = val;
+                }
+            }
+
+            for (int x = 30; x < 90; x++) {
+                for (int y = 11; y < 80; y++) {
+                    weights[x][y] = m;
+                }
+            }
+            break;
+        }
     }
 }
 
@@ -78,6 +150,13 @@ void draw_segment(RewindClient &rw_client, cpShape *shape, uint32_t color) {
 }
 
 void Map::draw(RewindClient &rw_client) {
+
+//    for(int x=0;x<120;x++){
+//        for(int y=0;y<80;y++){
+//            rw_client.rect(x*10,y*10,(x+1)*10,(y+1)*10,,0);
+//        }
+//    }
+
     uint32_t map_color = 0x263f31;
     for (cpShape *shape:shapes) {
         draw_segment(rw_client, shape, map_color);

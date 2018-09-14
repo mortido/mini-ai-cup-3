@@ -2,6 +2,9 @@
 #define MINI_AI_CUP_3_MAP_H
 
 #include <vector>
+#include <array>
+
+#include "../Constants.h"
 
 #ifdef REWIND_VIEWER
 #include "../RewindClient.h"
@@ -18,6 +21,7 @@ private:
 
 public:
     int external_id;
+    std::array<std::array<double, 80>, 120> weights;
 
     Map(const json &params, cpSpace *space);
     virtual ~Map();

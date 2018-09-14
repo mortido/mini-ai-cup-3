@@ -86,7 +86,7 @@ void Simulation::step() {
 //        if (sim_tick_index - saved_tick > GA::DEPTH / 2) {
 //            deadline->move();
 //        }
-        if (sim_tick_index - saved_tick > GA::DEPTH * 0.8) {
+        if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
             deadline->move();
         }
 //        if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
@@ -98,7 +98,7 @@ void Simulation::step() {
 //        cpSpaceStep(space, GAME::SIMULATION_DT * 3);
 //    }
 //        else
-    if (sim_tick_index - saved_tick > GA::DEPTH * 0.8) {
+    if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
         sim_tick_index++;
         cpSpaceStep(space, GAME::SIMULATION_DT * 2);
     } else {
@@ -177,13 +177,13 @@ cpFloat Simulation::get_closest_point_to_button(int player_id) {
         dist = std::min(dist, queryInfo.distance);
     }
 
-//    if (cpSpacePointQueryNearest(space, p1, dist, cars[player_id]->car_filter, &queryInfo)) {
-//        dist = std::min(dist, queryInfo.distance);
-//    }
-//
-//    if (cpSpacePointQueryNearest(space, p2, dist, cars[player_id]->car_filter, &queryInfo)) {
-//        dist = std::min(dist, queryInfo.distance);
-//    }
+    if (cpSpacePointQueryNearest(space, p1, dist, cars[player_id]->car_filter, &queryInfo)) {
+        dist = std::min(dist, queryInfo.distance);
+    }
+
+    if (cpSpacePointQueryNearest(space, p2, dist, cars[player_id]->car_filter, &queryInfo)) {
+        dist = std::min(dist, queryInfo.distance);
+    }
 
     return dist;
 }
@@ -191,7 +191,7 @@ cpFloat Simulation::get_closest_point_to_button(int player_id) {
 cpFloat Simulation::get_lowest_button_point(int player_id) {
     cpVect p1 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 0));
     cpVect p2 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 1));
-    return std::min(std::min(cpvmult(p1 + p2, 0.5).y, p1.y), p2.y);// - cpBodyGetPosition(deadline->body).y;
+    return std::min(std::min(cpvmult(p1 + p2, 0.5).y, p1.y), p2.y);
 }
 
 cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
@@ -199,7 +199,7 @@ cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
     cpVect p2 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 3));
     cpVect cp_middle = cpvmult(p1 + p2, 0.5);
 
-    cpPointQueryInfo queryInfo;
+//    cpPointQueryInfo queryInfo;
 //    if (cpSpacePointQueryNearest(space, cp_middle, 2000.0,
 //                                 cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,
 //                                                  cars[me]->car_category), &queryInfo)) {
@@ -225,21 +225,6 @@ cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
     dist = std::min(dist, cpvdist(cpBodyGetPosition(cars[me]->front_wheel_body), cp_middle)- cars[me]->front_wheel_radius);
 
     return dist;
-}
-
-cpFloat Simulation::get_my_distance_to_enemy_DNISCHE(int me, int enemy) {
-    cpVect p1 = cpBodyGetPosition(cars[enemy]->rear_wheel_body);
-    cpVect p2 = cpBodyGetPosition(cars[enemy]->front_wheel_body);
-    cpVect cp_middle = cpvmult(p1 + p2, 0.5);
-
-    cpPointQueryInfo queryInfo;
-    if (cpSpacePointQueryNearest(space, cp_middle, 2000.0,
-                                 cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,
-                                                  cars[me]->car_category), &queryInfo)) {
-        return queryInfo.distance;
-    } else {
-        return 2000.0;
-    }
 }
 
 #ifdef LOCAL_RUN

@@ -14,7 +14,7 @@ namespace GA {
 
     constexpr double MUTATION_PROBABILITY = 0.3;
     constexpr double STOP_SLICE_MUTATE_PROBABILITY = 0.1;
-    constexpr double CHANGE_MOVE_ON_RANDOMIZATION_PROBABILITY = 0.05;
+    constexpr double CHANGE_MOVE_ON_RANDOMIZATION_PROBABILITY = 0.1;
 
     constexpr int DEBUG_ITERATIONS_LIMIT = 2;
     constexpr double ENEMY_TIME_COEFF = 0.33;

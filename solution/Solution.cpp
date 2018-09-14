@@ -100,9 +100,8 @@ void Solution::copy_from(Solution &solution) {
 }
 
 void Solution::randomize() {
-
-//    randomize_interval();
-    randomize_shuffle();
+    randomize_interval();
+//    randomize_shuffle();
 
 }
 
