@@ -121,20 +121,8 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
             best_solutions[player].shift();
         }
     }
-
     _solve(simulation, start_time, enemy_TL, enemy_player_id, my_player_id);
     _solve(simulation, start_time, my_TL, my_player_id, enemy_player_id);
-}
-
-#define PI 3.14159265358979323846264338327950288
-static inline double normilize_angle(double angle){
-    while (angle > PI) {
-       angle -= 2.0 * PI;
-    }
-    while (angle < -PI) {
-        angle += 2.0 * PI;
-    }
-    return angle;
 }
 
 void Solver::evaluate(Simulation &simulation,
@@ -144,9 +132,15 @@ void Solver::evaluate(Simulation &simulation,
 
     simulation.restore();
     double fitness(0.0);
-    double mul(1.0), mul2(0.35 / 6.8);
+    double mul(1.0), mul2(0.35);
+    bool calc_for_bus = simulation.cars[0]->external_id == 2;
 
     for (int i = 0; i < GA::DEPTH; i++) {
+
+//        if(i==GA::DEPTH/2){
+//            cpSpaceSetIterations(simulation.space, 5);
+//        }
+
         // Apply moves.
         int m = 0;
         for (int p = 0; p < PLAYERS_COUNT; p++) {
@@ -171,20 +165,25 @@ void Solver::evaluate(Simulation &simulation,
         }
 
         if (!simulation.cars[enemy_id]->alive) {
-            while (i < GA::DEPTH) {
-                fitness += 5000000.0 * mul;
-                mul *= GA::THETA;
-                i++;
-            }
-            break;
+            fitness += 100000.0 * mul;
+//            while (i < GA::DEPTH) {
+//                fitness += 10000.0 * mul;
+//                mul *= GA::THETA;
+//                i++;
+//            }
+//            break;
         }
 
-        fitness += calcFitness(simulation, my_id, enemy_id, mul, mul2);
+        if (calc_for_bus) {
+            fitness += calcBusFitness(simulation, my_id, enemy_id, mul, mul2);
+        } else {
+            fitness += calcFitness(simulation, my_id, enemy_id, mul, mul2);
+        }
 
         mul *= GA::THETA;
         mul2 *= GA::THETA_PLUS;
-        mul2 *= GA::THETA_PLUS;
-        mul2 *= GA::THETA_PLUS;
+//        mul2 *= GA::THETA_PLUS;
+//        mul2 *= GA::THETA_PLUS;
     }
 
     test_solution.fitness = fitness;
@@ -204,111 +203,181 @@ double Solver::calcFitness(Simulation &simulation, int my_id, int enemy_id, doub
 #ifdef OPTIMIZATION_RUN
     GameConstants *c = GameConstants::INSTANCE();
 
-    a=278.3862977708894, b=0.8531054873279231, c=106.20954940046252, d=11.90707387236661, e=0.7589209470692159, f=3.7037698431282484, g=49.733023984927755, h=0.20970173959141047: //8.433
+    double my_btn_dist_to_objects = simulation.get_closest_point_to_button(my_id);
+    double enemy_btn_dist_to_objects = simulation.get_closest_point_to_button(enemy_id);
+    double btn_y_diff = simulation.get_lowest_button_point(my_id) -
+                        simulation.get_lowest_button_point(enemy_id);
 
-//        double aim_distance = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
+    double enemy_angle = simulation.get_car_angle(enemy_id);
+    double my_angle = simulation.get_car_angle(my_id);
 
-        double my_btn_dist_to_objects = simulation.get_closest_point_to_button(my_id);
+    double end_game_coef = (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
+    btn_y_diff *=end_game_coef;
+    btn_y_diff *= c->a;
 
-        double enemy_btn_dist_to_objects = simulation.get_closest_point_to_button(enemy_id);
+    double aim = simulation.get_my_distance_to_enemy_button(enemy_id,my_id)-simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
+    aim *= c->b * (1.0 - end_game_coef);
 
-        double btn_y_diff = simulation.get_distance_to_deadline(my_id)-simulation.get_lowest_button_point(enemy_id);
+    my_btn_dist_to_objects *= c->c;
+    my_btn_dist_to_objects = my_btn_dist_to_objects / (1.0 + abs(my_btn_dist_to_objects));
+    my_btn_dist_to_objects *= c->d;
 
-        my_btn_dist_to_objects *= c->h;
-        my_btn_dist_to_objects = my_btn_dist_to_objects / (1.0 + abs(my_btn_dist_to_objects));
-        fitness += my_btn_dist_to_objects * c->a * mul;
+    enemy_btn_dist_to_objects *= c->e;
 
-//        enemy_btn_dist_to_objects /= 20.0;
-//        enemy_btn_dist_to_objects = 150.0 * enemy_btn_dist_to_objects / (1.0 + abs(enemy_btn_dist_to_objects));
-        fitness -= enemy_btn_dist_to_objects * c->b * mul;
+    enemy_angle = abs(enemy_angle) * c->f;
+    my_angle = abs(my_angle);
+    if (my_angle < PI / 2.0) {
+        my_angle = 0;
+    } else {
+        my_angle *= c->g;
+    }
 
-//        fitness += cpvlength(cpBodyGetVelocity(simulation.cars[my_id]->car_body)) * mul;
-//
-#define PI 3.14159265358979323846264338327950288
-        double enemy_angle = cpBodyGetAngle(simulation.cars[enemy_id]->car_body);
-        while (enemy_angle > PI) {
-            enemy_angle -= 2.0 * PI;
-        }
-        while (enemy_angle < -PI) {
-            enemy_angle += 2.0 * PI;
-        }
 
-        fitness += abs(enemy_angle) * c->c * mul;
+    fitness += (my_btn_dist_to_objects - enemy_btn_dist_to_objects - my_angle + enemy_angle + aim) * mul +
+               (btn_y_diff) * mul2;
 
-//        btn_y_diff = 100.0 * btn_y_diff / (1.0+abs(btn_y_diff));
-        fitness += btn_y_diff * mul2 * c->d;
-
-        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
-            fitness += std::min(c->g, simulation.get_my_distance_to_enemy_button( enemy_id, my_id)) * mul * c->e;
-        }else{
-            fitness -= simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul * c->f;
-        }
+    fitness += mul2 * simulation.get_position_score(my_id) * c->h;
 
 #else
-//    double my_btn_dist_to_objects = simulation.get_closest_point_to_button(my_id);
-//    double enemy_btn_dist_to_objects = simulation.get_closest_point_to_button(enemy_id);
-//    double btn_y_diff = simulation.get_lowest_button_point(my_id) -
-//                        simulation.get_lowest_button_point(enemy_id);
-//
-//    double enemy_angle = normilize_angle(cpBodyGetAngle(simulation.cars[enemy_id]->car_body));
-//    double my_angle = normilize_angle(cpBodyGetAngle(simulation.cars[my_id]->car_body));
-//
-//    btn_y_diff *= (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
-//
-//    double aim = 0.0;
+//    0  >>>>  25.2106 SOLUTION [
+//            a = 12.395199375452764,
+//            b = 6.130363505477251,
+//            c = 0.017271487783766918,
+//            d = 525.0464332949529,
+//            e = 4.798823359684237,
+//            f = 97.70336392301641,
+//            g = 57.3477094451587,
+//            h = 277.8335405164962]
+
+//    a = 20.404509809204708,
+//    b = 5.598132402016896,
+//    c = 0.03035488833458294,
+//    d = 294.3200379306266,
+//    e = 10.647558480171222,
+//    f = 42.87901827207437,
+//    g = 117.84914839793149,
+//    h = 268.572707611291]
+    double my_btn_dist_to_objects = simulation.get_closest_point_to_button(my_id);
+    double enemy_btn_dist_to_objects = simulation.get_closest_point_to_button(enemy_id);
+    double btn_y_diff = simulation.get_lowest_button_point(my_id) -
+                        simulation.get_lowest_button_point(enemy_id);
+
+    double enemy_angle = simulation.get_car_angle(enemy_id);
+    double my_angle = simulation.get_car_angle(my_id);
+
+    double end_game_coef = (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
+    btn_y_diff *=end_game_coef;
+    btn_y_diff *= 20.4;
+
+    double aim = simulation.get_my_distance_to_enemy_button( enemy_id,my_id)-simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
+    aim *= 5.6 * (1.0 - end_game_coef);
 //    if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
-//        aim += std::min(250.0, simulation.get_my_distance_to_enemy_button(enemy_id, my_id)) * mul * 0.84;
+//        aim += std::min(250.0, simulation.get_my_distance_to_enemy_button(enemy_id, my_id)) * mul * 2.0;
 //    } else {
 //        aim = -simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
-//        if (simulation.cars[0]->external_id != 2) {
-//            aim *= 5.;
-//        } else {
-//            aim *= 0.5;
-//        }
+//        aim *= 2.5;
 //    }
-//
-//    my_btn_dist_to_objects *= 0.8;
-//    my_btn_dist_to_objects = my_btn_dist_to_objects / (1.0 + abs(my_btn_dist_to_objects));
-//    my_btn_dist_to_objects *= 800;
-//
-//    enemy_btn_dist_to_objects *= 5.2;
-//    enemy_angle = abs(enemy_angle) * 50;
-//    my_angle = abs(my_angle);
-//    if (my_angle < PI / 2.0) {
-//        my_angle = 0;
-//    } else {
-//        my_angle *= 77;
-//    }
-//    btn_y_diff *= 13;
-//
-//    fitness += (my_btn_dist_to_objects - enemy_btn_dist_to_objects - my_angle + enemy_angle + aim) * mul + (btn_y_diff) * mul2;
 
-//#ifdef REWIND_VIEWER
-//    if (print_fitness) {
-//        simulation.rewind.message("%f %f %fd %fd %f %f\\n", my_btn_dist_to_objects, enemy_btn_dist_to_objects,
-//                                  enemy_angle, my_angle, aim, btn_y_diff);
-//        simulation.rewind.message("%f \\n",
-//                                  (my_btn_dist_to_objects - enemy_btn_dist_to_objects - my_angle + enemy_angle + aim) *
-//                                  mul + (btn_y_diff) * mul2);
-//        print_fitness = false;
-//    }
-//#endif
+
+//    my_btn_dist_to_objects *= 1.0;
+    my_btn_dist_to_objects *= 0.03;
+    my_btn_dist_to_objects = my_btn_dist_to_objects / (1.0 + abs(my_btn_dist_to_objects));
+    my_btn_dist_to_objects *= 294.3;
+
+    enemy_btn_dist_to_objects *= 10.64;
+//    enemy_btn_dist_to_objects *= 0.9;
+    enemy_angle = abs(enemy_angle) * 42.8;
+    my_angle = abs(my_angle);
+    if (my_angle < PI / 2.0) {
+        my_angle = 0;
+    } else {
+        my_angle *= 117.8;
+    }
+
+
+    fitness += (my_btn_dist_to_objects - enemy_btn_dist_to_objects - my_angle + enemy_angle + aim) * mul +
+               (btn_y_diff) * mul2;
+
+    fitness += mul2 * simulation.get_position_score(my_id) * 268.6;
+
+#ifdef REWIND_VIEWER
+    if (print_fitness) {
+        simulation.rewind.message("%f %f %fd %fd %f %f\\n", my_btn_dist_to_objects, enemy_btn_dist_to_objects,
+                                  enemy_angle, my_angle, aim, btn_y_diff);
+        simulation.rewind.message("%f \\n",
+                                  (my_btn_dist_to_objects - enemy_btn_dist_to_objects - my_angle + enemy_angle + aim) *
+                                  mul + (btn_y_diff) * mul2);
+        print_fitness = false;
+    }
+#endif
 
 // **********************************
-        double min_dist = simulation.get_closest_point_to_button(my_id);
-        fitness += min_dist * mul;
-        min_dist = simulation.get_closest_point_to_button(enemy_id);
-        fitness += -min_dist * 0.9 * mul;
-        fitness += (simulation.get_lowest_button_point(my_id) - simulation.get_lowest_button_point(enemy_id)) * 1.9 * mul;
-        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
-            fitness += std::min(250.0, simulation.get_my_distance_to_enemy_button(enemy_id, my_id)) * mul;
-        } else {
-            fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
-        }
+//        double min_dist = simulation.get_closest_point_to_button(my_id);
+//        fitness += min_dist * mul;
+//        min_dist = simulation.get_closest_point_to_button(enemy_id);
+//        fitness += -min_dist * 0.9 * mul;
+//        fitness += (simulation.get_lowest_button_point(my_id) - simulation.get_lowest_button_point(enemy_id)) * 1.9 * mul;
+//        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
+//            fitness += std::min(250.0, simulation.get_my_distance_to_enemy_button(enemy_id, my_id)) * mul;
+//        } else {
+//            fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
+//        }
 #endif
     return fitness;
 }
 
+double Solver::calcBusFitness(Simulation &simulation, int my_id, int enemy_id, double mul, double mul2) {
+    double fitness(0.0);
+
+#ifdef OPTIMIZATION_RUN
+#else
+
+    double my_btn_dist_to_objects = simulation.get_closest_point_to_button(my_id);
+    double enemy_btn_dist_to_objects = simulation.get_closest_point_to_button(enemy_id);
+    double btn_y_diff = simulation.get_lowest_button_point(my_id) -
+                        simulation.get_lowest_button_point(enemy_id);
+    double position_on_map = simulation.get_position_score(my_id);
+
+
+    btn_y_diff *= (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
+    btn_y_diff *= 10;
+
+    my_btn_dist_to_objects *= 0.02;
+    my_btn_dist_to_objects = my_btn_dist_to_objects / (1.0 + abs(my_btn_dist_to_objects));
+    my_btn_dist_to_objects *= 100;
+
+    enemy_btn_dist_to_objects *= 3.6;
+
+    position_on_map *= 1000;
+
+    fitness += (my_btn_dist_to_objects - enemy_btn_dist_to_objects) * mul + (btn_y_diff + position_on_map) * mul2;
+
+#ifdef REWIND_VIEWER
+    if (print_fitness) {
+        simulation.rewind.message("me_d: %f en_d: %f pos:%f diff:%f\\n", my_btn_dist_to_objects,
+                                  enemy_btn_dist_to_objects,
+                                  position_on_map, btn_y_diff);
+        simulation.rewind.message("BUS: %f \\n",
+                                  (my_btn_dist_to_objects - enemy_btn_dist_to_objects) * mul +
+                                  (btn_y_diff + position_on_map) * mul2);
+        print_fitness = false;
+    }
+#endif
+
+// **********************************
+//        double min_dist = simulation.get_closest_point_to_button(my_id);
+//        fitness += min_dist * mul;
+//        min_dist = simulation.get_closest_point_to_button(enemy_id);
+//        fitness += -min_dist * 0.9 * mul;
+//        fitness += (simulation.get_lowest_button_point(my_id) - simulation.get_lowest_button_point(enemy_id)) * 1.9 * mul;
+//        if (simulation.sim_tick_index >= GAME::TICK_TO_DEADLINE) {
+//            fitness += std::min(250.0, simulation.get_my_distance_to_enemy_button(enemy_id, my_id)) * mul;
+//        } else {
+//            fitness += -simulation.get_my_distance_to_enemy_button(my_id, enemy_id) * mul;
+//        }
+#endif
+    return fitness;
+}
 // ********************* POPULATION STATES *********************
 
 Solver::PopulationState::PopulationState() {

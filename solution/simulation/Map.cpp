@@ -49,19 +49,42 @@ Map::Map(const json &params, cpSpace *space) {
         cpShapeSetFilter(s, cpShapeFilterNew(CP_NO_GROUP, 8, CP_ALL_CATEGORIES));
     }
 
+    weights.fill({});
+
     switch (external_id) {
-        case 3: {
+        case 1:{
+            double val{1};
+            int p = 29;
+            int u = 60 - p;
+            for (int t = 0; t <= p; t++) {
+                val = (double)t / p;
+                for (int y = 0; y < 80; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
+                }
+            }
+
+            for (int x = 0; x < u; x++) {
+                val = (double)x / u;
+                for (int y = 0; y < 80; y++) {
+                    weights[x][y] = val;
+                    weights[119 - x][y] = val;
+                }
+            }
+            break;
+        }
+        case 3: { // PillHill
             double m{0.5};
             double val{0};
             int b{10}, t{25};
             double d{static_cast<double>(t-b)};
 
-            for (int x = 0; x < 120; x++) {
-                for (int y = b; y < t; y++) {
-                    val = m * (y - b) / d;
-                    weights[x][y] = val;
-                }
-            }
+//            for (int x = 0; x < 120; x++) {
+//                for (int y = b; y < t; y++) {
+//                    val = m * (y - b) / d;
+//                    weights[x][y] = val;
+//                }
+//            }
 
             for (int x = 0; x < 120; x++) {
                 for (int y = t; y < 80; y++) {
@@ -70,13 +93,47 @@ Map::Map(const json &params, cpSpace *space) {
             }
             break;
         }
+        case 6: { // IslandHole
+            double val{1};
+            for (int t = 0; t <= 35; t++) {
+                val = t / 35.0;
+                for (int y = 0; y < 80; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
+                }
+            }
+
+            for (int x = 1; x < 25; x++) {
+                for (int y = 0; y < 80; y++) {
+                    weights[24 - x][y] = 1.0;
+                    weights[95 + x][y] = 1.0;
+                }
+            }
+            break;
+        }
         case 4: {
+//            double m1{0.25};
+//            double m2{2.0 * (0.5 - m1)};
+//            double val{0};
+//            for (int t = 0; t <= 30; t++) {
+//                val = m1 * t / 30.0;
+//                for (int y = 0; y < 39; y++) {
+//                    weights[60 + t][y] = val;
+//                    weights[59 - t][y] = val;
+//                }
+//                val = 1 - val;
+//                for (int y = 41; y < 80; y++) {
+//                    weights[60 + t][y] = val;
+//                    weights[59 - t][y] = val;
+//                }
+//            }
+
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};
             double val{0};
             for (int t = 0; t <= 30; t++) {
                 val = m1 * t / 30.0;
-                for (int y = 0; y < 39; y++) {
+                for (int y = 0; y < 19; y++) {
                     weights[60 + t][y] = val;
                     weights[59 - t][y] = val;
                 }
@@ -86,6 +143,7 @@ Map::Map(const json &params, cpSpace *space) {
                     weights[59 - t][y] = val;
                 }
             }
+
             for (int x = 1; x < 30; x++) {
                 for (int y = 0; y < 80; y++) {
                     val = 0.5 + m2 * (atan2(y - 40, x)) / PI;
@@ -151,11 +209,17 @@ void draw_segment(RewindClient &rw_client, cpShape *shape, uint32_t color) {
 
 void Map::draw(RewindClient &rw_client) {
 
+
+//    rw_client.CurrentLayer = 1;
 //    for(int x=0;x<120;x++){
 //        for(int y=0;y<80;y++){
-//            rw_client.rect(x*10,y*10,(x+1)*10,(y+1)*10,,0);
+//            uint32_t alpha = static_cast<uint32_t>(0xFF * weights[x][y])<<(3*8);
+//            if(alpha) {
+//                rw_client.rect(x * 10, y * 10, (x + 1) * 10, (y + 1) * 10, alpha | 0x00FF00);
+//            }
 //        }
 //    }
+//    rw_client.CurrentLayer = RewindClient::DEFAULT_LAYER;
 
     uint32_t map_color = 0x263f31;
     for (cpShape *shape:shapes) {

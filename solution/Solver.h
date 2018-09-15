@@ -55,6 +55,7 @@ public:
                double time_limit, int my_prev_move);
 
     double calcFitness(Simulation &simulation, int my_id, int enemy_id, double mul, double mul2);
+    double calcBusFitness(Simulation &simulation, int my_id, int enemy_id, double mul, double mul2);
 
 //#ifdef LOCAL_RUN
     int my_simulations, enemy_simulations;

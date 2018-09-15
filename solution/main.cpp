@@ -129,6 +129,7 @@ int main(int argc, char *argv[]) {
             simulation.new_round(params);
 
         } else if (input_type == "tick") {
+
             if (global_tick_index == 0) {
                 // init player positions once per game
                 solver.my_player_id = my_player_id = params["my_car"][2].get<int>() == -1;
@@ -159,6 +160,8 @@ int main(int argc, char *argv[]) {
             }
 
             simulation.save();
+            simulation.step();
+            simulation.restore();
 
             if (tick_index) {
                 // simulate 3 enemy moves and store them for later prediction
@@ -192,10 +195,12 @@ int main(int argc, char *argv[]) {
                                format("MY SIMS: %d\n", solver.my_simulations) +
                                format("ENEMY GENERATIONS: %.d\n", solver.enemy_generations) +
                                format("ENEMY SIMS: %d\n", solver.enemy_simulations) +
-                               format("x_dif: %.6f\n", cpBodyGetPosition(simulation.cars[my_player_id]->car_body).x -
-                                                       params["my_car"][0][0].get<cpFloat>()) +
-                               format("y_dif: %.6f\n", cpBodyGetPosition(simulation.cars[my_player_id]->car_body).y -
-                                                       params["my_car"][0][1].get<cpFloat>()) +
+                               format("x_dif: %.6f\n",
+                                      cpBodyGetPosition(simulation.cars[my_player_id]->car_body).x -
+                                      params["my_car"][0][0].get<cpFloat>()) +
+                               format("y_dif: %.6f\n",
+                                      cpBodyGetPosition(simulation.cars[my_player_id]->car_body).y -
+                                      params["my_car"][0][1].get<cpFloat>()) +
                                format("rear_x_dif: %.6f\n",
                                       cpBodyGetPosition(simulation.cars[my_player_id]->rear_wheel_body).x -
                                       params["my_car"][3][0].get<cpFloat>()) +
@@ -227,8 +232,13 @@ int main(int argc, char *argv[]) {
             simulation.rewind.message("ENEMY GENERATIONS: %.d\\n", solver.enemy_generations);
             simulation.rewind.message("ENEMY SIMS: %d\\n", solver.enemy_simulations);
 
-            solver.print_fitness=true;
-            solver.calcFitness(simulation,my_player_id, enemy_player_id,1,1);
+            solver.print_fitness = true;
+            if (simulation.cars[0]->external_id == 2) {
+                solver.calcBusFitness(simulation, my_player_id, enemy_player_id, 1, 0.35);
+            } else {
+                solver.calcFitness(simulation, my_player_id, enemy_player_id, 1, 0.35);
+            }
+
 
             simulation.draw(params, my_player_id, solver.best_solutions);
 #endif

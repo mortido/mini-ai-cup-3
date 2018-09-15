@@ -222,8 +222,9 @@ cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
 //    if (cpSpacePointQueryNearest(space, p2, dist, f, &queryInfo)) {
 //        dist = std::min(dist, queryInfo.distance);
 //    }
-    dist = cpvdist(cpBodyGetPosition(cars[me]->rear_wheel_body), cp_middle) -cars[me]->rear_wheel_radius;
-    dist = std::min(dist, cpvdist(cpBodyGetPosition(cars[me]->front_wheel_body), cp_middle)- cars[me]->front_wheel_radius);
+    dist = cpvdist(cpBodyGetPosition(cars[me]->rear_wheel_body), cp_middle) - cars[me]->rear_wheel_radius;
+    dist = std::min(dist,
+                    cpvdist(cpBodyGetPosition(cars[me]->front_wheel_body), cp_middle) - cars[me]->front_wheel_radius);
 
     return dist;
 }
@@ -239,4 +240,24 @@ void Simulation::check(int my_player_id, const json &params) {
 
 void Simulation::move_car(int player_id, int move) {
     cars[player_id]->move(move);
+}
+
+cpFloat Simulation::get_position_score(int player_id) {
+
+    const cpVect &temp1 = cpBodyGetPosition(cars[player_id]->rear_wheel_body);
+    const cpVect &temp2 = cpBodyGetPosition(cars[player_id]->front_wheel_body);
+    return 0.5 * (map->weights[static_cast<int>(temp1.x / 10.0)][static_cast<int>(temp1.y / 10.0)] +
+           map->weights[static_cast<int>(temp2.x / 10.0)][static_cast<int>(temp2.y / 10.0)]);
+
+}
+
+double normilize_angle(double x){
+    x = fmod(x + PI, 2.0*PI);
+    if (x < 0.0)
+        x += 2.0*PI;
+    return x - PI;
+}
+
+double Simulation::get_car_angle(int player_id) {
+    return sim_tick_index ? normilize_angle(cpBodyGetAngle(cars[player_id]->car_body)) : 0.0;
 }

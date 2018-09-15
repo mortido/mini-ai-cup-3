@@ -17,7 +17,9 @@
 
 using json = nlohmann::json;
 
-#define HEAP_SIZE 1024*1024*16
+#define HEAP_SIZE 1024*1024*8
+
+#define PI 3.14159265358979323846264338327950288
 
 class Simulation {
 private:
@@ -41,8 +43,9 @@ public:
     void save();
     cpFloat get_closest_point_to_button(int player_id);
     cpFloat get_my_distance_to_enemy_button(int me, int enemy);
-    cpFloat get_my_distance_to_enemy_DNISCHE(int me, int enemy);
+    cpFloat get_position_score(int player_id);
     cpFloat get_lowest_button_point(int player_id);
+    double get_car_angle(int player_id);
 
 #ifdef LOCAL_RUN
     cpVect car_pos_error;
