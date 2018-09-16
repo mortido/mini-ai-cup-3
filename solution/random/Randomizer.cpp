@@ -26,7 +26,7 @@ Randomizer::Randomizer() : rng(2707),
                            crossover(1, GA::DEPTH-2),
                            mutate(0, GA::DEPTH-1),
                            parent(0, GA::POPULATION_SIZE-1),
-                           coin(0, 2) {
+                           coin(0, 1) {
 
 }
 
@@ -40,6 +40,11 @@ double Randomizer::GetProbability() {
 }
 
 int Randomizer::GetRandomMove() {
+//    if(instance->coin(instance->rng)){
+//        return 1;
+//    }
+//    return -1;
+
     return instance->moves(instance->rng);
 }
 

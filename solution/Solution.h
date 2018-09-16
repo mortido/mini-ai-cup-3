@@ -27,6 +27,16 @@ public:
 
     json to_json(int move_index);
 
+#ifdef REWIND_VIEWER
+    double my_angle{0};
+    double eneymy_angle{0};
+    double points_dif{0};
+    double my_btn_dist_to_objects{0};
+    double enemy_btn_dist_to_objects{0};
+    double enemy_dist_to_my_btn{0};
+    double my_dist_to_enemy_btn{0};
+#endif
+
 private:
     void randomize_interval();
     void randomize_shuffle();

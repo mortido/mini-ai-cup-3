@@ -42,6 +42,7 @@ public:
     void restore();
     void save();
     cpFloat get_closest_point_to_button(int player_id);
+    cpFloat get_closest_point_to_button2(int player_id);
     cpFloat get_my_distance_to_enemy_button(int me, int enemy);
     cpFloat get_position_score(int player_id);
     cpFloat get_lowest_button_point(int player_id);

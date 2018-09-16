@@ -54,7 +54,7 @@ public:
     void solve(Simulation &simulation, high_resolution_clock::time_point &start_time,
                double time_limit, int my_prev_move);
 
-    double calcFitness(Simulation &simulation, int my_id, int enemy_id, double mul, double mul2);
+    double calcFitness(Simulation &simulation, Solution &solution, int my_id, int enemy_id, double mul, double mul2);
     double calcBusFitness(Simulation &simulation, int my_id, int enemy_id, double mul, double mul2);
 
 //#ifdef LOCAL_RUN

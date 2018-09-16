@@ -160,8 +160,6 @@ int main(int argc, char *argv[]) {
             }
 
             simulation.save();
-            simulation.step();
-            simulation.restore();
 
             if (tick_index) {
                 // simulate 3 enemy moves and store them for later prediction
@@ -236,7 +234,7 @@ int main(int argc, char *argv[]) {
             if (simulation.cars[0]->external_id == 2) {
                 solver.calcBusFitness(simulation, my_player_id, enemy_player_id, 1, 0.35);
             } else {
-                solver.calcFitness(simulation, my_player_id, enemy_player_id, 1, 0.35);
+                solver.calcFitness(simulation,solver.best_solutions[my_player_id], my_player_id, enemy_player_id, 1, 0.35);
             }
 
 
