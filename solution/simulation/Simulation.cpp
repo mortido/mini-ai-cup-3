@@ -86,7 +86,7 @@ void Simulation::step() {
 //        if (sim_tick_index - saved_tick > GA::DEPTH / 2) {
 //            deadline->move();
 //        }
-        if (sim_tick_index - saved_tick > GA::DEPTH * 0.5) {
+        if (sim_tick_index - saved_tick > GA::DEPTH * 0.66) {
             deadline->move();
         }
 //        if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
@@ -98,7 +98,7 @@ void Simulation::step() {
 //        cpSpaceStep(space, GAME::SIMULATION_DT * 3);
 //    }
 //        else
-    if (sim_tick_index - saved_tick > GA::DEPTH * 0.5) {
+    if (sim_tick_index - saved_tick > GA::DEPTH * 0.66) {
         sim_tick_index++;
         cpSpaceStep(space, GAME::SIMULATION_DT * 2);
     } else {

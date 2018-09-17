@@ -97,6 +97,9 @@ void Solution::copy_from(Solution &solution) {
         moves[i] = solution.moves[i];
     }
     fitness = solution.fitness;
+    for (int j = 0; j < 10; j++) {
+        fitness_components[j]=solution.fitness_components[j];
+    }
 }
 
 void Solution::randomize() {

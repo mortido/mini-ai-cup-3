@@ -237,6 +237,10 @@ int main(int argc, char *argv[]) {
                 solver.calcFitness(simulation,solver.best_solutions[my_player_id], my_player_id, enemy_player_id, 1, 0.35);
             }
 
+            for (int j = 0; j < 10; j++) {
+                simulation.rewind.message("COMP: %d %f\\n", j, solver.best_solutions[my_player_id].fitness_components[j]);
+            }
+
 
             simulation.draw(params, my_player_id, solver.best_solutions);
 #endif
