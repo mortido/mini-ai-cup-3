@@ -64,12 +64,12 @@ void Simulation::new_round(const json &params) {
 
     cars[0].reset(new Car(params["proto_car"], space, 1.0, 0, GAME::LEFT_CAR_POS)); // 300-300
     cpCollisionHandler *ch1 = cpSpaceAddWildcardHandler(space, cars[0]->button_collision_type);
-    ch1->beginFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
+    ch1->preSolveFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
     ch1->userData = &(cars[0]->alive);
 
     cars[1].reset(new Car(params["proto_car"], space, -1.0, 1, GAME::RIGHT_CAR_POS)); // 900-300
     cpCollisionHandler *ch2 = cpSpaceAddWildcardHandler(space, cars[1]->button_collision_type);
-    ch2->beginFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
+    ch2->preSolveFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
     ch2->userData = &(cars[1]->alive);
 
     map->attach(space);

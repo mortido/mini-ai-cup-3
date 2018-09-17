@@ -168,6 +168,7 @@ void Solver::evaluate(Simulation &simulation,
 
         if (!simulation.cars[enemy_id]->alive) {
             test_solution.fitness_components[1] += 1000000.0 * mul;
+            simulation.cars[enemy_id]->alive=true;
 //            while (i < GA::DEPTH) {
 //                fitness += 10000.0 * mul;
 //                mul *= GA::THETA;
@@ -289,7 +290,7 @@ Solver::calcFitness(Simulation &simulation, Solution &solution, int my_id, int e
 
     double my_to_en = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
     double ens_to_me = simulation.get_my_distance_to_enemy_button(enemy_id, my_id);
-    double positioning = -my_to_en + ens_to_me;
+    double positioning = 10.0-my_to_en + ens_to_me;
 //    double positioning = my_to_en / (std::min(1.0, ens_to_me));
 //
     double enemy_angle = 0.0 * abs(simulation.get_car_angle(enemy_id));
@@ -303,7 +304,7 @@ Solver::calcFitness(Simulation &simulation, Solution &solution, int my_id, int e
 
 //    fitness += abs(cpBodyGetAngularVelocity(simulation.cars[my_id]->car_body)) * mul * 250.25;
 
-    double position_on_map = simulation.get_position_score(my_id) * 20.21773251629055;
+    double position_on_map = simulation.get_position_score(my_id) *0; //20.21773251629055;
 
     double aim{my_to_en * (0.02210704949877725* positioning) * (1.0 - end_game_coef * 0.5)};
 
