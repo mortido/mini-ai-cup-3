@@ -11,8 +11,8 @@ Deadline::Deadline(Deadline::Type _type, cpFloat max_length, cpFloat max_height)
     std::array<cpVect, 4> verts {
         cpv(0.0, 2.0),
         cpv(max_length, 2),
-        cpv(max_length, -max_height),
-        cpv(0, -max_height),
+        cpv(max_length, -20.0),
+        cpv(0, -20.0),
     };
 //    pymunk.Poly(self.line_body, [(0, 2), (max_length, 2), (max_length, -max_height), (0, -max_height)])
 //    shape = cpSegmentShapeNew(body, cpv(0.0, 0.0), cpv(max_length, 0.0), 2.0);

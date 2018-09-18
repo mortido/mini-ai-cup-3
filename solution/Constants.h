@@ -24,7 +24,7 @@ namespace GAME {
     constexpr double TIME_BANK = 120.0;
 
     constexpr int MOVES_COUNT = 3;
-    constexpr int MAX_ROUND_TICKS = 1000;
+    constexpr int MAX_ROUND_TICKS = 1100;
 
     constexpr double SIMULATION_DT = 0.016;
     constexpr double SIMULATION_DT_INVERSED = 62.5;

@@ -50,10 +50,12 @@ void Solver::_solve(Simulation &simulation, high_resolution_clock::time_point &s
             }
         }
     }
+    best_solutions[my_id].copy_from(*best);
 #ifdef DEBUG
     int iteration =0;
 #endif
     while (LIMIT) {
+        best = &best_solutions[my_id];
         population_t &current = *population.current;
         population_t &previous = *population.previous;
 
@@ -82,6 +84,7 @@ void Solver::_solve(Simulation &simulation, high_resolution_clock::time_point &s
             }
         }
 
+        best_solutions[my_id].copy_from(*best);
         // swap prev and current populations, save best.
         population.swap();
 
@@ -222,31 +225,34 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
     double end_game_coef =
             (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
     btn_y_diff =pow(1.005, btn_y_diff) * end_game_coef * end_game_coef;
-    btn_y_diff *= 0.21;
+//    btn_y_diff = btn_y_diff * end_game_coef * end_game_coef;
+    btn_y_diff *= 1.9;
 
     double my_to_en = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
 
-    double enemy_angle = 50 * abs(simulation.get_car_angle(enemy_id));
-    double my_angle = - 50 * abs(simulation.get_car_angle(my_id));
+    double enemy_angle = 150 * abs(simulation.get_car_angle(enemy_id));
+    double my_angle = - 100 * abs(simulation.get_car_angle(my_id));
 
     double position_on_map{0}; //20.21773251629055;
     double aim{my_to_en};
-    if (simulation.map->external_id == 5) {
 
+    double ens_to_me = simulation.get_my_distance_to_enemy_button(enemy_id, my_id);
+    double positioning = -20 - my_to_en + ens_to_me;
+    aim *= (0.07 * positioning * (1.0 - 0.3*end_game_coef * end_game_coef));
+
+    if (simulation.map->external_id == 5) {
         cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
         cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
         if (std::min(v1.x, v2.x) < 100.0 || std::max(v1.x, v2.x) > 1100.0) {
             position_on_map -= 9000000.0;
         }
-
-        aim *= -4.2;
     } else {
-        double ens_to_me = simulation.get_my_distance_to_enemy_button(enemy_id, my_id);
-        double positioning = -15 - my_to_en + ens_to_me;
 
-        aim *= (0.025 * positioning) * (1.0 - end_game_coef * 0.5);
+//        position_on_map = simulation.get_position_score(my_id);
+
+
         solution.fitness_components[2] +=
-                cpvlength(cpBodyGetVelocity(simulation.cars[my_id]->car_body)) * mul * 0.35;
+                cpvlength(cpBodyGetVelocity(simulation.cars[my_id]->car_body)) * mul * 0.5;
 //        position_on_map = simulation.get_position_score(my_id) * 150.0;
     }
 
@@ -254,7 +260,7 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
     solution.fitness_components[3] += my_danger * mul;
     solution.fitness_components[4] += enemy_danger * mul;
     solution.fitness_components[5] += my_angle * mul2;
-    solution.fitness_components[6] += aim * mul;
+    solution.fitness_components[6] += aim * 1;
     solution.fitness_components[7] += btn_y_diff * mul2;
     solution.fitness_components[8] += position_on_map * mul;
     solution.fitness_components[9] += enemy_angle * mul;
