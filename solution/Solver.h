@@ -54,16 +54,14 @@ public:
     void solve(Simulation &simulation, high_resolution_clock::time_point &start_time,
                double time_limit, int my_prev_move);
 
-    double calcFitness(Simulation &simulation, Solution &solution, int my_id, int enemy_id, double mul, double mul2);
-    double calcBusFitness(Simulation &simulation, int my_id, int enemy_id, double mul, double mul2);
+    void calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, int enemy_id, double mul, double mul2);
+    void calcSquareFitness(Simulation &simulation, Solution &solution, int my_id, int enemy_id, double mul, double mul2);
+    void calcBusFitness(Simulation &simulation, Solution &solution, int my_id, int enemy_id, double mul, double mul2);
 
 //#ifdef LOCAL_RUN
     int my_simulations, enemy_simulations;
     int my_generations, enemy_generations;
 //#endif
-#ifdef REWIND_VIEWER
-    bool print_fitness=false;
-#endif
 };
 
 #endif //MINI_AI_CUP_3_SOLVER_H

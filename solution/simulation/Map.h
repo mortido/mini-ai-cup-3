@@ -23,7 +23,7 @@ public:
     int external_id;
     std::array<std::array<double, 80>, 120> weights;
 
-    Map(const json &params, cpSpace *space);
+    Map(const json &params, cpSpace *space, int car_id);
     virtual ~Map();
     void detach(cpSpace *space);
     void attach(cpSpace *space);

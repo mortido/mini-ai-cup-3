@@ -59,7 +59,7 @@ void Simulation::new_round(const json &params) {
     cars[0].reset(nullptr);
     cars[1].reset(nullptr);
 
-    map.reset(new Map(params["proto_map"], space));
+    map.reset(new Map(params["proto_map"], space, params["proto_car"]["external_id"].get<int>()));
     deadline.reset(new Deadline(Deadline::ASC, 1800, 800));
 
     cars[0].reset(new Car(params["proto_car"], space, 1.0, 0, GAME::LEFT_CAR_POS)); // 300-300
@@ -150,7 +150,7 @@ void Simulation::draw(json &params, int my_player, std::array<Solution, 2> best_
 
     rewind.CurrentLayer = 2;
 
-    for (int i = 0; i < GA::DEPTH; i++) {
+    for (int i = static_cast<int>(sim_tick_index>0); i < GA::DEPTH; i++) {
         cars[0]->move(best_solutions[0].moves[i]);
         cars[1]->move(best_solutions[1].moves[i]);
         step();

@@ -12,7 +12,7 @@ Map::~Map() {
     }
 }
 
-Map::Map(const json &params, cpSpace *space) {
+Map::Map(const json &params, cpSpace *space, int car_id) {
     external_id = params["external_id"].get<int>();
     cpBody *staticBody = cpSpaceGetStaticBody(space);
 
@@ -51,49 +51,82 @@ Map::Map(const json &params, cpSpace *space) {
 
     weights.fill({});
 
-    switch (external_id) {
-        case 1:{
-            double val{1};
-            int p = 40;
-            int u = 60 - p;
-            for (int t = 0; t <= p; t++) {
-                val = (double)t / p;
-                for (int y = 0; y < 80; y++) {
+    switch (external_id + car_id * 10) {
+        case 21: {
+//            double val{1};
+//            int p = 31;
+//            int u = 60 - p;
+//            for (int t = 0; t <= p; t++) {
+//                val = (double) t / p;
+//                for (int y = 0; y < 80; y++) {
+//                    weights[60 + t][y] = val;
+//                    weights[59 - t][y] = val;
+//                }
+//            }
+//
+//            for (int x = 0; x < u; x++) {
+//                val = (double) x / u;
+//                for (int y = 0; y < 80; y++) {
+//                    weights[x][y] = val;
+//                    weights[119 - x][y] = val;
+//                }
+//            }
+            break;
+        }
+        case 22: {
+            double m1{0.25};
+            double m2{2.0 * (0.5 - m1)};
+            double val{0};
+            for (int t = 0; t <= 30; t++) {
+                val = m1 * t / 30.0;
+                for (int y = 0; y < 15; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
+                }
+                val = 1 - val;
+                for (int y = 41; y < 80; y++) {
                     weights[60 + t][y] = val;
                     weights[59 - t][y] = val;
                 }
             }
 
-            for (int x = 0; x < u; x++) {
-                val = (double)x / u;
+            for (int x = 1; x < 30; x++) {
                 for (int y = 0; y < 80; y++) {
-                    weights[x][y] = val;
-                    weights[119 - x][y] = val;
+                    val = 0.5 + m2 * (atan2(y - 40, x)) / PI;
+                    weights[29 - x][y] = val;
+                    weights[90 + x][y] = val;
                 }
             }
             break;
         }
-        case 3: { // PillHill
-            double m{0.5};
+        case 23: { // PillHill
+            double m1{0.25};
+            double m2{2.0 * (0.5 - m1)};
             double val{0};
-            int b{10}, t{25};
-            double d{static_cast<double>(t-b)};
-
-//            for (int x = 0; x < 120; x++) {
-//                for (int y = b; y < t; y++) {
-//                    val = m * (y - b) / d;
-//                    weights[x][y] = val;
-//                }
-//            }
-
-            for (int x = 0; x < 120; x++) {
-                for (int y = t; y < 80; y++) {
-                    weights[x][y] = m;
+            for (int t = 0; t <= 30; t++) {
+                val = m1 * t / 30.0;
+                for (int y = 0; y < 19; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
+                }
+                val = 1 - val;
+                for (int y = 41; y < 80; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
                 }
             }
+
+            for (int x = 1; x < 30; x++) {
+                for (int y = 0; y < 80; y++) {
+                    val = 0.5 + m2 * (atan2(y - 40, x)) / PI;
+                    weights[29 - x][y] = val;
+                    weights[90 + x][y] = val;
+                }
+            }
+
             break;
         }
-        case 6: { // IslandHole
+        case 26: { // IslandHole
             double val{1};
             for (int t = 0; t <= 35; t++) {
                 val = t / 35.0;
@@ -111,23 +144,7 @@ Map::Map(const json &params, cpSpace *space) {
             }
             break;
         }
-        case 4: {
-//            double m1{0.25};
-//            double m2{2.0 * (0.5 - m1)};
-//            double val{0};
-//            for (int t = 0; t <= 30; t++) {
-//                val = m1 * t / 30.0;
-//                for (int y = 0; y < 39; y++) {
-//                    weights[60 + t][y] = val;
-//                    weights[59 - t][y] = val;
-//                }
-//                val = 1 - val;
-//                for (int y = 41; y < 80; y++) {
-//                    weights[60 + t][y] = val;
-//                    weights[59 - t][y] = val;
-//                }
-//            }
-
+        case 24: {
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};
             double val{0};
@@ -153,7 +170,7 @@ Map::Map(const json &params, cpSpace *space) {
             }
             break;
         }
-        case 5: {
+        case 25: {
             double m{0.5};
             double val{0};
 
@@ -211,10 +228,10 @@ void Map::draw(RewindClient &rw_client) {
 
 
 //    rw_client.CurrentLayer = 1;
-//    for(int x=0;x<120;x++){
-//        for(int y=0;y<80;y++){
-//            uint32_t alpha = static_cast<uint32_t>(0xFF * weights[x][y])<<(3*8);
-//            if(alpha) {
+//    for (int x = 0; x < 120; x++) {
+//        for (int y = 0; y < 80; y++) {
+//            uint32_t alpha = static_cast<uint32_t>(0xFF * weights[x][y]) << (3 * 8);
+//            if (alpha) {
 //                rw_client.rect(x * 10, y * 10, (x + 1) * 10, (y + 1) * 10, alpha | 0x00FF00);
 //            }
 //        }

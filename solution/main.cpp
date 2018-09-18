@@ -218,6 +218,8 @@ int main(int argc, char *argv[]) {
 #ifdef LOCAL_RUN
             simulation.restore();
             if (tick_index) {
+                simulation.move_car(my_player_id, my_prev_prev_move);
+                simulation.move_car(enemy_player_id, solver.best_solutions[enemy_player_id].moves[0]);
                 simulation.step();
             }
             simulation.check(my_player_id, params);
@@ -230,17 +232,9 @@ int main(int argc, char *argv[]) {
             simulation.rewind.message("ENEMY GENERATIONS: %.d\\n", solver.enemy_generations);
             simulation.rewind.message("ENEMY SIMS: %d\\n", solver.enemy_simulations);
 
-            solver.print_fitness = true;
-            if (simulation.cars[0]->external_id == 2) {
-                solver.calcBusFitness(simulation, my_player_id, enemy_player_id, 1, 0.35);
-            } else {
-                solver.calcFitness(simulation,solver.best_solutions[my_player_id], my_player_id, enemy_player_id, 1, 0.35);
-            }
-
             for (int j = 0; j < 10; j++) {
                 simulation.rewind.message("COMP: %d %f\\n", j, solver.best_solutions[my_player_id].fitness_components[j]);
             }
-
 
             simulation.draw(params, my_player_id, solver.best_solutions);
 #endif
