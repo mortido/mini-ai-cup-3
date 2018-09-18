@@ -226,10 +226,8 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
 
     double my_to_en = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
 
-//    double positioning = my_to_en / (std::min(1.0, ens_to_me));
-//
-    double enemy_angle = 0.0 * abs(simulation.get_car_angle(enemy_id));
-    double my_angle = 80 * (abs(simulation.get_car_angle(enemy_id)) - 0.5 * abs(simulation.get_car_angle(my_id)));
+    double enemy_angle = 50 * abs(simulation.get_car_angle(enemy_id));
+    double my_angle = - 50 * abs(simulation.get_car_angle(my_id));
 
     double position_on_map{0}; //20.21773251629055;
     double aim{my_to_en};
@@ -255,10 +253,11 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
 
     solution.fitness_components[3] += my_danger * mul;
     solution.fitness_components[4] += enemy_danger * mul;
-    solution.fitness_components[5] += my_angle * mul;
+    solution.fitness_components[5] += my_angle * mul2;
     solution.fitness_components[6] += aim * mul;
     solution.fitness_components[7] += btn_y_diff * mul2;
     solution.fitness_components[8] += position_on_map * mul;
+    solution.fitness_components[9] += enemy_angle * mul;
 }
 
 void
@@ -285,10 +284,8 @@ Solver::calcSquareFitness(Simulation &simulation, Solution &solution, int my_id,
 
     double my_to_en = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
 
-//    double positioning = my_to_en / (std::min(1.0, ens_to_me));
-//
-    double enemy_angle = 0.0 * abs(simulation.get_car_angle(enemy_id));
-    double my_angle = 80 * (abs(simulation.get_car_angle(enemy_id)) - 0.9 * abs(simulation.get_car_angle(my_id)));
+    double enemy_angle = 50 * abs(simulation.get_car_angle(enemy_id));
+    double my_angle = - 50 * abs(simulation.get_car_angle(my_id));
 
     double position_on_map{0}; //20.21773251629055;
     double aim{my_to_en};
@@ -314,21 +311,18 @@ Solver::calcSquareFitness(Simulation &simulation, Solution &solution, int my_id,
 
     solution.fitness_components[3] += my_danger * mul;
     solution.fitness_components[4] += enemy_danger * mul;
-    solution.fitness_components[5] += my_angle * mul;
+    solution.fitness_components[5] += my_angle * mul2;
     solution.fitness_components[6] += aim * mul;
     solution.fitness_components[7] += btn_y_diff * mul2;
     solution.fitness_components[8] += position_on_map * mul;
+    solution.fitness_components[9] += enemy_angle * mul;
 }
 
 
 void
 Solver::calcBusFitness(Simulation &simulation, Solution &solution, int my_id, int enemy_id, double mul, double mul2) {
 
-    double btn_y_diff = simulation.get_lowest_button_point(my_id) -
-                        simulation.get_lowest_button_point(enemy_id);
-    double position_on_map = simulation.get_position_score(my_id);
-
-
+    double btn_y_diff = simulation.get_lowest_button_point(my_id) - simulation.get_lowest_button_point(enemy_id);
     btn_y_diff *= (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
     btn_y_diff *= 1.0;
 
@@ -337,13 +331,14 @@ Solver::calcBusFitness(Simulation &simulation, Solution &solution, int my_id, in
         solution.fitness_components[9] += -500000 * mul;
     }
 
-    double enemy_danger = simulation.get_closest_point_to_button2(enemy_id);
     my_danger *= 0.15;
     my_danger = my_danger / (1.0 + abs(my_danger));
     my_danger *= 350;
+
+    double enemy_danger = simulation.get_closest_point_to_button2(enemy_id);
     enemy_danger *= -0.95;
 
-
+    double position_on_map = simulation.get_position_score(my_id);
     position_on_map *= 1000;
 
     solution.fitness_components[3] += my_danger * mul;
