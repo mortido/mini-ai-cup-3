@@ -59,6 +59,7 @@ int main(int argc, char *argv[]) {
     int my_prev_move{0}, my_prev_prev_move{0};
 
 #ifdef LOCAL_RUN
+    size_t max_bytes_to_copy = 0;
 //    std::fstream file;
 //    if (argc == 1) {
 //        file.open("data.json", std::ios::out);
@@ -109,7 +110,8 @@ int main(int argc, char *argv[]) {
                 cerr << "round " << round << " pos_diff_sum: " << simulation.car_pos_error.x << " ; ";
                 cerr << simulation.car_pos_error.y;
                 cerr << " squared =" << state["params"]["proto_car"].value("squared_wheels", false) << endl;
-                cerr << "BYTES TO COPY " << getBytesToCopy() << endl;
+                cerr << "BYTES TO COPY " << max_bytes_to_copy << endl;
+                max_bytes_to_copy = 0;
 //                cerr << "1000 cycles of (restore)" << endl;
 //
 //                start_time = NOW;
@@ -159,6 +161,9 @@ int main(int argc, char *argv[]) {
                 simulation.step();
             }
 
+#ifdef LOCAL_RUN
+            max_bytes_to_copy = std::max(max_bytes_to_copy, getBytesToCopy());
+#endif
             simulation.save();
 
             if (tick_index) {
@@ -233,7 +238,8 @@ int main(int argc, char *argv[]) {
             simulation.rewind.message("ENEMY SIMS: %d\\n", solver.enemy_simulations);
 
             for (int j = 0; j < 10; j++) {
-                simulation.rewind.message("COMP: %d %f\\n", j, solver.best_solutions[my_player_id].fitness_components[j]);
+                simulation.rewind.message("COMP: %d %f\\n", j,
+                                          solver.best_solutions[my_player_id].fitness_components[j]);
             }
 
             simulation.draw(params, my_player_id, solver.best_solutions);

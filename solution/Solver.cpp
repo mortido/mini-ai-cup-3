@@ -221,8 +221,8 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
                         simulation.get_lowest_button_point(enemy_id);
     double end_game_coef =
             (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
-    btn_y_diff *= end_game_coef * end_game_coef;
-    btn_y_diff *= 0.15;
+    btn_y_diff =pow(1.005, btn_y_diff) * end_game_coef * end_game_coef;
+    btn_y_diff *= 0.21;
 
     double my_to_en = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
 
@@ -279,13 +279,13 @@ Solver::calcSquareFitness(Simulation &simulation, Solution &solution, int my_id,
                         simulation.get_lowest_button_point(enemy_id);
     double end_game_coef =
             (double) std::min(GAME::TICK_TO_DEADLINE, simulation.sim_tick_index) / GAME::TICK_TO_DEADLINE;
-    btn_y_diff *= end_game_coef * end_game_coef;
-    btn_y_diff *= 0.15;
+    btn_y_diff =pow(1.005, btn_y_diff) * end_game_coef * end_game_coef;
+    btn_y_diff *= 0.45;
 
     double my_to_en = simulation.get_my_distance_to_enemy_button(my_id, enemy_id);
 
-    double enemy_angle = 50 * abs(simulation.get_car_angle(enemy_id));
-    double my_angle = - 50 * abs(simulation.get_car_angle(my_id));
+    double enemy_angle = 30 * abs(simulation.get_car_angle(enemy_id));
+    double my_angle = - 30 * abs(simulation.get_car_angle(my_id));
 
     double position_on_map{0}; //20.21773251629055;
     double aim{my_to_en};

@@ -58,6 +58,11 @@ void Simulation::new_round(const json &params) {
     deadline.reset(nullptr);
     cars[0].reset(nullptr);
     cars[1].reset(nullptr);
+#ifdef LOCAL_RUN
+    std::cerr << "EMPTY SPACE COPY " << getBytesToCopy() << std::endl;
+#endif
+    // TODO prea maloc and free after map creatiom for more efficient memory management.
+//    heapMalloc()
 
     map.reset(new Map(params["proto_map"], space, params["proto_car"]["external_id"].get<int>()));
     deadline.reset(new Deadline(Deadline::ASC, 1800, 800));
@@ -76,7 +81,9 @@ void Simulation::new_round(const json &params) {
     deadline->attach(space);
     cars[0]->attach(space);
     cars[1]->attach(space);
-
+#ifdef LOCAL_RUN
+    std::cerr << "ALL ATTACHED SPACE COPY " << getBytesToCopy() << std::endl;
+#endif
     sim_tick_index = 0;
 }
 
