@@ -270,11 +270,23 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
     }
 
     double enemy_danger = simulation.get_closest_point_to_button2(enemy_id);
-    my_danger *= 0.14;
-    my_danger = my_danger / (1.0 + abs(my_danger));
-    my_danger *= 713;
-    enemy_danger *= -2.17;
+    constexpr double dng_threshold = 42.0;
+    constexpr double dng_coef1 = 42.0;
 
+    if(my_danger<dng_threshold){
+//        my_danger *= 1.0;
+        my_danger = (dng_coef1+1) * my_danger / (dng_coef1 * (1.0 + abs(my_danger)));
+        my_danger *= 713;
+//        my_danger *= 100;
+    }else{
+        my_danger=0.0;
+    }
+
+    if(enemy_danger<dng_threshold){
+        enemy_danger *= -2.17;
+    }else{
+        enemy_danger=0.0;
+    }
 
     double btn_y_diff = simulation.get_lowest_button_point(my_id) -
                         simulation.get_lowest_button_point(enemy_id);
@@ -313,7 +325,7 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
     solution.fitness_components[4] += enemy_danger * mul;
     solution.fitness_components[5] += my_angle * mul2;
     solution.fitness_components[6] += aim * mul;
-    solution.fitness_components[7] += btn_y_diff * 1.0;
+    solution.fitness_components[7] += btn_y_diff * mul2;
     solution.fitness_components[8] += position_on_map * mul;
     solution.fitness_components[9] += enemy_angle * mul;
 }
