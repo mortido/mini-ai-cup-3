@@ -29,6 +29,7 @@ public:
     int external_id;
     int player_id;
     bool alive;
+    int inair{-1};
 
     cpSpace *space_attached;
     cpBody *car_body;
@@ -58,6 +59,9 @@ public:
     void detach_constraints(cpSpace *space);
 
     void move(int direction);
+    bool in_air();
+    bool real_in_air();
+
 
 #ifdef REWIND_VIEWER
 

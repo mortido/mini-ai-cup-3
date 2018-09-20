@@ -141,18 +141,35 @@ Car::Car(const json &params, cpSpace *_space, double mirror, int _player_id,
                                                  params["rear_wheel_position"][1].get<cpFloat>()));
 }
 
+bool Car::in_air() {
+    if (inair==-1){
+        inair = static_cast<int>(!(cpSpacePointQueryNearest(space_attached,
+                                                            cpBodyGetPosition(rear_wheel_body), rear_wheel_radius + 1.0, car_filter, nullptr)
+                                   or cpSpacePointQueryNearest(space_attached,
+                                                               cpBodyGetPosition(front_wheel_body), front_wheel_radius + 1.0, car_filter,
+                                                               nullptr)));
+    }
+
+    return static_cast<bool>(inair);
+}
+
+bool Car::real_in_air() {
+    auto f = cpShapeFilterNew(car_group, car_category, CP_ALL_CATEGORIES^(static_cast<cpBitmask>(1 << (1-player_id))));
+    return !(cpSpacePointQueryNearest(space_attached, cpBodyGetPosition(rear_wheel_body), rear_wheel_radius + 1.0, f, nullptr)
+             or cpSpacePointQueryNearest(space_attached, cpBodyGetPosition(front_wheel_body), front_wheel_radius + 1.0, f,
+                                         nullptr));
+}
+
+
 void Car::move(int direction) {
+    inair=-1;
     if (direction) {
 
 //        def in_air(self):
 //        return not (self.point_query_nearest(self.rear_wheel_body.position, self.rear_wheel_radius + 1, pymunk.ShapeFilter(group=self.car_group))
 //                    or self.point_query_nearest(self.front_wheel_body.position, self.front_wheel_radius + 1, pymunk.ShapeFilter(group=self.car_group)))
 
-        if (!(cpSpacePointQueryNearest(space_attached,
-                                       cpBodyGetPosition(rear_wheel_body), rear_wheel_radius + 1.0, car_filter, nullptr)
-              or cpSpacePointQueryNearest(space_attached,
-                                          cpBodyGetPosition(front_wheel_body), front_wheel_radius + 1.0, car_filter,
-                                          nullptr))) {
+        if (in_air()) {
 //            cpBodySetAngularVelocity(car_body, max_angular_speed * direction);
 
             cpBodySetTorque(car_body, torque * direction);
@@ -300,5 +317,7 @@ void Car::draw(RewindClient &rw_client, bool shadow) {
     draw_poly(rw_client, car_body, car_shape, car_color);
     draw_poly(rw_client, car_body, button_shape, button_color);
 }
+
+
 
 #endif
