@@ -31,9 +31,9 @@ void Simulation::save() {
 }
 
 static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive) {
-
     *alive = false;
-    return cpFalse;
+//    return cpFalse;
+    return cpTrue;
 }
 
 void Simulation::new_round(const json &params) {
@@ -249,26 +249,26 @@ cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
     cpVect cp_middle = cpvmult(p1 + p2, 0.5);
 
     cpPointQueryInfo queryInfo;
-////    if (cpSpacePointQueryNearest(space, cp_middle, 2000.0,
-////                                 cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,
-////                                                  cars[me]->car_category), &queryInfo)) {
-////        return queryInfo.distance;
-////    } else {
-////        return 2000.0;
-////    }
+    if (cpSpacePointQueryNearest(space, cp_middle, 2000.0,
+                                 cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category,
+                                                  cars[me]->car_category), &queryInfo)) {
+        return queryInfo.distance;
+    } else {
+        return 2000.0;
+    }
 //
 //
-    double dist = 2000.0;
-    auto f = cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category, cars[me]->car_category);
-    if (cpSpacePointQueryNearest(space, cp_middle, dist, f, &queryInfo)) {
-        dist = std::min(dist, queryInfo.distance);
-    }
-    if (cpSpacePointQueryNearest(space, p1, dist, f, &queryInfo)) {
-        dist = std::min(dist, queryInfo.distance);
-    }
-    if (cpSpacePointQueryNearest(space, p2, dist, f, &queryInfo)) {
-        dist = std::min(dist, queryInfo.distance);
-    }
+//    double dist = 2000.0;
+//    auto f = cpShapeFilterNew(cars[enemy]->car_group, cars[enemy]->car_category, cars[me]->car_category);
+//    if (cpSpacePointQueryNearest(space, cp_middle, dist, f, &queryInfo)) {
+//        dist = std::min(dist, queryInfo.distance);
+//    }
+//    if (cpSpacePointQueryNearest(space, p1, dist, f, &queryInfo)) {
+//        dist = std::min(dist, queryInfo.distance);
+//    }
+//    if (cpSpacePointQueryNearest(space, p2, dist, f, &queryInfo)) {
+//        dist = std::min(dist, queryInfo.distance);
+//    }
 //    dist = cpvdist(cpBodyGetPosition(cars[me]->rear_wheel_body), cp_middle) - cars[me]->rear_wheel_radius;
 //    dist = std::min(dist, cpvdist(cpBodyGetPosition(cars[me]->front_wheel_body), cp_middle) - cars[me]->front_wheel_radius);
 //
@@ -278,7 +278,7 @@ cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
 //    dist = std::min(dist, cpvdist(cpBodyGetPosition(cars[me]->rear_wheel_body), p2) - cars[me]->rear_wheel_radius);
 //    dist = std::min(dist, cpvdist(cpBodyGetPosition(cars[me]->front_wheel_body), p2) - cars[me]->front_wheel_radius);
 //
-    return dist;
+//    return dist;
 }
 
 #ifdef LOCAL_RUN
