@@ -61,6 +61,7 @@ public:
     void move(int direction);
     bool in_air();
     bool real_in_air();
+    double dist_to_map();
 
 
 #ifdef REWIND_VIEWER

@@ -160,6 +160,21 @@ bool Car::real_in_air() {
                                          nullptr));
 }
 
+double Car::dist_to_map(){
+    cpPointQueryInfo queryInfo;
+    auto f = cpShapeFilterNew(car_group, car_category, CP_ALL_CATEGORIES^(static_cast<cpBitmask>(1 << (1-player_id))));
+    double dist = 0.0;
+    if(cpSpacePointQueryNearest(space_attached, cpBodyGetPosition(rear_wheel_body), dist, f, &queryInfo)){
+        dist += queryInfo.distance;
+    }
+    if(cpSpacePointQueryNearest(space_attached, cpBodyGetPosition(front_wheel_body), dist, f, &queryInfo)){
+        dist += queryInfo.distance;
+    }
+
+
+    return dist*0.5;
+};
+
 
 void Car::move(int direction) {
     inair=-1;

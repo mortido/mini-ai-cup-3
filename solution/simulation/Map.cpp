@@ -54,7 +54,7 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
     switch (external_id + car_id * 10) {
         case 21: {
 //            double val{1};
-//            int p = 31;
+//            int p = 30;
 //            int u = 60 - p;
 //            for (int t = 0; t <= p; t++) {
 //                val = (double) t / p;
