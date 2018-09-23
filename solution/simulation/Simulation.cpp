@@ -286,6 +286,16 @@ cpFloat Simulation::get_lowest_button_point(int player_id) {
     return std::min(std::min(cpvmult(p1 + p2, 0.5).y, p1.y), p2.y);
 }
 
+cpFloat Simulation::get_lowest_bus_point(int player_id) {
+
+    for (int i=0;i<7;i++){
+
+    }
+    cpVect p1 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 0));
+    cpVect p2 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 1));
+    return std::min(std::min(cpvmult(p1 + p2, 0.5).y, p1.y), p2.y);
+}
+
 cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
     cpVect p1 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 0));
     cpVect p2 = cpBodyLocalToWorld(cars[enemy]->car_body, cpPolyShapeGetVert(cars[enemy]->button_shape, 1));

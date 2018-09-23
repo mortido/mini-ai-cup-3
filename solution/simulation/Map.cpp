@@ -53,24 +53,24 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
 
     switch (external_id + car_id * 10) {
         case 21: {
-            double val{1};
-            int p = 29;
-            int u = 60 - p;
-            for (int t = 0; t <= p; t++) {
-                val = (double) t / p;
-                for (int y = 0; y < 80; y++) {
-                    weights[60 + t][y] = val;
-                    weights[59 - t][y] = val;
-                }
-            }
-
-            for (int x = 0; x < u; x++) {
-                val = (double) x / u;
-                for (int y = 0; y < 80; y++) {
-                    weights[x][y] = val;
-                    weights[119 - x][y] = val;
-                }
-            }
+//            double val{1};
+//            int p = 29;
+//            int u = 60 - p;
+//            for (int t = 0; t <= p; t++) {
+//                val = (double) t / p;
+//                for (int y = 0; y < 80; y++) {
+//                    weights[60 + t][y] = val;
+//                    weights[59 - t][y] = val;
+//                }
+//            }
+//
+//            for (int x = 0; x < u; x++) {
+//                val = (double) x / u;
+//                for (int y = 0; y < 80; y++) {
+//                    weights[x][y] = val;
+//                    weights[119 - x][y] = val;
+//                }
+//            }
             break;
         }
         case 22: {
@@ -127,21 +127,21 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
             break;
         }
         case 26: { // IslandHole
-            double val{1};
-            for (int t = 0; t <= 35; t++) {
-                val = t / 35.0;
-                for (int y = 0; y < 80; y++) {
-                    weights[60 + t][y] = val;
-                    weights[59 - t][y] = val;
-                }
-            }
-
-            for (int x = 1; x < 25; x++) {
-                for (int y = 0; y < 80; y++) {
-                    weights[24 - x][y] = 1.0;
-                    weights[95 + x][y] = 1.0;
-                }
-            }
+//            double val{1};
+//            for (int t = 0; t <= 35; t++) {
+//                val = t / 35.0;
+//                for (int y = 0; y < 80; y++) {
+//                    weights[60 + t][y] = val;
+//                    weights[59 - t][y] = val;
+//                }
+//            }
+//
+//            for (int x = 1; x < 25; x++) {
+//                for (int y = 0; y < 80; y++) {
+//                    weights[24 - x][y] = 1.0;
+//                    weights[95 + x][y] = 1.0;
+//                }
+//            }
             break;
         }
         case 24: {
