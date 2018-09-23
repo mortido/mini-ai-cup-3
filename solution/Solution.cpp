@@ -98,7 +98,7 @@ void Solution::copy_from(Solution &solution) {
     }
     fitness = solution.fitness;
     for (int j = 0; j < 10; j++) {
-        fitness_components[j]=solution.fitness_components[j];
+        fitness_components[j] = solution.fitness_components[j];
     }
 }
 
@@ -109,7 +109,7 @@ void Solution::randomize() {
 }
 
 void Solution::mutate() {
-        mutate_slice();
+    mutate_slice();
 }
 
 void Solution::merge(Solution &solution1, Solution &solution2) {
@@ -121,8 +121,14 @@ void Solution::merge(Solution &solution1, Solution &solution2) {
 }
 
 void Solution::reset_to(int move) {
-    for(int i=0;i<GA::DEPTH;i++){
-        moves[i]=move;
+    if (move) {
+        for (int i = 0; i < GA::DEPTH; i++) {
+            moves[i] = move;
+        }
+    } else {
+        for (int i = 0; i < GA::DEPTH; i++) {
+            moves[i] = 1 - 2 * (i % 2);
+        }
     }
 
 }

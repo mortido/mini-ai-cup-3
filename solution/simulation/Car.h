@@ -30,6 +30,7 @@ public:
     int player_id;
     bool alive;
     int inair{-1};
+    int last_touched{0};
 
     cpSpace *space_attached;
     cpBody *car_body;
