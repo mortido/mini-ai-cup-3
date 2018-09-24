@@ -53,26 +53,27 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
 
     switch (external_id + car_id * 10) {
         case 21: {
-//            double val{1};
-//            int p = 29;
-//            int u = 60 - p;
-//            for (int t = 0; t <= p; t++) {
-//                val = (double) t / p;
-//                for (int y = 0; y < 80; y++) {
-//                    weights[60 + t][y] = val;
-//                    weights[59 - t][y] = val;
-//                }
-//            }
-//
-//            for (int x = 0; x < u; x++) {
-//                val = (double) x / u;
-//                for (int y = 0; y < 80; y++) {
-//                    weights[x][y] = val;
-//                    weights[119 - x][y] = val;
-//                }
-//            }
+            double val{1};
+            int p = 29;
+            int u = 60 - p;
+            for (int t = 0; t <= p; t++) {
+                val = (double) t / p;
+                for (int y = 0; y < 80; y++) {
+                    weights[60 + t][y] = val;
+                    weights[59 - t][y] = val;
+                }
+            }
+
+            for (int x = 0; x < u; x++) {
+                val = (double) x / u;
+                for (int y = 0; y < 80; y++) {
+                    weights[x][y] = val*(y/80.0);
+                    weights[119 - x][y] = val*(y/80.0);
+                }
+            }
             break;
         }
+        case 12:
         case 22: {
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};
@@ -99,6 +100,7 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
             }
             break;
         }
+        case 13:
         case 23: { // PillHill
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};

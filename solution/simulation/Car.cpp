@@ -321,6 +321,7 @@ void Car::draw(RewindClient &rw_client, bool shadow) {
 //    cpCircleShapeGetOffset(fro)
     const cpVect &car_center = cpBodyLocalToWorld(car_body, cpBodyGetCenterOfGravity(car_body));
     rw_client.circle(car_center.x, car_center.y, 3.0, center_gravity_color);
+
     rw_client.line(car_center.x, car_center.y - 5.0, car_center.x, car_center.y + 5.0, car_lines);
     rw_client.line(car_center.x - 5.0, car_center.y, car_center.x + 5.0, car_center.y, car_lines);
 
