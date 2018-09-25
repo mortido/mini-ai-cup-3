@@ -120,15 +120,34 @@ void Solution::merge(Solution &solution1, Solution &solution2) {
     }
 }
 
+void Solution::reset_to_butt_move(int player_id){
+    int a = player_id ? -1 :1;
+    int b = -a;
+    for (int i = 0; i < GA::DEPTH; i++) {
+        int y = i%3;
+        switch (y){
+            case 0:
+            case 1:
+//                case 2:
+                moves[i]=a;
+                break;
+            case 2:
+//                case 3:
+                moves[i]=b;
+                break;
+//                case 4:
+//                case 3:
+//                    moves[i]=1;
+//                    break;
+            default:
+                moves[i]=0;
+                break;
+        }
+    }
+}
+
 void Solution::reset_to(int move) {
-    if (move) {
         for (int i = 0; i < GA::DEPTH; i++) {
             moves[i] = move;
         }
-    } else {
-        for (int i = 0; i < GA::DEPTH; i++) {
-            moves[i] = 1 - 2 * (i % 2);
-        }
-    }
-
 }

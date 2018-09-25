@@ -48,14 +48,14 @@ void Solver::_solve(Simulation &simulation, high_resolution_clock::time_point &s
         }
         idx++;
 
-//        if(simulation.cars[0]->external_id==2){
-//            previous[idx].reset_to(0);
-//            evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
-//            if (!best || (previous[idx].fitness > best->fitness)) {
-//                best = &previous[idx];
-//            }
-//            idx++;
-//        }
+        if (simulation.map->external_id == 6 && simulation.cars[0]->external_id == 2) {
+            previous[idx].reset_to_butt_move(my_id);
+            evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
+            if (!best || (previous[idx].fitness > best->fitness)) {
+                best = &previous[idx];
+            }
+            idx++;
+        }
 
         // fill with random chromosomes
         for (; idx < GA::POPULATION_SIZE; idx++) {
@@ -490,6 +490,7 @@ Solver::calcBusFitness(Simulation &simulation, Solution &solution, int my_id, in
         }
         speed *= 0.0;
     } else if (simulation.map->external_id == 6) {
+
         cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
         cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
         double y = std::min(v1.y, v2.y);

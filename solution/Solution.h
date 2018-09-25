@@ -22,6 +22,7 @@ public:
 
     void randomize();
     void reset_to(int move);
+    void reset_to_butt_move(int player_id);
     void merge(Solution &solution1, Solution &solution2);
     void mutate();
     void shift();
