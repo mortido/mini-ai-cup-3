@@ -216,6 +216,8 @@ int main(int argc, char *argv[]) {
                                format("front_y_dif: %.6f\n",
                                       cpBodyGetPosition(simulation.cars[my_player_id]->front_wheel_body).y -
                                       params["my_car"][4][1].get<cpFloat>());
+
+
             cout << command.dump() << endl;
 
             time_bank -= ELAPSED_TIME;
@@ -236,6 +238,9 @@ int main(int argc, char *argv[]) {
             simulation.rewind.message("MY SIMS: %d\\n", solver.my_simulations);
             simulation.rewind.message("ENEMY GENERATIONS: %.d\\n", solver.enemy_generations);
             simulation.rewind.message("ENEMY SIMS: %d\\n", solver.enemy_simulations);
+
+            simulation.rewind.message("\\n\\nfront: %.2f %.2f\\n",params["my_car"][4][0].get<cpFloat>(),params["my_car"][4][1].get<cpFloat>());
+            simulation.rewind.message("rear: %.2f %.2f\\n",params["my_car"][3][0].get<cpFloat>(),params["my_car"][3][1].get<cpFloat>());
 
             for (int j = 0; j < 10; j++) {
                 simulation.rewind.message("COMP: %d %f\\n", j,
