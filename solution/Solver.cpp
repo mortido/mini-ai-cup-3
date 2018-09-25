@@ -301,17 +301,47 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
         if (std::min(v1.x, v2.x) < 100.0 || std::max(v1.x, v2.x) > 1100.0) {
             position_on_map -= 9000000.0;
         }
+
+        if(simulation.sim_tick_index > 600){
+            aim*=0.1;
+        }
+
+        cpVect c1 = cpBodyLocalToWorld(simulation.cars[my_id]->car_body, cpBodyGetCenterOfGravity(simulation.cars[my_id]->car_body));
+        cpVect c2 = cpBodyLocalToWorld(simulation.cars[enemy_id]->car_body, cpBodyGetCenterOfGravity(simulation.cars[enemy_id]->car_body));
+        if(c1.x>c2.x){
+            position_on_map+=-c1.x-c2.x;
+        }else{
+            position_on_map+=c1.x+c2.x;
+        }
+
+        my_excess_angle*=25.0;
+        enemy_excess_angle*=10.0;
     }
 
     if (simulation.map->external_id == 6) {
-        cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
-        cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
-        double y = std::min(v1.y, v2.y);
-        if (y < 210.0) {
-            position_on_map -= (220.0 - y) * 90000.0;
+        if(my_to_en>99.0) {
+            cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
+            cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
+//        double y = std::min(v1.y, v2.y);
+//        if (y < 220.0) {
+//            position_on_map -= (220.0 - y) * 90000.0;
+//        }
+
+            double a = cpvdist(v1, cpv(600.0, 175.0));
+            double b = cpvdist(v2, cpv(600.0, 175.0));
+            constexpr double thr = 200.0;
+            if (a < thr) {
+                position_on_map -= 450000.0 + 450000.0 * (1.0 - a / thr);
+            }
+
+            if (b < thr) {
+                position_on_map -= 450000.0 + 450000.0 * (1.0 - b / thr);
+            }
+
+            speed *= 0.5;
+            aim *= 0.1;
+            btn_y_diff /= 0.5 * end_game_coef;
         }
-        speed *= 0.0;
-        aim *= 0.0;
     }
 
 
@@ -535,43 +565,34 @@ Solver::calcBusFitness(Simulation &simulation, Solution &solution, int my_id, in
         speed *= 0.0;
 //        position_on_map+=std::abs(simulation.get_lowest_bus_point(my_id).x-600.0)*6.35;
     } else if (simulation.map->external_id == 1) {
-        cpVect v = cpBodyGetPosition(simulation.cars[enemy_id]->front_wheel_body);
-
-        if (abs(600.0 - v.x) > 173.0) {
-
-            double x = my_id ? 900.0 : 300.0;
-
-            // TODO:check enemy position.
-            if (simulation.sim_tick_index < 80.0) {
-                cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
-                cpVect d = cpv(x, 215.0);
-                position_on_map -= cpvdist(v1, d) * 150.0;
-            } else if (simulation.sim_tick_index < 230.0) {
-                if (simulation.sim_tick_index < 90.0) {
-                    cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
-                    cpVect d = cpv(x, 145.0);
-                    position_on_map -= cpvdist(v1, d) * 5.0;
-                }
-//            if(simulation.cars[my_id]->in_air()) {
-
-                cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
-                cpVect d = cpv(x, 230.0);
-                position_on_map -= cpvdist(v2, d) * 10.0;
-//            }
-            }
-//        cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
-//        cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
-//        double a = cpvdist(v1, cpv(600.0, 100.0));
-//        double b = cpvdist(v2, cpv(600.0, 100.0));
-//        constexpr double thr = 310.0;
-//        if (a < thr) {
-//            position_on_map -= 4500.0 + 4500.0 * (1.0 - a / thr);
-//        }
+//        cpVect v = cpBodyGetPosition(simulation.cars[enemy_id]->front_wheel_body);
 //
-//        if (b < thr) {
-//            position_on_map -= 4500.0 + 4500.0 * (1.0 - b / thr);
+//        if (abs(600.0 - v.x) > 173.0) {
+//
+//            double x = my_id ? 900.0 : 300.0;
+//
+//            // TODO:check enemy position.
+//            if (simulation.sim_tick_index < 80.0) {
+//                cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
+//                cpVect d = cpv(x, 215.0);
+//                position_on_map -= cpvdist(v1, d) * 150.0;
+//            } else if (simulation.sim_tick_index < 230.0) {
+//                if (simulation.sim_tick_index < 90.0) {
+//                    cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
+//                    cpVect d = cpv(x, 145.0);
+//                    position_on_map -= cpvdist(v1, d) * 5.0;
+//                }
+//                cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
+//                cpVect d = cpv(x, 230.0);
+//                position_on_map -= cpvdist(v2, d) * 10.0;
+//
+//            }
+//
+//            speed *= 0.0;
+//
+//
 //        }
-        speed *= 0.0;
+        btn_y_diff /= end_game_coef;
     }
 
 

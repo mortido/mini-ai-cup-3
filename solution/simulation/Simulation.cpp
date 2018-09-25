@@ -261,8 +261,8 @@ cpFloat Simulation::get_closest_point_to_button2(int player_id, bool ignore_cars
     cpVect v = cpvnormalize(p2 - p1);
 
     cpVect normal = cpvperp(v);
-    cpVect back = cpvrotate(v, cpvforangle(3.0 * PI / 4.0));
-    cpVect front = cpvrotate(v, cpvforangle(PI / 4.0));
+    cpVect back = cpvrotate(v, cpvforangle(5.0 * PI / 6.0));
+    cpVect front = cpvrotate(v, cpvforangle(PI / 6.0));
 
 //    if (cpSpaceSegmentQueryFirst(space, cp_middle, cp_middle + normal * dist, 1.0, f, &queryInfo)) {
 //        dist = std::min(dist, cpvdist(queryInfo.point, cp_middle));
