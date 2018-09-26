@@ -34,21 +34,29 @@ void Solver::_solve(Simulation &simulation, high_resolution_clock::time_point &s
             idx++;
         }
 
-        previous[idx].reset_to(-1);
-        evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
-        if (!best || (previous[idx].fitness > best->fitness)) {
-            best = &previous[idx];
-        }
-        idx++;
+        if(simulation.saved_tick%2==0) {
+            previous[idx].reset_to(-1);
+            evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
+            if (!best || (previous[idx].fitness > best->fitness)) {
+                best = &previous[idx];
+            }
+            idx++;
 
-        previous[idx].reset_to(1);
-        evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
-        if (!best || (previous[idx].fitness > best->fitness)) {
-            best = &previous[idx];
+            previous[idx].reset_to(1);
+            evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
+            if (!best || (previous[idx].fitness > best->fitness)) {
+                best = &previous[idx];
+            }
+            idx++;
+        } else {
+            previous[idx].copy_from(best_solutions[my_id]);
+            previous[idx].mutate();
+            evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
+            idx++;
         }
-        idx++;
 
-        if (simulation.map->external_id == 6 && simulation.cars[0]->external_id == 2) {
+        if (simulation.map->external_id == 6 &&
+            (simulation.cars[0]->external_id == 2 || simulation.cars[0]->external_id == 1)) {
             previous[idx].reset_to_butt_move(my_id);
             evaluate(simulation, previous[idx], best_solutions, my_id, enemy_id);
             if (!best || (previous[idx].fitness > best->fitness)) {
@@ -140,7 +148,9 @@ void Solver::solve(Simulation &simulation, high_resolution_clock::time_point &st
             best_solutions[player].shift();
         }
     }
+//    if(simulation.saved_tick%2==0) {
     _solve(simulation, start_time, enemy_TL, enemy_player_id, my_player_id);
+//    }
     _solve(simulation, start_time, my_TL, my_player_id, enemy_player_id);
 }
 
@@ -156,7 +166,8 @@ void Solver::evaluate(Simulation &simulation,
         test_solution.fitness_components[j] = 0.0;
     }
 
-    for (int i = 0; i < GA::DEPTH; i++) {
+    int depth = my_id == my_player_id ? GA::DEPTH : GA::DEPTH;// / 2;
+    for (int i = 0; i < depth; i++) {
         // Apply moves.
         int m = 0;
         for (int p = 0; p < PLAYERS_COUNT; p++) {
@@ -183,7 +194,7 @@ void Solver::evaluate(Simulation &simulation,
         }
 
         if (!simulation.cars[my_id]->alive) {
-            while (i < GA::DEPTH) {
+            while (i < depth) {
                 test_solution.fitness_components[0] += -9000000.0 * mul;
                 mul *= GA::THETA;
                 i++;
@@ -294,7 +305,32 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
 
 //    aim += (simulation.cars[enemy_id]->dist_to_map() - simulation.cars[my_id]->dist_to_map()) * 50.0;
 
-    double position_on_map{end_game_coef * end_game_coef * simulation.get_position_score(my_id) * 500.0};
+//    double position_on_map{end_game_coef * end_game_coef * simulation.get_position_score(my_id) * 500.0};
+    double position_on_map{0.0};
+
+    if (simulation.map->external_id == 1) {
+        cpVect c1 = cpBodyLocalToWorld(simulation.cars[my_id]->car_body,
+                                       cpBodyGetCenterOfGravity(simulation.cars[my_id]->car_body));
+        cpVect c2 = cpBodyLocalToWorld(simulation.cars[enemy_id]->car_body,
+                                       cpBodyGetCenterOfGravity(simulation.cars[enemy_id]->car_body));
+
+        if (simulation.sim_tick_index < 250) {
+            my_excess_angle *= 25.0;
+            enemy_excess_angle *= 10.0;
+            if (c1.x > c2.x) {
+                position_on_map += (-c1.x - c2.x) * 1.5;
+            } else {
+                position_on_map += (c1.x + c2.x) * 1.5;
+            }
+        } else {
+            if (c1.x < c2.x) {
+                position_on_map += (-c1.x - c2.x) * 1.5;
+            } else {
+                position_on_map += (c1.x + c2.x) * 1.5;
+            }
+        }
+    }
+
     if (simulation.map->external_id == 5) {
         cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
         cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
@@ -302,34 +338,41 @@ Solver::calcBuggyFitness(Simulation &simulation, Solution &solution, int my_id, 
             position_on_map -= 9000000.0;
         }
 
-        if(simulation.sim_tick_index > 600){
-            aim*=0.1;
+        if (simulation.sim_tick_index > 600) {
+            aim *= 0.1;
         }
 
-        cpVect c1 = cpBodyLocalToWorld(simulation.cars[my_id]->car_body, cpBodyGetCenterOfGravity(simulation.cars[my_id]->car_body));
-        cpVect c2 = cpBodyLocalToWorld(simulation.cars[enemy_id]->car_body, cpBodyGetCenterOfGravity(simulation.cars[enemy_id]->car_body));
-        if(c1.x>c2.x){
-            position_on_map+=-c1.x-c2.x;
-        }else{
-            position_on_map+=c1.x+c2.x;
+        cpVect c1 = cpBodyLocalToWorld(simulation.cars[my_id]->car_body,
+                                       cpBodyGetCenterOfGravity(simulation.cars[my_id]->car_body));
+        cpVect c2 = cpBodyLocalToWorld(simulation.cars[enemy_id]->car_body,
+                                       cpBodyGetCenterOfGravity(simulation.cars[enemy_id]->car_body));
+        if (c1.x > c2.x) {
+            position_on_map += -(c1.x - c2.x)*5.0;
+        } else {
+            position_on_map += (c1.x + c2.x)*5.0;
         }
 
-        my_excess_angle*=25.0;
-        enemy_excess_angle*=10.0;
+        speed*=0.0;
+        my_excess_angle = my_excess_angle+enemy_excess_angle;
+        my_excess_angle*=350.0;
+        enemy_excess_angle *= 0.0;
     }
 
     if (simulation.map->external_id == 6) {
-        if(my_to_en>99.0) {
+        if (my_to_en > 99.0) {
             cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
             cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
 //        double y = std::min(v1.y, v2.y);
-//        if (y < 220.0) {
+            if (simulation.sim_tick_index < 2050) {
 //            position_on_map -= (220.0 - y) * 90000.0;
-//        }
+                position_on_map += v2.y * 10.0;
+            } else {
+                position_on_map += v1.y * 10.0;
+            }
 
             double a = cpvdist(v1, cpv(600.0, 175.0));
             double b = cpvdist(v2, cpv(600.0, 175.0));
-            constexpr double thr = 200.0;
+            constexpr double thr = 210.0;
             if (a < thr) {
                 position_on_map -= 450000.0 + 450000.0 * (1.0 - a / thr);
             }
@@ -571,13 +614,12 @@ Solver::calcBusFitness(Simulation &simulation, Solution &solution, int my_id, in
 //
 //            double x = my_id ? 900.0 : 300.0;
 //
-//            // TODO:check enemy position.
 //            if (simulation.sim_tick_index < 80.0) {
 //                cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
-//                cpVect d = cpv(x, 215.0);
+//                cpVect d = cpv(x+5.0, 215.0);
 //                position_on_map -= cpvdist(v1, d) * 150.0;
 //            } else if (simulation.sim_tick_index < 230.0) {
-//                if (simulation.sim_tick_index < 90.0) {
+//                if (simulation.sim_tick_index < 100.0) {
 //                    cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
 //                    cpVect d = cpv(x, 145.0);
 //                    position_on_map -= cpvdist(v1, d) * 5.0;
@@ -589,10 +631,57 @@ Solver::calcBusFitness(Simulation &simulation, Solution &solution, int my_id, in
 //            }
 //
 //            speed *= 0.0;
-//
-//
 //        }
-        btn_y_diff /= end_game_coef;
+//        btn_y_diff /= end_game_coef;
+
+
+        if (simulation.sim_tick_index > 150.0) {
+            double x = my_id ? (1200.0-225.0) : 225.0;
+            position_on_map = 0.0;
+            cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
+            cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
+                    cpVect d = cpv(x, 170.0);
+                    position_on_map -= cpvdist(v1, d) * 500.0 /mul * mul2;
+                    position_on_map += v2.y*1.0;
+            speed *= 0.0;
+            btn_y_diff /= end_game_coef;
+            btn_y_diff /= 1;
+        }else{
+            position_on_map *= 10.0;
+//            cpVect v1 = cpBodyGetPosition(simulation.cars[my_id]->rear_wheel_body);
+//            cpVect v2 = cpBodyGetPosition(simulation.cars[my_id]->front_wheel_body);
+//            cpVect d = cpv(22.0, 404.0);
+//            position_on_map -= cpvdist(v1, d) * 50.0 /mul * mul2;
+        }
+//        speed = -cpvlength(cpBodyGetVelocity(simulation.cars[my_id]->car_body))*0.1;
+    }else if (simulation.map->external_id == 3) {
+        if(simulation.sim_tick_index<150){
+            position_on_map*=0.0;
+            speed = -cpvlength(cpBodyGetVelocity(simulation.cars[my_id]->car_body));
+        }else if(simulation.sim_tick_index<230) {
+            btn_y_diff *= end_game_coef;
+        }else{
+            btn_y_diff /= end_game_coef;
+        }
+    }else if (simulation.map->external_id == 2) {
+        if(simulation.sim_tick_index<90){
+            position_on_map*=0.0;
+            speed = -cpvlength(cpBodyGetVelocity(simulation.cars[my_id]->car_body));
+        }else if(simulation.sim_tick_index<230) {
+            btn_y_diff *= end_game_coef;
+        }else{
+            btn_y_diff /= end_game_coef;
+        }
+
+    }else if (simulation.map->external_id == 4) {
+//        if(simulation.sim_tick_index<50){
+//            position_on_map*=0.0;
+//        }
+        if(simulation.sim_tick_index<230) {
+            btn_y_diff *= end_game_coef;
+        }else{
+//            btn_y_diff /= end_game_coef;
+        }
     }
 
 
@@ -670,9 +759,9 @@ std::pair<int, int> Solver::PopulationState::get_parent_indexes() {
     int a = Randomizer::GetRandomParent();
     int b;
 
-    do {
-        b = Randomizer::GetRandomParent();
-    } while (b == a);
+//    do {
+    b = Randomizer::GetRandomParent();
+//    } while (b == a);
 
     int mom = (*previous)[a].fitness > (*previous)[b].fitness ? a : b;
 
@@ -682,7 +771,8 @@ std::pair<int, int> Solver::PopulationState::get_parent_indexes() {
 
     do {
         b = Randomizer::GetRandomParent();
-    } while (b == a || b == mom);
+//    } while (b == a || b == mom);
+    } while (b == mom);
 
     int dad = (*previous)[a].fitness > (*previous)[b].fitness ? a : b;
 

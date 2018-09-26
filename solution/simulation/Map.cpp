@@ -73,7 +73,7 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
             }
             break;
         }
-        case 12:
+//        case 12:
         case 22: {
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};
@@ -100,7 +100,7 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
             }
             break;
         }
-        case 13:
+//        case 13:
         case 23: { // PillHill
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};
