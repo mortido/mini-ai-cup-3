@@ -3,7 +3,7 @@
 
 Simulation::Simulation() : space{nullptr}, sim_tick_index{0}
 #ifdef REWIND_VIEWER
-        , rewind(RewindClient::instance())
+, rewind(RewindClient::instance())
 #endif
 {
     // Allocate heap for space and buffer to copy state.
@@ -37,7 +37,7 @@ void Simulation::save() {
 static cpBool kill_car_on_button_press(cpArbiter *arb, cpSpace *space, bool *alive) {
     *alive = false;
 //    return cpFalse;
-    return cpTrue;
+    return cpTrue; // changed to kill enemy every frame
 }
 
 void Simulation::new_round(const json &params) {
@@ -68,12 +68,12 @@ void Simulation::new_round(const json &params) {
 
     cars[0].reset(new Car(params["proto_car"], space, 1.0, 0, GAME::LEFT_CAR_POS)); // 300-300
     cpCollisionHandler *ch1 = cpSpaceAddWildcardHandler(space, cars[0]->button_collision_type);
-    ch1->preSolveFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
+    ch1->preSolveFunc = (cpCollisionBeginFunc) kill_car_on_button_press; // changed from begin to kill enemy every frame
     ch1->userData = &(cars[0]->alive);
 
     cars[1].reset(new Car(params["proto_car"], space, -1.0, 1, GAME::RIGHT_CAR_POS)); // 900-300
     cpCollisionHandler *ch2 = cpSpaceAddWildcardHandler(space, cars[1]->button_collision_type);
-    ch2->preSolveFunc = (cpCollisionBeginFunc) kill_car_on_button_press;
+    ch2->preSolveFunc = (cpCollisionBeginFunc) kill_car_on_button_press; // changed from begin to kill enemy every frame
     ch2->userData = &(cars[1]->alive);
 
     map->attach(space);
@@ -84,59 +84,15 @@ void Simulation::new_round(const json &params) {
     sim_tick_index = 0;
 }
 
-#include <chipmunk/chipmunk_structs.h>
-
-static void
-tocuhHelper(cpBody *body, cpArbiter *arb, bool *touched_by_enemy) {
-    if (!*touched_by_enemy) {
-        *touched_by_enemy = (arb->a->filter.group == 1 && arb->b->filter.group == 2) ||
-                            (arb->a->filter.group == 2 && arb->b->filter.group == 1);
-    }
-
-}
-
 void Simulation::step() {
-
-//    bool touched_by_enemy{false};
-//    cpBodyEachArbiter(cars[0]->car_body, (cpBodyArbiterIteratorFunc) tocuhHelper, &touched_by_enemy);
-//    cpBodyEachArbiter(cars[0]->rear_wheel_body, (cpBodyArbiterIteratorFunc) tocuhHelper,
-//                      &touched_by_enemy);
-//    cpBodyEachArbiter(cars[0]->front_wheel_body, (cpBodyArbiterIteratorFunc) tocuhHelper,
-//                      &touched_by_enemy);
-//
-//    if(touched_by_enemy){
-//        cars[0]->last_touched=sim_tick_index;
-//    }
-//
-//    touched_by_enemy =false;
-//    cpBodyEachArbiter(cars[1]->car_body, (cpBodyArbiterIteratorFunc) tocuhHelper, &touched_by_enemy);
-//    cpBodyEachArbiter(cars[1]->rear_wheel_body, (cpBodyArbiterIteratorFunc) tocuhHelper,
-//                      &touched_by_enemy);
-//    cpBodyEachArbiter(cars[1]->front_wheel_body, (cpBodyArbiterIteratorFunc) tocuhHelper,
-//                      &touched_by_enemy);
-//
-//    if(touched_by_enemy){
-//        cars[1]->last_touched=sim_tick_index;
-//    }
-
-
     if (GAME::TICK_TO_DEADLINE - sim_tick_index < 1) {
         deadline->move();
-//        if (sim_tick_index - saved_tick > GA::DEPTH / 2) {
-//            deadline->move();
-//        }
+
+        // after 3/4 of moves calc them as x2 to cover bigger range...
         if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
             deadline->move();
         }
-//        if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
-//            deadline->move();
-//        }
-
     }
-//    if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
-//        cpSpaceStep(space, GAME::SIMULATION_DT * 3);
-//    }
-//        else
     if (sim_tick_index - saved_tick > GA::DEPTH * 0.75) {
         sim_tick_index++;
         cpSpaceStep(space, GAME::SIMULATION_DT * 2);
@@ -204,6 +160,34 @@ void Simulation::draw(json &params, int my_player, std::array<Solution, 2> best_
 }
 
 #endif
+
+void Simulation::move_car(int player_id, int move) {
+    cars[player_id]->move(move);
+}
+
+cpFloat Simulation::get_position_score(int player_id) {
+
+    const cpVect &temp1 = cpBodyGetPosition(cars[player_id]->rear_wheel_body);
+    const cpVect &temp2 = cpBodyGetPosition(cars[player_id]->front_wheel_body);
+    return 0.5 * (map->weights[static_cast<int>(temp1.x / 10.0)][static_cast<int>(temp1.y / 10.0)] +
+                  map->weights[static_cast<int>(temp2.x / 10.0)][static_cast<int>(temp2.y / 10.0)]);
+
+//    const cpVect &p = cpBodyLocalToWorld(cars[player_id]->car_body,
+//                                         cpBodyGetCenterOfGravity(cars[player_id]->car_body));
+//    return map->weights[static_cast<int>(p.x / 10.0)][static_cast<int>(p.y / 10.0)];
+
+}
+
+double normilize_angle(double x) {
+    x = fmod(x + PI, 2.0 * PI);
+    if (x < 0.0)
+        x += 2.0 * PI;
+    return x - PI;
+}
+
+double Simulation::get_car_angle(int player_id) {
+    return sim_tick_index ? normilize_angle(cpBodyGetAngle(cars[player_id]->car_body)) : 0.0;
+}
 
 cpFloat Simulation::get_closest_point_to_button(int player_id, bool ignore_cars) {
     cpVect p1 = cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->button_shape, 0));
@@ -287,7 +271,8 @@ cpFloat Simulation::get_lowest_button_point(int player_id) {
 }
 
 cpVect Simulation::get_lowest_bus_point(int player_id) {
-    return cpBodyLocalToWorld(cars[player_id]->car_body, cpPolyShapeGetVert(cars[player_id]->car_shape, 0+player_id*3));
+    return cpBodyLocalToWorld(cars[player_id]->car_body,
+                              cpPolyShapeGetVert(cars[player_id]->car_shape, 0 + player_id * 3));
 }
 
 cpFloat Simulation::get_my_distance_to_enemy_button(int me, int enemy) {
@@ -375,31 +360,3 @@ void Simulation::check(int my_player_id, const json &params) {
 }
 
 #endif
-
-void Simulation::move_car(int player_id, int move) {
-    cars[player_id]->move(move);
-}
-
-cpFloat Simulation::get_position_score(int player_id) {
-
-    const cpVect &temp1 = cpBodyGetPosition(cars[player_id]->rear_wheel_body);
-    const cpVect &temp2 = cpBodyGetPosition(cars[player_id]->front_wheel_body);
-    return 0.5 * (map->weights[static_cast<int>(temp1.x / 10.0)][static_cast<int>(temp1.y / 10.0)] +
-                  map->weights[static_cast<int>(temp2.x / 10.0)][static_cast<int>(temp2.y / 10.0)]);
-
-//    const cpVect &p = cpBodyLocalToWorld(cars[player_id]->car_body,
-//                                         cpBodyGetCenterOfGravity(cars[player_id]->car_body));
-//    return map->weights[static_cast<int>(p.x / 10.0)][static_cast<int>(p.y / 10.0)];
-
-}
-
-double normilize_angle(double x) {
-    x = fmod(x + PI, 2.0 * PI);
-    if (x < 0.0)
-        x += 2.0 * PI;
-    return x - PI;
-}
-
-double Simulation::get_car_angle(int player_id) {
-    return sim_tick_index ? normilize_angle(cpBodyGetAngle(cars[player_id]->car_body)) : 0.0;
-}

@@ -73,7 +73,6 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
             }
             break;
         }
-//        case 12:
         case 22: {
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};
@@ -100,7 +99,6 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
             }
             break;
         }
-//        case 13:
         case 23: { // PillHill
             double m1{0.25};
             double m2{2.0 * (0.5 - m1)};
@@ -126,24 +124,6 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
                 }
             }
 
-            break;
-        }
-        case 26: { // IslandHole
-//            double val{1};
-//            for (int t = 0; t <= 35; t++) {
-//                val = t / 35.0;
-//                for (int y = 0; y < 80; y++) {
-//                    weights[60 + t][y] = val;
-//                    weights[59 - t][y] = val;
-//                }
-//            }
-//
-//            for (int x = 1; x < 25; x++) {
-//                for (int y = 0; y < 80; y++) {
-//                    weights[24 - x][y] = 1.0;
-//                    weights[95 + x][y] = 1.0;
-//                }
-//            }
             break;
         }
         case 24: {
@@ -195,14 +175,12 @@ Map::Map(const json &params, cpSpace *space, int car_id) {
 }
 
 void Map::attach(cpSpace *space) {
-//    is_attached = false;
     for (cpShape *shape:shapes) {
         cpSpaceAddShape(space, shape);
     }
 }
 
 void Map::detach(cpSpace *space) {
-//    is_attached = false;
     for (cpShape *shape:shapes) {
         cpSpaceRemoveShape(space, shape);
     }

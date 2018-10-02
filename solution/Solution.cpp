@@ -130,17 +130,11 @@ void Solution::reset_to_butt_move(int player_id){
             case 1:
             case 2:
             case 3:
-//                case 2:
                 moves[i]=a;
                 break;
             case 4:
-//                case 3:
                 moves[i]=b;
                 break;
-//                case 4:
-//                case 3:
-//                    moves[i]=1;
-//                    break;
             default:
                 moves[i]=0;
                 break;

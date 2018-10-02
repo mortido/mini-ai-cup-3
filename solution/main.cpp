@@ -60,29 +60,9 @@ int main(int argc, char *argv[]) {
 
 #ifdef LOCAL_RUN
     size_t max_bytes_to_copy = 0;
-//    std::fstream file;
-//    if (argc == 1) {
-//        file.open("data.json", std::ios::out);
-//    } else {
-//        file.open(argv[1], std::ios::in);
-//    }
 #endif
     while (true) {
-#ifdef LOCAL_RUN
-        if (argc == 1) {
-            getline(cin, input_string);
-//            file << input_string << std::endl;
-//            file.close();
-//            file.open("data.json", std::ios::out);
-        } else {
-//            getline(file, input_string);
-//            if (file.eof()) {
-//                break;
-//            }
-        }
-#else
         getline(cin, input_string);
-#endif
         start_time = NOW;
         if (!input_string.length()) {
             break;
@@ -112,18 +92,6 @@ int main(int argc, char *argv[]) {
                 cerr << " squared =" << state["params"]["proto_car"].value("squared_wheels", false) << endl;
                 cerr << "BYTES TO COPY " << max_bytes_to_copy << endl;
                 max_bytes_to_copy = 0;
-//                cerr << "1000 cycles of (restore)" << endl;
-//
-//                start_time = NOW;
-//                for(int i=0;i<1000;i++){
-//                    for(int j=0;j<50;j++) {
-//                        simulation.step();
-//                    }
-////                    simulation.step();
-//                    simulation.restore();
-//                }
-//
-//                cerr << "time = " << ELAPSED_TIME << endl;
             }
 #endif
 
